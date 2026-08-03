@@ -1,11 +1,11 @@
 # Vercidium Audio
 
-Raytraced audio plugin with realistic muffling, reverb, ambience and visualisation for Godot 4.
+Raytraced audio addon with realistic muffling, reverb, ambience and visualisation for Mono Godot 4, using OpenAL Soft as the audio backend.
 
 > [!WARNING]
-> This plugin is experimental and requires much testing and feedback
+> This plugin is experimental and requires testing and feedback
 
-This repository requires Vercidium Audio v1.5.0 and OpenAL Soft to run:
+This repository requires Vercidium Audio v1.6.0 and OpenAL Soft to run:
 - Download the Vercidium Audio SDK from [vercidium.com](https://vercidium.com)
 - Download the OpenAL Soft DLL from [github.com/kcat/openal-soft](https://github.com/kcat/openal-soft/releases/tag/1.25.2)
 
