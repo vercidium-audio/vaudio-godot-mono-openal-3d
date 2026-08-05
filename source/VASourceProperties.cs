@@ -41,10 +41,10 @@ public partial class VASource : ALSource3D
         }
     }
 
-    float _ReverbEnergyCap = 0.2f;
+    float _ReverbEnergyCap = 0.15f;
     [Export(PropertyHint.Range, "0.0,1.0")]
     /// <summary>
-    /// The percentage of returning energy required for reverb to be at maximum volume. Defaults to 20% of the other emitter's <see cref="ReverbRayCount"/> * <see cref="ReverbBounceCount"/>.
+    /// The percentage of returning energy required for reverb to be at maximum volume. Defaults to 15% of this emitter's <see cref="ReverbRayCount"/> * <see cref="ReverbBounceCount"/>.
     /// </summary>
     /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity, less than 0 or greater than 1</exception>
     public float ReverbEnergyCap
