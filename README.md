@@ -5,7 +5,7 @@ Raytraced audio addon with realistic muffling, reverb, ambience and visualisatio
 > [!WARNING]
 > This plugin is experimental and requires testing and feedback
 
-This repository requires Vercidium Audio v1.6.1 and OpenAL Soft to run:
+This repository requires Vercidium Audio v1.6.2 and OpenAL Soft to run:
 - Download the Vercidium Audio SDK from [vercidium.com](https://vercidium.com)
 - Download the OpenAL Soft DLL from [github.com/kcat/openal-soft](https://github.com/kcat/openal-soft/releases/tag/1.25.2)
 
