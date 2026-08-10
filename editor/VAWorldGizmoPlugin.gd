@@ -192,45 +192,54 @@ func _set_handle(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool, came
 	# live origin, the axis line itself would shift out from under the drag each frame instead of
 	# staying fixed for its duration.
 	#
-	# Cast the mouse position into a 3D ray and find the closest point on that ray to the axis
-	# line - the same technique Godot's own built-in box/extents gizmos use (see
-	# Gizmo3DHelper::get_handle_value / CSGBox3D/CollisionShape3D gizmos), rather than unprojecting
-	# world-space points back to screen space: unproject_position() has no guard for points behind
-	# the camera (clip-space w <= 0), so as the axis origin or the +1-unit reference point crosses
-	# behind the camera the projected screen coordinates flip sign, causing exactly the
-	# snapping/jumping this replaces.
-	#
-	# Solved directly (rather than via Geometry3D.get_closest_points_between_segments) because
-	# that method divides by the determinant of the two directions with no epsilon guard, so it
-	# returns NaN whenever the mouse ray is parallel (or near-parallel) to the axis - which happens
-	# often here, since looking roughly down the axis being dragged is a completely normal camera
-	# angle.
+	# Cast the mouse position into a 3D ray and intersect it with a *plane* through the handle's
+	# pre-drag world position - not the closest point on the ray to the axis *line*, which is what
+	# this used to do (matching the approach Gizmo3DHelper::box_set_handle appears to use at a
+	# glance). That line-based approach is only exact when the handle sits on the axis itself
+	# (true for CSGBox3D/CollisionShape3D, whose extent handles are at e.g. (size.x/2, 0, 0)) - ours
+	# sit at face centres, off-axis (e.g. (max.x, max.y * 0.5, max.z * 0.5)), and for an off-axis
+	# handle the closest-point-on-line solution advances faster than the cursor's actual on-screen
+	# motion (verified numerically: a cursor moving a world-space delta of 2 units produced a
+	# closest-point delta of 2.39, growing with distance from the axis and view angle) - this was
+	# the "outruns the cursor" bug. Intersecting a camera-facing plane through the handle's actual
+	# position instead makes the hit point track the cursor exactly 1:1 regardless of how far the
+	# handle sits from the axis, because the ray always lands exactly where the cursor is pointing
+	# on that plane.
 	var parent = world.get_parent_node_3d()
 	var parent_transform: Transform3D = parent.global_transform if parent else Transform3D.IDENTITY
 	var axis_origin = parent_transform * drag_start_position
 	var axis_direction = parent_transform.basis[axis].normalized()
 
+	var handle_offset: Vector3 = drag_start_size
+	handle_offset[axis] = 0.0 if is_min_face else drag_start_size[axis]
+	var handle_position = axis_origin + parent_transform.basis * (handle_offset * 0.5)
+
 	var ray_origin = camera.project_ray_origin(screen_pos)
 	var ray_direction = camera.project_ray_normal(screen_pos)
 
-	var cross = axis_direction.cross(ray_direction)
-	var denom = cross.length_squared()
+	# Plane contains the axis line and is tilted to face the camera as much as possible while
+	# still containing that line - the standard construction for a view-aligned axis-constrained
+	# drag plane (used by e.g. Blender/Unity's axis gizmos).
+	var view_direction = (handle_position - camera.global_transform.origin)
+	var plane_normal = axis_direction.cross(view_direction.cross(axis_direction))
+	var plane_normal_length = plane_normal.length()
 
-	if denom < 0.0001:
-		# Rays parallel (camera looking straight down the axis) - moving the mouse can't
-		# meaningfully change the position along the axis, so leave Size/Position untouched this
-		# frame rather than dividing by ~zero.
+	if plane_normal_length < 0.0001 or absf(plane_normal.normalized().dot(ray_direction)) < 0.0001:
+		# Camera looking straight down the axis - the plane is edge-on (or the ray can't meet it),
+		# so moving the mouse can't meaningfully change the position along the axis. Leave
+		# Size/Position untouched this frame rather than dividing by ~zero.
 		return
 
-	# Closest point on the axis line to the ray: standard closest-point-between-two-lines
-	# solution, e.g. https://en.wikipedia.org/wiki/Skew_lines#Distance. Note this makes the drag
-	# speed vary with distance from the camera (the face sweeps more world-space per on-screen
-	# pixel the further it recedes along the view direction) - that's expected perspective
-	# foreshortening inherent to any true 3D-space axis drag, not a bug: Godot's own built-in
-	# box/extents gizmos (Gizmo3DHelper::box_set_handle) use this exact same math and have the
-	# same property. new_length is world-space distance from drag_start_position along the axis.
-	var diff = ray_origin - axis_origin
-	var new_length = (diff.cross(ray_direction)).dot(cross) / denom
+	plane_normal /= plane_normal_length
+
+	var t = (handle_position - ray_origin).dot(plane_normal) / ray_direction.dot(plane_normal)
+	var hit_point = ray_origin + ray_direction * t
+
+	# new_length is world-space distance from drag_start_position along the axis. Note this makes
+	# the drag speed vary with distance from the camera (the face sweeps more world-space per
+	# on-screen pixel the further it recedes along the view direction) - that's expected
+	# perspective foreshortening inherent to any true 3D-space axis drag, not a bug.
+	var new_length = (hit_point - axis_origin).dot(axis_direction)
 
 	# Preserve the offset between where the user clicked and the handle's exact position (rather
 	# than snapping the box edge to exactly under the cursor), so the drag starts smoothly from
