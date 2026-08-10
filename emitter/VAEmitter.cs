@@ -1,4 +1,5 @@
 using System.Linq;
+using Godot.Collections;
 
 namespace vaudio_godot_openal;
 
@@ -6,6 +7,20 @@ namespace vaudio_godot_openal;
 [GlobalClass]
 public partial class VAEmitter : Node3D
 {
+    // IsMainListener is set by VAListener alone (see VAListener.cs) - a plain VAEmitter should
+    // never toggle it, so hide it from the inspector rather than exposing a footgun checkbox.
+    public override void _ValidateProperty(Dictionary property)
+    {
+        string name = property["name"].AsStringName();
+
+        if (name == "IsMainListener")
+        {
+            var usage = property["usage"].As<PropertyUsageFlags>();
+            usage &= ~PropertyUsageFlags.Editor;
+            property["usage"] = (int)usage;
+        }
+    }
+
     VAWorld vercidiumAudio;
     public vaudio.Emitter emitter;
 
