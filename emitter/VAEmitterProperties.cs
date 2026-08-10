@@ -121,6 +121,15 @@ public partial class VAEmitter : Node3D
         }
     }
 
+    bool _UseListenerReverb = true;
+    [Export]
+    /// <summary>If true, this emitter's reverb send uses the listener's reverb effect rather than its own</summary>
+    public bool UseListenerReverb
+    {
+        get => _UseListenerReverb;
+        set => _UseListenerReverb = value;
+    }
+
     bool _HasRelativeReverb = true;
     [Export]
     /// <summary>Whether this emitter is used as a reference point for calculating relative reverb gain and direction</summary>

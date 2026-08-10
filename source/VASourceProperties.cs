@@ -128,6 +128,21 @@ public partial class VASource : ALSource3D
         }
     }
 
+    bool _UseListenerReverb = true;
+    [Export]
+    /// <summary>If true, this source's reverb send uses the listener's reverb effect rather than its own</summary>
+    public bool UseListenerReverb
+    {
+        get => _UseListenerReverb;
+        set
+        {
+            _UseListenerReverb = value;
+
+            if (emitter != null)
+                emitter.UseListenerReverb = value;
+        }
+    }
+
 
     [ExportGroup("Muffling")]
 

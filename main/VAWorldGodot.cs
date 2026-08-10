@@ -73,6 +73,12 @@ public partial class VAWorld : Node3D
         if (what != NotificationTransformChanged)
             return;
 
+        // The bounds AABB is always axis-aligned (see VAWorldProperties._ValidateProperty, which
+        // hides rotation/scale in the Inspector) - but the viewport's Rotate tool bypasses the
+        // Inspector and can still rotate the node directly, so snap it back out here too.
+        if (Quaternion != Quaternion.Identity)
+            Quaternion = Quaternion.Identity;
+
         // Rebuild the bounds gizmo whenever the node moves, whether from the viewport gizmo,
         // the Inspector's Position field, or code.
         UpdateGizmos();

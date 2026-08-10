@@ -84,6 +84,7 @@ public partial class VASource : ALSource3D
             MaxEchogramTime = MaxEchogramTime,
             EchogramGranularity = EchogramGranularity,
             AffectsGroupedEAX = AffectsGroupedEAX,
+            UseListenerReverb = UseListenerReverb,
             HasRelativeReverb = false,
 
             // Muffling
