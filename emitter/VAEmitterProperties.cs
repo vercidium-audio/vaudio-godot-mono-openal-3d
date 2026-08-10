@@ -375,6 +375,21 @@ public partial class VAEmitter : Node3D
 
     [ExportGroup("Debug Rendering")]
 
+    bool _RandomTrailColor = false;
+    [Export]
+    /// <summary>If true, renders each trail a different color in the debug window (dev build only)</summary>
+    public bool RandomTrailColor
+    {
+        get => _RandomTrailColor;
+        set
+        {
+            _RandomTrailColor = value;
+
+            if (emitter != null)
+                emitter.RandomTrailColor = value;
+        }
+    }
+
     Godot.Color _TrailColor = new(1.0f, 1.0f, 1.0f, 0.1f);
     [Export]
     /// <summary>

@@ -53,6 +53,7 @@ public partial class VAWorld : Node3D
             AmbientPermeationEnergyCap = node.AmbientPermeationEnergyCap,
 
             // Debug rendering
+            RandomTrailColor = node.RandomTrailColor,
             TrailColor = ToVAudio(node.TrailColor),
             OcclusionColor = ToVAudio(node.OcclusionColor),
             PermeationColor = ToVAudio(node.PermeationColor),

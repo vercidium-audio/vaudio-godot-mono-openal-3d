@@ -292,6 +292,21 @@ public partial class VASource : ALSource3D
 
     [ExportGroup("Debug Rendering")]
 
+    bool _RandomTrailColor = false;
+    [Export]
+    /// <summary>If true, renders each trail a different color in the debug window (dev build only)</summary>
+    public bool RandomTrailColor
+    {
+        get => _RandomTrailColor;
+        set
+        {
+            _RandomTrailColor = value;
+
+            if (emitter != null)
+                emitter.RandomTrailColor = value;
+        }
+    }
+
     Godot.Color _TrailColor = new(1, 1, 1, 0.1f);
     [Export]
     /// <summary>

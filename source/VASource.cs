@@ -104,6 +104,7 @@ public partial class VASource : ALSource3D
             AmbientPermeationEnergyCap = AmbientPermeationEnergyCap,
 
             // Debug rendering
+            RandomTrailColor = RandomTrailColor,
             TrailColor = TrailColor,
             OcclusionColor = OcclusionColor,
             PermeationColor = PermeationColor,
