@@ -11,8 +11,10 @@ const VASourceAmbient = preload("res://addons/vaudio-godot-openal/nodes/VASource
 const VASourceLeech = preload("res://addons/vaudio-godot-openal/nodes/VASourceLeech.cs")
 
 const VAWorldGizmoPlugin = preload("res://addons/vaudio-godot-openal/editor/VAWorldGizmoPlugin.gd")
+const VAMaterialInspectorPlugin = preload("res://addons/vaudio-godot-openal/editor/VAMaterialInspectorPlugin.gd")
 
 var world_gizmo_plugin
+var material_inspector_plugin
 
 const CSPROJ_INSERT = """    <ItemGroup>
         <Reference Include="vaudio">
@@ -37,6 +39,9 @@ func _enter_tree():
 	world_gizmo_plugin = VAWorldGizmoPlugin.new()
 	add_node_3d_gizmo_plugin(world_gizmo_plugin)
 
+	material_inspector_plugin = VAMaterialInspectorPlugin.new()
+	add_inspector_plugin(material_inspector_plugin)
+
 	_setup_project()
 
 	if not ProjectSettings.settings_changed.is_connected(_on_settings_changed):
@@ -57,6 +62,10 @@ func _exit_tree():
 	if world_gizmo_plugin:
 		remove_node_3d_gizmo_plugin(world_gizmo_plugin)
 		world_gizmo_plugin = null
+
+	if material_inspector_plugin:
+		remove_inspector_plugin(material_inspector_plugin)
+		material_inspector_plugin = null
 
 	if ProjectSettings.settings_changed.is_connected(_on_settings_changed):
 		ProjectSettings.settings_changed.disconnect(_on_settings_changed)

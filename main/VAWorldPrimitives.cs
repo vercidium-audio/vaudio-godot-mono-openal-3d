@@ -2,11 +2,18 @@ namespace vaudio_godot_openal;
 
 public partial class VAWorld : Node3D
 {
-    void AddPrimitive(Node node, vaudio.MaterialType material, bool recursive)
+    void AddPrimitive(Node node, vaudio.MaterialType material, bool recursive) =>
+        AddPrimitive(node, material, true, recursive);
+
+    void AddPrimitive(Node node, vaudio.MaterialType material, bool supportsPermeation, bool recursive)
     {
         // Use this specific material rather than the parent material
         if (node.HasMeta(MATERIAL_META_KEY))
             material = GetMaterial(node);
+
+        // Use this specific permeation setting rather than the parent's
+        if (node.HasMeta(SUPPORTS_PERMEATION_META_KEY))
+            supportsPermeation = node.GetMeta(SUPPORTS_PERMEATION_META_KEY).As<bool>();
 
         // Ignore nodes without materials
         if (material != vaudio.MaterialType.Air)
@@ -24,12 +31,12 @@ public partial class VAWorld : Node3D
             else if (node is CollisionShape3D collisionShape)
                 CreateVAudioPrimitive(collisionShape, material);
             else if (node is MeshInstance3D meshInstance)
-                CreateVAudioPrimitive(meshInstance, material);
+                CreateVAudioPrimitive(meshInstance, material, supportsPermeation);
         }
 
         if (recursive)
             foreach (Node child in node.GetChildren())
-                AddPrimitive(child, material, true);
+                AddPrimitive(child, material, supportsPermeation, true);
     }
 
     void RemovePrimitive(Node node, bool recursive)
@@ -492,7 +499,7 @@ public partial class VAWorld : Node3D
         }
     }
 
-    void CreateVAudioPrimitive(MeshInstance3D meshInstance, vaudio.MaterialType material)
+    void CreateVAudioPrimitive(MeshInstance3D meshInstance, vaudio.MaterialType material, bool supportsPermeation)
     {
         Debug.Assert(material != vaudio.MaterialType.Air);
 
@@ -520,8 +527,7 @@ public partial class VAWorld : Node3D
 
         vaudio.MeshPrimitive prim = new(material, triangles, min, max, transform)
         {
-            // TODO - make this a metadata / inspector flag in godot
-            Supports3DPermeation = true
+            Supports3DPermeation = supportsPermeation
         };
 
         world.AddPrimitive(prim);
