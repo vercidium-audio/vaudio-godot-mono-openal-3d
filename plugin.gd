@@ -12,9 +12,11 @@ const VASourceLeech = preload("res://addons/vaudio-godot-openal/nodes/VASourceLe
 
 const VAWorldGizmoPlugin = preload("res://addons/vaudio-godot-openal/editor/VAWorldGizmoPlugin.gd")
 const VAMaterialInspectorPlugin = preload("res://addons/vaudio-godot-openal/editor/VAMaterialInspectorPlugin.gd")
+const VAConversionContextMenuPlugin = preload("res://addons/vaudio-godot-openal/editor/VAConversionContextMenuPlugin.gd")
 
 var world_gizmo_plugin
 var material_inspector_plugin
+var conversion_context_menu_plugin
 
 const CSPROJ_INSERT = """    <ItemGroup>
         <Reference Include="vaudio">
@@ -42,6 +44,9 @@ func _enter_tree():
 	material_inspector_plugin = VAMaterialInspectorPlugin.new()
 	add_inspector_plugin(material_inspector_plugin)
 
+	conversion_context_menu_plugin = VAConversionContextMenuPlugin.new()
+	add_context_menu_plugin(EditorContextMenuPlugin.CONTEXT_SLOT_SCENE_TREE, conversion_context_menu_plugin)
+
 	_setup_project()
 
 	if not ProjectSettings.settings_changed.is_connected(_on_settings_changed):
@@ -66,6 +71,10 @@ func _exit_tree():
 	if material_inspector_plugin:
 		remove_inspector_plugin(material_inspector_plugin)
 		material_inspector_plugin = null
+
+	if conversion_context_menu_plugin:
+		remove_context_menu_plugin(conversion_context_menu_plugin)
+		conversion_context_menu_plugin = null
 
 	if ProjectSettings.settings_changed.is_connected(_on_settings_changed):
 		ProjectSettings.settings_changed.disconnect(_on_settings_changed)

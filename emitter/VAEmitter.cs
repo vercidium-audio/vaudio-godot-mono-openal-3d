@@ -101,10 +101,10 @@ public partial class VAEmitter : Node3D
 
         ApplyRaytracingResults();
 
+        OnRaytracedByAnotherEmitterCallback?.Invoke(emitter);
+
         if (RaytraceOnce)
             RemoveEmitter();
-
-        OnRaytracedByAnotherEmitterCallback?.Invoke(emitter);
     }
 
     public override void _Process(double delta)
