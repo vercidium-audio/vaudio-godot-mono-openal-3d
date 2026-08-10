@@ -290,60 +290,6 @@ public partial class VASource : ALSource3D
     }
 
 
-    [ExportGroup("Visualisation")]
-
-    int _VisualisationRayCount = 0;
-    [Export]
-    /// <summary>Number of visualisation rays cast</summary>
-    public int VisualisationRayCount
-    {
-        get => _VisualisationRayCount;
-        set
-        {
-            _VisualisationRayCount = Math.Max(0, value);
-
-            if (emitter != null)
-            {
-                emitter.VisualisationRayCount = _VisualisationRayCount;
-            }
-        }
-    }
-
-    int _VisualisationBounceCount = 0;
-    [Export]
-    /// <summary>Number of times each visualisation ray bounces</summary>
-    public int VisualisationBounceCount
-    {
-        get => _VisualisationBounceCount;
-        set
-        {
-            _VisualisationBounceCount = Math.Max(0, value);
-
-            if (emitter != null)
-            {
-                emitter.VisualisationBounceCount = _VisualisationBounceCount;
-            }
-        }
-    }
-
-    int _VisualisationUpdateFrequency = 500;
-    [Export]
-    /// <summary>How often - in milliseconds - to cast visualisation rays. Defaults to 500</summary>
-    public int VisualisationUpdateFrequency
-    {
-        get => _VisualisationUpdateFrequency;
-        set
-        {
-            _VisualisationUpdateFrequency = Math.Max(0, value);
-
-            if (emitter != null)
-            {
-                emitter.VisualisationUpdateFrequency = _VisualisationUpdateFrequency;
-            }
-        }
-    }
-
-
     [ExportGroup("Debug Rendering")]
 
     Godot.Color _TrailColor = new(1, 1, 1, 0.1f);

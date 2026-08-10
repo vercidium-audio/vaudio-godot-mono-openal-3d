@@ -52,11 +52,6 @@ public partial class VAWorld : Node3D
             AmbientOcclusionEnergyCap = node.AmbientOcclusionEnergyCap,
             AmbientPermeationEnergyCap = node.AmbientPermeationEnergyCap,
 
-            // Visualisation
-            VisualisationRayCount = node.VisualisationRayCount,
-            VisualisationBounceCount = node.VisualisationBounceCount,
-            VisualisationUpdateFrequency = node.VisualisationUpdateFrequency,
-
             // Debug rendering
             TrailColor = ToVAudio(node.TrailColor),
             OcclusionColor = ToVAudio(node.OcclusionColor),

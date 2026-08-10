@@ -103,11 +103,6 @@ public partial class VASource : ALSource3D
             AmbientOcclusionEnergyCap = AmbientOcclusionEnergyCap,
             AmbientPermeationEnergyCap = AmbientPermeationEnergyCap,
 
-            // Visualisation
-            VisualisationRayCount = VisualisationRayCount,
-            VisualisationBounceCount = VisualisationBounceCount,
-            VisualisationUpdateFrequency = VisualisationUpdateFrequency,
-
             // Debug rendering
             TrailColor = TrailColor,
             OcclusionColor = OcclusionColor,
@@ -123,6 +118,15 @@ public partial class VASource : ALSource3D
         };
 
         AddChild(emitter);
+
+        // VAVisualisation must be a direct child of a VAEmitter to render, but this node's own
+        // VAEmitter is only created here, at runtime - reparent any VAVisualisation nodes added
+        // under this VASource in the editor onto it now that it exists.
+        foreach (var visualisation in GetChildren().OfType<VAVisualisation>().ToArray())
+        {
+            RemoveChild(visualisation);
+            emitter.AddChild(visualisation);
+        }
     }
 
     void OnDeviceRecreated()
