@@ -8,6 +8,7 @@ const VAMaterial = preload("res://addons/vaudio-godot-openal/nodes/VAMaterial.cs
 const VASource = preload("res://addons/vaudio-godot-openal/source/VASource.cs")
 const VASourceRelative = preload("res://addons/vaudio-godot-openal/nodes/VASourceRelative.cs")
 const VASourceAmbient = preload("res://addons/vaudio-godot-openal/nodes/VASourceAmbient.cs")
+const VASourceLeech = preload("res://addons/vaudio-godot-openal/nodes/VASourceLeech.cs")
 
 const CSPROJ_INSERT = """    <ItemGroup>
         <Reference Include="vaudio">
@@ -27,6 +28,7 @@ func _enter_tree():
 	add_custom_type("VASource", "Node3D", VASource, iconAL)
 	add_custom_type("VASourceRelative", "Node", VASourceRelative, iconAL)
 	add_custom_type("VASourceAmbient", "Node", VASourceAmbient, iconAL)
+	add_custom_type("VASourceLeech", "Node3D", VASourceLeech, iconAL)
 
 	_setup_project()
 
@@ -43,6 +45,7 @@ func _exit_tree():
 	remove_custom_type("VASource")
 	remove_custom_type("VASourceRelative")
 	remove_custom_type("VASourceAmbient")
+	remove_custom_type("VASourceLeech")
 
 	if ProjectSettings.settings_changed.is_connected(_on_settings_changed):
 		ProjectSettings.settings_changed.disconnect(_on_settings_changed)
