@@ -42,7 +42,8 @@ public partial class VAWorld : Node3D
         world.EmittersOutsideTheWorldAreMuffled = EmittersOutsideTheWorldAreMuffled;
 
         // Threading
-        world.MaximumConcurrencyLevel = MaximumConcurrencyLevel;
+        // 0 maps to processor count - 1, matching the native plugin's behaviour
+        world.MaximumConcurrencyLevel = MaximumConcurrencyLevel == 0 ? vaudio.ThreadStatistics.BackgroundThreadCount : MaximumConcurrencyLevel;
         world.WorkItemCount = WorkItemCount;
 
         world.RenderingEnabled = RenderingEnabled;

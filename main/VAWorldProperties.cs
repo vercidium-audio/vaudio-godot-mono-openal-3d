@@ -263,17 +263,18 @@ public partial class VAWorld : Node3D
 
     [ExportGroup("Threading")]
 
-    int _MaximumConcurrencyLevel = vaudio.ThreadStatistics.BackgroundThreadCount;
-    [Export(PropertyHint.Range, "1,32,1,or_greater")]
+    // 0 maps to processor count - 1, matching the native plugin's behaviour
+    int _MaximumConcurrencyLevel = 0;
+    [Export(PropertyHint.Range, "0,32,1,or_greater")]
     public int MaximumConcurrencyLevel
     {
         get => _MaximumConcurrencyLevel;
         set
         {
-            _MaximumConcurrencyLevel = Math.Max(1, value);
+            _MaximumConcurrencyLevel = Math.Max(0, value);
 
             if (world != null)
-                world.MaximumConcurrencyLevel = _MaximumConcurrencyLevel;
+                world.MaximumConcurrencyLevel = _MaximumConcurrencyLevel == 0 ? vaudio.ThreadStatistics.BackgroundThreadCount : _MaximumConcurrencyLevel;
         }
     }
 
