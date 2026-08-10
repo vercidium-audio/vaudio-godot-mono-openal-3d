@@ -2,12 +2,18 @@ using godot_openal;
 
 namespace vaudio_godot_openal;
 
-public partial class VAWorld : Node
+public partial class VAWorld : Node3D
 {
     public bool Initialised => world != null;
 
     public override void _EnterTree()
     {
+        // Node3D.Position/Transform can't be overridden or shadowed in a way the engine/editor
+        // will actually call (Inspector edits and gizmo drags go straight through the engine's
+        // native set_position, bypassing any C# property) - NOTIFICATION_TRANSFORM_CHANGED is
+        // the only hook that fires uniformly for all three, so opt into it here.
+        SetNotifyTransform(true);
+
         if (Engine.IsEditorHint())
             return;
 
@@ -17,8 +23,8 @@ public partial class VAWorld : Node
         world = new();
         
         world.LogCallback = Log;
-        world.Position = new(Position.X, Position.Y, Position.Z);
-        world.Size = new(Size.X, Size.Y, Size.Z);
+        world.Position = ToVAudio(Position);
+        world.Size = ToVAudio(Size);
         world.Epsilon = Epsilon;
         world.WorldIsIndoors = WorldIsIndoors;
 
@@ -60,6 +66,19 @@ public partial class VAWorld : Node
 
         // Wait a frame for the scene to be fully loaded
         CallDeferred(nameof(InitializeScene));
+    }
+
+    public override void _Notification(int what)
+    {
+        if (what != NotificationTransformChanged)
+            return;
+
+        // Rebuild the bounds gizmo whenever the node moves, whether from the viewport gizmo,
+        // the Inspector's Position field, or code.
+        UpdateGizmos();
+
+        if (world != null)
+            world.Position = ToVAudio(Position);
     }
 
     void OnDeviceRecreated()

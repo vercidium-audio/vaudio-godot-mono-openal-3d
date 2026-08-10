@@ -1,6 +1,6 @@
 namespace vaudio_godot_openal;
 
-public partial class VAWorld : Node
+public partial class VAWorld : Node3D
 {
     public const string PRIMITIVE_META_KEY = "vercidium_audio_primitive";
     public const string MATERIAL_META_KEY = "vercidium_audio_material";

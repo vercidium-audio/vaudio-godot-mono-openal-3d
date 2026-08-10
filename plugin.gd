@@ -10,6 +10,10 @@ const VASourceRelative = preload("res://addons/vaudio-godot-openal/nodes/VASourc
 const VASourceAmbient = preload("res://addons/vaudio-godot-openal/nodes/VASourceAmbient.cs")
 const VASourceLeech = preload("res://addons/vaudio-godot-openal/nodes/VASourceLeech.cs")
 
+const VAWorldGizmoPlugin = preload("res://addons/vaudio-godot-openal/editor/VAWorldGizmoPlugin.gd")
+
+var world_gizmo_plugin
+
 const CSPROJ_INSERT = """    <ItemGroup>
         <Reference Include="vaudio">
             <!-- Replace this with the path to your vaudio SDK -->
@@ -21,7 +25,7 @@ func _enter_tree():
 	var icon = preload("res://addons/vaudio-godot-openal/icons/vercidium.svg")
 	var iconAL = preload("res://addons/vaudio-godot-openal/icons/vercidium_al.svg")
 
-	add_custom_type("VAWorld", "Node", VAWorld, icon)
+	add_custom_type("VAWorld", "Node3D", VAWorld, icon)
 	add_custom_type("VAEmitter", "Node3D", VAEmitter, icon)
 	add_custom_type("VAMaterial", "Node3D", VAMaterial, icon)
 
@@ -29,6 +33,9 @@ func _enter_tree():
 	add_custom_type("VASourceRelative", "Node", VASourceRelative, iconAL)
 	add_custom_type("VASourceAmbient", "Node", VASourceAmbient, iconAL)
 	add_custom_type("VASourceLeech", "Node3D", VASourceLeech, iconAL)
+
+	world_gizmo_plugin = VAWorldGizmoPlugin.new()
+	add_node_3d_gizmo_plugin(world_gizmo_plugin)
 
 	_setup_project()
 
@@ -46,6 +53,10 @@ func _exit_tree():
 	remove_custom_type("VASourceRelative")
 	remove_custom_type("VASourceAmbient")
 	remove_custom_type("VASourceLeech")
+
+	if world_gizmo_plugin:
+		remove_node_3d_gizmo_plugin(world_gizmo_plugin)
+		world_gizmo_plugin = null
 
 	if ProjectSettings.settings_changed.is_connected(_on_settings_changed):
 		ProjectSettings.settings_changed.disconnect(_on_settings_changed)

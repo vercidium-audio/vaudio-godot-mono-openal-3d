@@ -1,29 +1,33 @@
+using Godot.Collections;
+
 namespace vaudio_godot_openal;
 
-public partial class VAWorld : Node
+public partial class VAWorld : Node3D
 {
     public Node3D SceneRoot;
 
-    [ExportGroup("World")]
+    static readonly string[] HiddenTransformProperties =
+    [
+        "rotation", "rotation_degrees", "quaternion", "basis", "scale", "transform",
+        "rotation_edit_mode", "rotation_order",
+    ];
 
-    private Vector3 _Position = new(-100, 0, -100);
-    [Export]
-    /// <summary>
-    /// The minimum bounds of the world. <br />
-    /// <see cref="Emitter"/>s outside the world will not be raytraced, and <see cref="Primitive"/>s that are fully outside these bounds will not affect raytracing.
-    /// </summary>
-    /// <exception cref="ArgumentException">Thrown when worldPosition is NaN or Infinity</exception>
-    public Vector3 Position
-    { 
-        get => _Position;
-        set
+    // The bounds AABB is always axis-aligned starting at Position (see _Notification's
+    // NotificationTransformChanged handler and VAWorldGizmoPlugin.gd), so rotation/scale would
+    // be misleading in the Inspector - hide them, matching the native plugin's VAWorld.
+    public override void _ValidateProperty(Dictionary property)
+    {
+        string name = property["name"].AsStringName();
+
+        if (System.Array.IndexOf(HiddenTransformProperties, name.ToString()) != -1)
         {
-            _Position = value;
-
-            if (world != null)
-                world.Position = ToVAudio(value);
+            var usage = property["usage"].As<PropertyUsageFlags>();
+            usage &= ~PropertyUsageFlags.Editor;
+            property["usage"] = (int)usage;
         }
     }
+
+    [ExportGroup("World")]
 
     Vector3 _Size = new(200, 100, 200);
     [Export]
@@ -38,9 +42,25 @@ public partial class VAWorld : Node
         set
         {
             _Size = value;
+            UpdateGizmos();
 
             if (world != null)
                 world.Size = ToVAudio(value);
+        }
+    }
+
+    Color _BoundsColor = new(0.0f, 0.0f, 0.0f, 0.25f);
+    [Export]
+    /// <summary>
+    /// Editor-only color used to draw the world bounds gizmo in the 3D viewport. Not forwarded to vaudio.
+    /// </summary>
+    public Color BoundsColor
+    {
+        get => _BoundsColor;
+        set
+        {
+            _BoundsColor = value;
+            UpdateGizmos();
         }
     }
 

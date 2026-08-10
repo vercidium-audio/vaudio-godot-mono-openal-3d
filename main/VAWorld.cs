@@ -1,7 +1,10 @@
 namespace vaudio_godot_openal;
 
+// This is a Node3D purely so the editor can draw a gizmo showing the world's Position/Size AABB
+// (see VAWorldGizmoPlugin.gd) - the node's transform is otherwise unused by vaudio, which always
+// treats Position/Size as absolute world-space coordinates.
 [Tool]
-public partial class VAWorld : Node
+public partial class VAWorld : Node3D
 {
     // Temp
     public List<vaudio.Emitter> emitters = [];
