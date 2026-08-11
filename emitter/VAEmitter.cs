@@ -205,29 +205,4 @@ public partial class VAEmitter : Node3D
         }
     }
 
-    [ExportGroup("Orientation")]
-
-    float _Pitch;
-    [Export]
-    public float Pitch
-    {
-        get => _Pitch;
-        set
-        {
-            _Pitch = value;
-        }
-    }
-
-    float _Yaw;
-    [Export]
-    public float Yaw
-    {
-        get => _Yaw;
-        set
-        {
-            _Yaw = value;
-        }
-    }
-
-
 }

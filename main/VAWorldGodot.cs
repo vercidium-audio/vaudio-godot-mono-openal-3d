@@ -164,17 +164,19 @@ public partial class VAWorld : Node3D
         }
 
         // Sync the AL listener to our main listener
+        Vector3 listenerRotation = listener.GlobalRotation;
+
         if (GodotOpenALEnabled)
         {
             ALManager.instance.ListenerPosition = listener.GlobalPosition;
-            ALManager.instance.ListenerPitch = listener.Pitch;
-            ALManager.instance.ListenerYaw = listener.Yaw;
+            ALManager.instance.ListenerPitch = listenerRotation.X;
+            ALManager.instance.ListenerYaw = listenerRotation.Y;
         }
 
         // Render the debug window from the perspective of the main listener
         world.CameraPosition = ToVAudio(listener.GlobalPosition);
-        world.CameraPitch = listener.Pitch;
-        world.CameraYaw = listener.Yaw;
+        world.CameraPitch = listenerRotation.X;
+        world.CameraYaw = listenerRotation.Y;
         world.FieldOfView = float.DegreesToRadians(90);
 
         world.Update();

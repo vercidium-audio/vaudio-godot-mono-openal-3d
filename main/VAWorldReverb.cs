@@ -101,7 +101,8 @@ public partial class VAWorld : Node3D
         if (isGroupedEAX && eax.RelativeDirections != null && eax.RelativeDirections.TryGetValue(listener.emitter, out var pan))
         {
             // Convert to a listener-relative vector for OpenAL
-            pan = world.CalculateListenerRelativePan(pan, listener.Pitch, listener.Yaw);
+            Vector3 listenerRotation = listener.GlobalRotation;
+            pan = world.CalculateListenerRelativePan(pan, listenerRotation.X, listenerRotation.Y);
 
             effect.effectSlotGain = eax.RelativeGains[listener.emitter];
             effect.effectSlotGain = Math.Max(0, effect.effectSlotGain);
