@@ -18,12 +18,13 @@ var world_gizmo_plugin
 var material_inspector_plugin
 var conversion_context_menu_plugin
 
+const VAUDIO_DLL_HINT_PATH = "addons\\vaudio-godot-openal\\bin\\vaudio.dll"
+
 const CSPROJ_INSERT = """    <ItemGroup>
         <Reference Include="vaudio">
-            <!-- Replace this with the path to your vaudio SDK -->
-            <HintPath>path\\to\\vaudio.dll</HintPath>
+            <HintPath>%s</HintPath>
         </Reference>
-    </ItemGroup>"""
+    </ItemGroup>""" % VAUDIO_DLL_HINT_PATH
 
 func _enter_tree():
 	var icon = preload("res://addons/vaudio-godot-openal/icons/vercidium.svg")
@@ -104,25 +105,27 @@ func _setup_project():
 
 	_setup_done = true
 
-	if "vaudio.dll" in content:
-		if "path\\to\\vaudio.dll" in content:
-			push_error("[vaudio-godot-openal] csproj is invalid (%s) - please replace 'path\\to\\vaudio.dll' with your actual vaudio.dll path, then disable and enable the Vercidium Audio plugin" % ProjectSettings.globalize_path(csproj_path))
-		else:
-			print("[vaudio-godot-openal] csproj configured correctly")
-		return
+	var dll_res_path = "res://addons/vaudio-godot-openal/bin/vaudio.dll"
+	var dll_exists = FileAccess.file_exists(dll_res_path)
 
-	var insert_pos = content.rfind("</Project>")
-	if insert_pos == -1:
-		push_error("[vaudio-godot-openal] Could not find a </Project> tag in the .csproj file")
-		return
+	if "vaudio.dll" not in content:
+		var insert_pos = content.rfind("</Project>")
+		if insert_pos == -1:
+			push_error("[vaudio-godot-openal] Could not find a </Project> tag in the .csproj file")
+			return
 
-	var new_content = content.substr(0, insert_pos) + "\n" + CSPROJ_INSERT + "\n" + content.substr(insert_pos)
+		var new_content = content.substr(0, insert_pos) + "\n" + CSPROJ_INSERT + "\n" + content.substr(insert_pos)
 
-	file = FileAccess.open(csproj_path, FileAccess.WRITE)
-	if file:
-		file.store_string(new_content)
-		file.close()
-		push_warning("[vaudio-godot-openal] Added vaudio references to ", ProjectSettings.globalize_path(csproj_path), " - please replace 'path\\to\\vaudio.dll' with your actual vaudio.dll path, then disable and enable the Vercidium Audio plugin")
+		file = FileAccess.open(csproj_path, FileAccess.WRITE)
+		if file:
+			file.store_string(new_content)
+			file.close()
+			print("[vaudio-godot-openal] Added vaudio references to ", ProjectSettings.globalize_path(csproj_path))
+
+	if dll_exists:
+		print("[vaudio-godot-openal] csproj configured correctly")
+	else:
+		push_error("[vaudio-godot-openal] vaudio.dll not found - please copy your vaudio.dll into %s, then disable and enable the Vercidium Audio plugin" % ProjectSettings.globalize_path(dll_res_path.get_base_dir()))
 
 func _enable_plugin():
 	if not DirAccess.dir_exists_absolute("res://addons/godot-openal"):

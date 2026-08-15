@@ -2,3 +2,7 @@
 .godot/
 *.uid
 *.import
+
+# Ignore user-provided vaudio SDK binaries
+/bin/*
+!/bin/.gitkeep

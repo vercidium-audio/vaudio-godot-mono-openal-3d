@@ -33,6 +33,8 @@ This repository requires Vercidium Audio v1.6.3 and OpenAL Soft to run:
 
 Setup instructions are [available here](https://vercidium.com/docs/godot/getting-started).
 
+Copy `vaudio.dll` from the Vercidium Audio SDK into `addons/vaudio-godot-openal/bin/` (this folder is git-ignored). The plugin will automatically reference it from your `.csproj`.
+
 ## Visual Studio
 
 To run your Godot project from Visual Studio, click the small dropdown arrow next to `your_game` and click `your_game Debug Properties`.
