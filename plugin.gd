@@ -93,7 +93,7 @@ func _setup_project():
 	var csproj_path = "res://%s.csproj" % project_name
 
 	if not FileAccess.file_exists(csproj_path):
-		push_error("[vaudio-godot-openal] No C# solution found. Please create a C# solution (Project → Tools → C# → Create C# Solution) and then re-enable this plugin")
+		push_error("[vaudio-godot-openal] No C# solution found. This plugin requires C# - please create a C# solution (Project → Tools → C# → Create C# Solution) and then re-enable this plugin")
 		return
 
 	var file = FileAccess.open(csproj_path, FileAccess.READ)
