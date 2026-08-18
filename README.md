@@ -33,7 +33,7 @@ This repository requires Vercidium Audio v1.7.0 and OpenAL Soft to run:
 
 Setup instructions are [available here](https://vercidium.com/docs/godot/getting-started).
 
-Copy `vaudio.dll` from the Vercidium Audio SDK into `addons/vaudio-godot-openal/bin/` (this folder is git-ignored). The plugin will automatically reference it from your `.csproj`.
+Copy `vaudio.dll` from the Vercidium Audio SDK into `addons/vaudio-godot-mono-openal-3d/bin/` (this folder is git-ignored). The plugin will automatically reference it from your `.csproj`.
 
 ## Visual Studio
 

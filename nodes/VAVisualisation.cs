@@ -117,7 +117,7 @@ public partial class VAVisualisation : Node3D
 
         if (emitter == null)
         {
-            GD.PushWarning($"[vaudio-godot-openal] {Name} must be a direct child of a VAEmitter (or VASource) to render its visualisation rays.");
+            GD.PushWarning($"[vaudio-godot-mono-openal-3d] {Name} must be a direct child of a VAEmitter (or VASource) to render its visualisation rays.");
             return;
         }
 

@@ -40,7 +40,7 @@ public partial class VAEmitter : Node3D
 
         if (vercidiumAudio == null)
         {
-            GD.PushWarning($"[vaudio-godot-openal] Failed to initialise node {Name} because there is no VAWorld node. Ensure a VAWorld node exists higher up the tree");
+            GD.PushWarning($"[vaudio-godot-mono-openal-3d] Failed to initialise node {Name} because there is no VAWorld node. Ensure a VAWorld node exists higher up the tree");
             return;
         }
 

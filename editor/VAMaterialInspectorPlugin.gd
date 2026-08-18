@@ -7,13 +7,13 @@ extends EditorInspectorPlugin
 # Both settings are inherited down the scene tree at runtime (see VAWorldPrimitives.AddPrimitive),
 # so setting either on a plain Node3D configures its whole subtree at once.
 
-const VAWorld = preload("res://addons/vaudio-godot-openal/main/VAWorld.cs")
-const VAEmitter = preload("res://addons/vaudio-godot-openal/emitter/VAEmitter.cs")
-const VAMaterial = preload("res://addons/vaudio-godot-openal/nodes/VAMaterial.cs")
-const VASource = preload("res://addons/vaudio-godot-openal/source/VASource.cs")
-const VASourceRelative = preload("res://addons/vaudio-godot-openal/nodes/VASourceRelative.cs")
-const VASourceAmbient = preload("res://addons/vaudio-godot-openal/nodes/VASourceAmbient.cs")
-const VASourceLeech = preload("res://addons/vaudio-godot-openal/nodes/VASourceLeech.cs")
+const VAWorld = preload("res://addons/vaudio-godot-mono-openal-3d/main/VAWorld.cs")
+const VAEmitter = preload("res://addons/vaudio-godot-mono-openal-3d/emitter/VAEmitter.cs")
+const VAMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAMaterial.cs")
+const VASource = preload("res://addons/vaudio-godot-mono-openal-3d/source/VASource.cs")
+const VASourceRelative = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceRelative.cs")
+const VASourceAmbient = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceAmbient.cs")
+const VASourceLeech = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceLeech.cs")
 
 const MATERIAL_META_KEY = "vercidium_audio_material"
 const USE_FLAT_TRANSMISSION_META_KEY = "vercidium_audio_use_flat_transmission"

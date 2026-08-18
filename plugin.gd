@@ -1,26 +1,26 @@
 @tool
 extends EditorPlugin
 
-const VAWorld = preload("res://addons/vaudio-godot-openal/main/VAWorld.cs")
-const VAEmitter = preload("res://addons/vaudio-godot-openal/emitter/VAEmitter.cs")
-const VAMaterial = preload("res://addons/vaudio-godot-openal/nodes/VAMaterial.cs")
+const VAWorld = preload("res://addons/vaudio-godot-mono-openal-3d/main/VAWorld.cs")
+const VAEmitter = preload("res://addons/vaudio-godot-mono-openal-3d/emitter/VAEmitter.cs")
+const VAMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAMaterial.cs")
 
-const VASource = preload("res://addons/vaudio-godot-openal/source/VASource.cs")
-const VASourceRelative = preload("res://addons/vaudio-godot-openal/nodes/VASourceRelative.cs")
-const VASourceAmbient = preload("res://addons/vaudio-godot-openal/nodes/VASourceAmbient.cs")
-const VASourceLeech = preload("res://addons/vaudio-godot-openal/nodes/VASourceLeech.cs")
+const VASource = preload("res://addons/vaudio-godot-mono-openal-3d/source/VASource.cs")
+const VASourceRelative = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceRelative.cs")
+const VASourceAmbient = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceAmbient.cs")
+const VASourceLeech = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceLeech.cs")
 
-const VAWorldGizmoPlugin = preload("res://addons/vaudio-godot-openal/editor/VAWorldGizmoPlugin.gd")
-const VAMaterialInspectorPlugin = preload("res://addons/vaudio-godot-openal/editor/VAMaterialInspectorPlugin.gd")
-const VAConversionContextMenuPlugin = preload("res://addons/vaudio-godot-openal/editor/VAConversionContextMenuPlugin.gd")
-const VADebuggerPlugin = preload("res://addons/vaudio-godot-openal/editor/VADebuggerPlugin.gd")
+const VAWorldGizmoPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VAWorldGizmoPlugin.gd")
+const VAMaterialInspectorPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VAMaterialInspectorPlugin.gd")
+const VAConversionContextMenuPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VAConversionContextMenuPlugin.gd")
+const VADebuggerPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VADebuggerPlugin.gd")
 
 var world_gizmo_plugin
 var material_inspector_plugin
 var conversion_context_menu_plugin
 var debugger_plugin
 
-const VAUDIO_DLL_HINT_PATH = "addons\\vaudio-godot-openal\\bin\\vaudio.dll"
+const VAUDIO_DLL_HINT_PATH = "addons\\vaudio-godot-mono-openal-3d\\bin\\vaudio.dll"
 
 const CSPROJ_INSERT = """    <ItemGroup>
         <Reference Include="vaudio">
@@ -29,8 +29,8 @@ const CSPROJ_INSERT = """    <ItemGroup>
     </ItemGroup>""" % VAUDIO_DLL_HINT_PATH
 
 func _enter_tree():
-	var icon = preload("res://addons/vaudio-godot-openal/icons/vercidium.svg")
-	var iconAL = preload("res://addons/vaudio-godot-openal/icons/vercidium_al.svg")
+	var icon = preload("res://addons/vaudio-godot-mono-openal-3d/icons/vercidium.svg")
+	var iconAL = preload("res://addons/vaudio-godot-mono-openal-3d/icons/vercidium_al.svg")
 
 	add_custom_type("VAWorld", "Node3D", VAWorld, icon)
 	add_custom_type("VAEmitter", "Node3D", VAEmitter, icon)
@@ -59,7 +59,7 @@ func _enter_tree():
 	if not ProjectSettings.settings_changed.is_connected(_on_settings_changed):
 		ProjectSettings.settings_changed.connect(_on_settings_changed)
 
-	print("[vaudio-godot-openal] Vercidium Audio (vaudio) plugin enabled")
+	print("[vaudio-godot-mono-openal-3d] Vercidium Audio (vaudio) plugin enabled")
 
 func _exit_tree():
 	remove_custom_type("VAWorld")
@@ -90,7 +90,7 @@ func _exit_tree():
 	if ProjectSettings.settings_changed.is_connected(_on_settings_changed):
 		ProjectSettings.settings_changed.disconnect(_on_settings_changed)
 
-	print("Vercidium Audio (vaudio-godot-openal) plugin disabled")
+	print("Vercidium Audio (vaudio-godot-mono-openal-3d) plugin disabled")
 
 var _setup_done := false
 
@@ -103,7 +103,7 @@ func _setup_project():
 	var csproj_path = "res://%s.csproj" % project_name
 
 	if not FileAccess.file_exists(csproj_path):
-		push_error("[vaudio-godot-openal] No C# solution found. This plugin requires C# - please create a C# solution (Project → Tools → C# → Create C# Solution) and then re-enable this plugin")
+		push_error("[vaudio-godot-mono-openal-3d] No C# solution found. This plugin requires C# - please create a C# solution (Project → Tools → C# → Create C# Solution) and then re-enable this plugin")
 		return
 
 	var file = FileAccess.open(csproj_path, FileAccess.READ)
@@ -115,13 +115,13 @@ func _setup_project():
 
 	_setup_done = true
 
-	var dll_res_path = "res://addons/vaudio-godot-openal/bin/vaudio.dll"
+	var dll_res_path = "res://addons/vaudio-godot-mono-openal-3d/bin/vaudio.dll"
 	var dll_exists = FileAccess.file_exists(dll_res_path)
 
 	if "vaudio.dll" not in content:
 		var insert_pos = content.rfind("</Project>")
 		if insert_pos == -1:
-			push_error("[vaudio-godot-openal] Could not find a </Project> tag in the .csproj file")
+			push_error("[vaudio-godot-mono-openal-3d] Could not find a </Project> tag in the .csproj file")
 			return
 
 		var new_content = content.substr(0, insert_pos) + "\n" + CSPROJ_INSERT + "\n" + content.substr(insert_pos)
@@ -130,14 +130,14 @@ func _setup_project():
 		if file:
 			file.store_string(new_content)
 			file.close()
-			print("[vaudio-godot-openal] Added vaudio references to ", ProjectSettings.globalize_path(csproj_path))
+			print("[vaudio-godot-mono-openal-3d] Added vaudio references to ", ProjectSettings.globalize_path(csproj_path))
 
 	if dll_exists:
-		print("[vaudio-godot-openal] csproj configured correctly")
+		print("[vaudio-godot-mono-openal-3d] csproj configured correctly")
 	else:
-		push_error("[vaudio-godot-openal] vaudio.dll not found - please copy your vaudio.dll into %s, then disable and enable the Vercidium Audio plugin" % ProjectSettings.globalize_path(dll_res_path.get_base_dir()))
+		push_error("[vaudio-godot-mono-openal-3d] vaudio.dll not found - please copy your vaudio.dll into %s, then disable and enable the Vercidium Audio plugin" % ProjectSettings.globalize_path(dll_res_path.get_base_dir()))
 
 func _enable_plugin():
 	if not DirAccess.dir_exists_absolute("res://addons/godot-openal"):
-		push_error("[vaudio-godot-openal] The 'godot-openal' plugin is required. Clone it from https://github.com/vercidium-audio/godot-openal and enable it first.")
-		get_editor_interface().set_plugin_enabled("vaudio-godot-openal", false)
+		push_error("[vaudio-godot-mono-openal-3d] The 'godot-openal' plugin is required. Clone it from https://github.com/vercidium-audio/godot-openal and enable it first.")
+		get_editor_interface().set_plugin_enabled("vaudio-godot-mono-openal-3d", false)

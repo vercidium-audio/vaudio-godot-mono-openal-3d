@@ -5,11 +5,11 @@ extends EditorContextMenuPlugin
 # or AudioStreamPlayer to VASourceRelative / VASourceAmbient. Mirrors the conversion offered by the native
 # (C++ GDExtension) plugin's ConversionContextMenuPlugin, adapted to this addon's node/property names.
 
-const VASource = preload("res://addons/vaudio-godot-openal/source/VASource.cs")
-const VASourceRelative = preload("res://addons/vaudio-godot-openal/nodes/VASourceRelative.cs")
-const VASourceAmbient = preload("res://addons/vaudio-godot-openal/nodes/VASourceAmbient.cs")
-const VASourceLeech = preload("res://addons/vaudio-godot-openal/nodes/VASourceLeech.cs")
-const VAEmitter = preload("res://addons/vaudio-godot-openal/emitter/VAEmitter.cs")
+const VASource = preload("res://addons/vaudio-godot-mono-openal-3d/source/VASource.cs")
+const VASourceRelative = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceRelative.cs")
+const VASourceAmbient = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceAmbient.cs")
+const VASourceLeech = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceLeech.cs")
+const VAEmitter = preload("res://addons/vaudio-godot-mono-openal-3d/emitter/VAEmitter.cs")
 
 func _popup_menu(paths: PackedStringArray) -> void:
 	if paths.is_empty():
@@ -89,7 +89,7 @@ func convert_node(old_node: Node, target_class: String) -> void:
 
 	var parent = old_node.get_parent()
 	if not parent:
-		push_warning("[vaudio-godot-openal] Cannot convert the scene root node.")
+		push_warning("[vaudio-godot-mono-openal-3d] Cannot convert the scene root node.")
 		return
 
 	var new_node

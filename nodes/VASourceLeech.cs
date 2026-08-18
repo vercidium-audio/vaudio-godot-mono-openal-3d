@@ -38,7 +38,7 @@ public partial class VASourceLeech : ALSource3D
 
         if (emitter == null)
         {
-            GD.PushWarning($"[vaudio-godot-openal] '{Name}' is a VASourceLeech but its parent is not a VAEmitter - it will never play. VASourceLeech must be a direct child of a VAEmitter (or VASource) node whose own raytracing results it leeches off.");
+            GD.PushWarning($"[vaudio-godot-mono-openal-3d] '{Name}' is a VASourceLeech but its parent is not a VAEmitter - it will never play. VASourceLeech must be a direct child of a VAEmitter (or VASource) node whose own raytracing results it leeches off.");
             return;
         }
 
