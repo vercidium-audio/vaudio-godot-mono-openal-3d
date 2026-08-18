@@ -4,7 +4,7 @@ public partial class VAWorld : Node3D
 {
     public const string PRIMITIVE_META_KEY = "vercidium_audio_primitive";
     public const string MATERIAL_META_KEY = "vercidium_audio_material";
-    public const string SUPPORTS_PERMEATION_META_KEY = "vercidium_audio_supports_permeation";
+    public const string USE_FLAT_TRANSMISSION_META_KEY = "vercidium_audio_use_flat_transmission";
 
     public vaudio.World world;
     public VAEmitter listener;

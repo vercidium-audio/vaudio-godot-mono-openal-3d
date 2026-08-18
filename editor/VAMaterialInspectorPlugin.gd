@@ -2,8 +2,8 @@
 extends EditorInspectorPlugin
 
 # Adds a "Vercidium Audio" section to the Inspector for any Node3D, exposing the Material and
-# Supports Permeation settings as an OptionButton/CheckBox rather than requiring the user to edit
-# the vercidium_audio_material / vercidium_audio_supports_permeation metadata fields by hand.
+# Use Flat Transmission settings as an OptionButton/CheckBox rather than requiring the user to edit
+# the vercidium_audio_material / vercidium_audio_use_flat_transmission metadata fields by hand.
 # Both settings are inherited down the scene tree at runtime (see VAWorldPrimitives.AddPrimitive),
 # so setting either on a plain Node3D configures its whole subtree at once.
 
@@ -16,7 +16,7 @@ const VASourceAmbient = preload("res://addons/vaudio-godot-openal/nodes/VASource
 const VASourceLeech = preload("res://addons/vaudio-godot-openal/nodes/VASourceLeech.cs")
 
 const MATERIAL_META_KEY = "vercidium_audio_material"
-const SUPPORTS_PERMEATION_META_KEY = "vercidium_audio_supports_permeation"
+const USE_FLAT_TRANSMISSION_META_KEY = "vercidium_audio_use_flat_transmission"
 
 const BUILTIN_MATERIAL_NAMES = [
 	"brick", "cloth", "concrete", "concretepolished", "dirt", "glass", "grass", "gravel",
@@ -43,7 +43,7 @@ func _parse_end(object):
 	section.add_child(_make_heading())
 
 	section.add_child(_make_material_row(node))
-	section.add_child(_make_supports_permeation_row(node))
+	section.add_child(_make_use_flat_transmission_row(node))
 
 	add_custom_control(section)
 
@@ -95,22 +95,22 @@ func _make_material_row(node: Node3D) -> HBoxContainer:
 
 	return row
 
-func _make_supports_permeation_row(node: Node3D) -> HBoxContainer:
+func _make_use_flat_transmission_row(node: Node3D) -> HBoxContainer:
 	var row := HBoxContainer.new()
 
 	var label := Label.new()
-	label.text = "Supports Permeation"
+	label.text = "Use Flat Transmission"
 	label.custom_minimum_size.x = 120 * EditorInterface.get_editor_scale()
 	row.add_child(label)
 
 	var check_box := CheckBox.new()
 
-	var supports_permeation := true
-	if node.has_meta(SUPPORTS_PERMEATION_META_KEY):
-		supports_permeation = node.get_meta(SUPPORTS_PERMEATION_META_KEY)
+	var use_flat_transmission := false
+	if node.has_meta(USE_FLAT_TRANSMISSION_META_KEY):
+		use_flat_transmission = node.get_meta(USE_FLAT_TRANSMISSION_META_KEY)
 
-	check_box.button_pressed = supports_permeation
-	check_box.toggled.connect(_on_supports_permeation_toggled.bind(node))
+	check_box.button_pressed = use_flat_transmission
+	check_box.toggled.connect(_on_use_flat_transmission_toggled.bind(node))
 	row.add_child(check_box)
 
 	return row
@@ -123,11 +123,11 @@ func _on_material_selected(index: int, node: Node3D, option_button: OptionButton
 
 	EditorInterface.mark_scene_as_unsaved()
 
-func _on_supports_permeation_toggled(toggled_on: bool, node: Node3D):
+func _on_use_flat_transmission_toggled(toggled_on: bool, node: Node3D):
 	if toggled_on:
-		node.remove_meta(SUPPORTS_PERMEATION_META_KEY)
+		node.set_meta(USE_FLAT_TRANSMISSION_META_KEY, true)
 	else:
-		node.set_meta(SUPPORTS_PERMEATION_META_KEY, false)
+		node.remove_meta(USE_FLAT_TRANSMISSION_META_KEY)
 
 	EditorInterface.mark_scene_as_unsaved()
 

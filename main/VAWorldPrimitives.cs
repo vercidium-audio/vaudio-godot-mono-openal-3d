@@ -3,17 +3,17 @@ namespace vaudio_godot_openal;
 public partial class VAWorld : Node3D
 {
     void AddPrimitive(Node node, vaudio.MaterialType material, bool recursive) =>
-        AddPrimitive(node, material, true, recursive);
+        AddPrimitive(node, material, false, recursive);
 
-    void AddPrimitive(Node node, vaudio.MaterialType material, bool supportsPermeation, bool recursive)
+    void AddPrimitive(Node node, vaudio.MaterialType material, bool useFlatTransmission, bool recursive)
     {
         // Use this specific material rather than the parent material
         if (node.HasMeta(MATERIAL_META_KEY))
             material = GetMaterial(node);
 
-        // Use this specific permeation setting rather than the parent's
-        if (node.HasMeta(SUPPORTS_PERMEATION_META_KEY))
-            supportsPermeation = node.GetMeta(SUPPORTS_PERMEATION_META_KEY).As<bool>();
+        // Use this specific transmission setting rather than the parent's
+        if (node.HasMeta(USE_FLAT_TRANSMISSION_META_KEY))
+            useFlatTransmission = node.GetMeta(USE_FLAT_TRANSMISSION_META_KEY).As<bool>();
 
         // Ignore nodes without materials
         if (material != vaudio.MaterialType.Air)
@@ -31,12 +31,12 @@ public partial class VAWorld : Node3D
             else if (node is CollisionShape3D collisionShape)
                 CreateVAudioPrimitive(collisionShape, material);
             else if (node is MeshInstance3D meshInstance)
-                CreateVAudioPrimitive(meshInstance, material, supportsPermeation);
+                CreateVAudioPrimitive(meshInstance, material, useFlatTransmission);
         }
 
         if (recursive)
             foreach (Node child in node.GetChildren())
-                AddPrimitive(child, material, supportsPermeation, true);
+                AddPrimitive(child, material, useFlatTransmission, true);
     }
 
     void RemovePrimitive(Node node, bool recursive)
@@ -499,7 +499,7 @@ public partial class VAWorld : Node3D
         }
     }
 
-    void CreateVAudioPrimitive(MeshInstance3D meshInstance, vaudio.MaterialType material, bool supportsPermeation)
+    void CreateVAudioPrimitive(MeshInstance3D meshInstance, vaudio.MaterialType material, bool useFlatTransmission)
     {
         Debug.Assert(material != vaudio.MaterialType.Air);
 
@@ -527,7 +527,7 @@ public partial class VAWorld : Node3D
 
         vaudio.MeshPrimitive prim = new(material, triangles, min, max, transform)
         {
-            Supports3DPermeation = supportsPermeation
+            UseFlatTransmission = useFlatTransmission
         };
 
         world.AddPrimitive(prim);
