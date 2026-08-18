@@ -19,6 +19,7 @@ public partial class VAListener : VAEmitter
     {
         IsMainListener = true;
         HasRelativeReverb = true;
+        AffectsGroupedEAX = false;
     }
 
     // Hides inherited properties from the inspector that aren't meaningful on a listener:
