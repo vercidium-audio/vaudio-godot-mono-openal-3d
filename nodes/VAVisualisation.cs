@@ -1,4 +1,4 @@
-namespace vaudio_godot_openal;
+namespace vaudio_godot_mono_openal_3d;
 
 /// <summary>
 /// Renders an emitter's <see cref="vaudio.Emitter.VisualisationCallback"/> ray-bounce results as

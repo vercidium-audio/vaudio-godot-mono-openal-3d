@@ -1,6 +1,6 @@
-using godot_openal;
+using godot_mono_openal;
 
-namespace vaudio_godot_openal;
+namespace vaudio_godot_mono_openal_3d;
 
 [GlobalClass]
 public partial class VASourceRelative : ALSource3D

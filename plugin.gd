@@ -138,6 +138,6 @@ func _setup_project():
 		push_error("[vaudio-godot-mono-openal-3d] vaudio.dll not found - please copy your vaudio.dll into %s, then disable and enable the Vercidium Audio plugin" % ProjectSettings.globalize_path(dll_res_path.get_base_dir()))
 
 func _enable_plugin():
-	if not DirAccess.dir_exists_absolute("res://addons/godot-openal"):
-		push_error("[vaudio-godot-mono-openal-3d] The 'godot-openal' plugin is required. Clone it from https://github.com/vercidium-audio/godot-openal and enable it first.")
+	if not DirAccess.dir_exists_absolute("res://addons/godot-mono-openal"):
+		push_error("[vaudio-godot-mono-openal-3d] The 'godot-mono-openal' plugin is required. Clone it from https://github.com/vercidium-audio/godot-mono-openal and enable it first.")
 		get_editor_interface().set_plugin_enabled("vaudio-godot-mono-openal-3d", false)

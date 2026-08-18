@@ -1,6 +1,6 @@
-using godot_openal;
+using godot_mono_openal;
 
-namespace vaudio_godot_openal;
+namespace vaudio_godot_mono_openal_3d;
 
 // A sound source that leeches raytracing results off a parent VAEmitter instead of
 // owning/casting its own rays - useful for sounds that fire frequently from the same

@@ -20,12 +20,12 @@ This repository requires Vercidium Audio v1.7.0 and OpenAL Soft to run:
 - Dynamic scene updates - automatically handles moving objects
 
 ## References
-- [godot-openal repo](https://github.com/vercidium-audio/godot-openal)
+- [godot-mono-openal repo](https://github.com/vercidium-audio/godot-mono-openal)
 - [Vercidum Audio documentation](https://vercidium.com/docs)
 
 ## Requirements
 
-- This plugin depends on the [godot-openal](https://github.com/vercidium-audio/godot-openal) plugin. If you wish to use other audio middleware instead, use the raw [vaudio-godot](https://github.com/vercidium-audio/vaudio-godot) plugin
+- This plugin depends on the [godot-mono-openal](https://github.com/vercidium-audio/godot-mono-openal) plugin. If you wish to use other audio middleware instead, use the raw [vaudio-godot](https://github.com/vercidium-audio/vaudio-godot) plugin
 - Godot 4.x with C# support
 - [Vercidium Audio SDK](https://vercidium.com)
 

@@ -1,6 +1,6 @@
 using System.Linq;
 using Godot.Collections;
-namespace vaudio_godot_openal;
+namespace vaudio_godot_mono_openal_3d;
 
 /// <summary>
 /// Custom acoustic material resource for the Vercidium Audio plugin.

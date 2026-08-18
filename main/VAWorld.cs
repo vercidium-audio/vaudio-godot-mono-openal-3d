@@ -1,4 +1,4 @@
-namespace vaudio_godot_openal;
+namespace vaudio_godot_mono_openal_3d;
 
 // This is a Node3D purely so the editor can draw a gizmo showing the world's Position/Size AABB
 // (see VAWorldGizmoPlugin.gd) - the node's transform is otherwise unused by vaudio, which always
