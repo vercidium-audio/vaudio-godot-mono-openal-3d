@@ -18,6 +18,10 @@ const VASourceLeech = preload("res://addons/vaudio-godot-openal/nodes/VASourceLe
 const MATERIAL_META_KEY = "vercidium_audio_material"
 const USE_FLAT_TRANSMISSION_META_KEY = "vercidium_audio_use_flat_transmission"
 
+# Relays edits to a running game's VAWorld - see VADebuggerPlugin. Null until plugin.gd finishes
+# wiring it up via set_debugger_plugin.
+var debugger_plugin
+
 const BUILTIN_MATERIAL_NAMES = [
 	"brick", "cloth", "concrete", "concretepolished", "dirt", "glass", "grass", "gravel",
 	"gyprock", "ice", "leaf", "marble", "metal", "mud", "rock", "sand", "snow", "tile",
@@ -122,6 +126,7 @@ func _on_material_selected(index: int, node: Node3D, option_button: OptionButton
 		node.set_meta(MATERIAL_META_KEY, option_button.get_item_text(index))
 
 	EditorInterface.mark_scene_as_unsaved()
+	_sync_running_game(node)
 
 func _on_use_flat_transmission_toggled(toggled_on: bool, node: Node3D):
 	if toggled_on:
@@ -130,6 +135,36 @@ func _on_use_flat_transmission_toggled(toggled_on: bool, node: Node3D):
 		node.remove_meta(USE_FLAT_TRANSMISSION_META_KEY)
 
 	EditorInterface.mark_scene_as_unsaved()
+	_sync_running_game(node)
+
+func set_debugger_plugin(plugin) -> void:
+	debugger_plugin = plugin
+
+# Custom EditorInspectorPlugin controls only ever run against the editor's local copy of the
+# scene - there's no way to reach a Node in the running game's separate process directly, so this
+# instead sends the node's path (relative to the edited scene root, which the running game's scene
+# root mirrors) over the debugger protocol - see VADebuggerPlugin. The running game's copy of this
+# node was never touched by the set_meta/remove_meta call that just ran above on the editor's local
+# copy, so the current metadata values have to be sent too, for the receiving end to apply to its
+# own copy before re-adding the primitive.
+func _sync_running_game(node: Node3D) -> void:
+	if debugger_plugin == null:
+		return
+
+	var scene_root := EditorInterface.get_edited_scene_root()
+	if scene_root == null:
+		return
+
+	var material := ""
+	if node.has_meta(MATERIAL_META_KEY):
+		material = str(node.get_meta(MATERIAL_META_KEY))
+
+	var use_flat_transmission = null
+	if node.has_meta(USE_FLAT_TRANSMISSION_META_KEY):
+		use_flat_transmission = node.get_meta(USE_FLAT_TRANSMISSION_META_KEY)
+
+	var node_path := scene_root.get_path_to(node)
+	debugger_plugin.sync_primitive(scene_root.name, node_path, material, use_flat_transmission)
 
 # VAMaterial nodes only register themselves in customMaterials at runtime (VAMaterial._EnterTree
 # bails out early when Engine.IsEditorHint() is true), so the edited scene tree has to be walked

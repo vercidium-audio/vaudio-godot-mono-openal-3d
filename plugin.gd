@@ -13,10 +13,12 @@ const VASourceLeech = preload("res://addons/vaudio-godot-openal/nodes/VASourceLe
 const VAWorldGizmoPlugin = preload("res://addons/vaudio-godot-openal/editor/VAWorldGizmoPlugin.gd")
 const VAMaterialInspectorPlugin = preload("res://addons/vaudio-godot-openal/editor/VAMaterialInspectorPlugin.gd")
 const VAConversionContextMenuPlugin = preload("res://addons/vaudio-godot-openal/editor/VAConversionContextMenuPlugin.gd")
+const VADebuggerPlugin = preload("res://addons/vaudio-godot-openal/editor/VADebuggerPlugin.gd")
 
 var world_gizmo_plugin
 var material_inspector_plugin
 var conversion_context_menu_plugin
+var debugger_plugin
 
 const VAUDIO_DLL_HINT_PATH = "addons\\vaudio-godot-openal\\bin\\vaudio.dll"
 
@@ -42,7 +44,11 @@ func _enter_tree():
 	world_gizmo_plugin = VAWorldGizmoPlugin.new()
 	add_node_3d_gizmo_plugin(world_gizmo_plugin)
 
+	debugger_plugin = VADebuggerPlugin.new()
+	add_debugger_plugin(debugger_plugin)
+
 	material_inspector_plugin = VAMaterialInspectorPlugin.new()
+	material_inspector_plugin.set_debugger_plugin(debugger_plugin)
 	add_inspector_plugin(material_inspector_plugin)
 
 	conversion_context_menu_plugin = VAConversionContextMenuPlugin.new()
@@ -72,6 +78,10 @@ func _exit_tree():
 	if material_inspector_plugin:
 		remove_inspector_plugin(material_inspector_plugin)
 		material_inspector_plugin = null
+
+	if debugger_plugin:
+		remove_debugger_plugin(debugger_plugin)
+		debugger_plugin = null
 
 	if conversion_context_menu_plugin:
 		remove_context_menu_plugin(conversion_context_menu_plugin)

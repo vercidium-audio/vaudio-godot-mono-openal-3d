@@ -67,6 +67,8 @@ public partial class VAWorld : Node3D
 
         // Wait a frame for the scene to be fully loaded
         CallDeferred(nameof(InitializeScene));
+
+        RegisterDebuggerCapture();
     }
 
     public override void _Notification(int what)
@@ -130,6 +132,8 @@ public partial class VAWorld : Node3D
 
         GetTree().NodeAdded -= OnNodeAdded;
         GetTree().NodeRemoved -= OnNodeRemoved;
+
+        UnregisterDebuggerCapture();
 
         // Remove vercidium_audio_* metadata fields from all nodes in the scene
         RemovePrimitive(SceneRoot, true);
