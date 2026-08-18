@@ -107,7 +107,8 @@ public partial class VAEmitter : Node3D
     bool _AffectsGroupedEAX = true;
     [Export]
     /// <summary>
-    /// Controls whether this Emitter's EAX is blended to produced grouped EAX. Set this to false for listener emitters
+    /// Controls whether this Emitter's EAX is blended to produced grouped EAX. Set this to false for listener emitters.
+    /// Mutually exclusive with HasRelativeReverb - both can't be true at the same time.
     /// </summary>
     public bool AffectsGroupedEAX
     {
@@ -118,12 +119,18 @@ public partial class VAEmitter : Node3D
 
             if (emitter != null)
                 emitter.AffectsGroupedEAX = value;
+
+            if (value)
+                HasRelativeReverb = false;
         }
     }
 
     bool _HasRelativeReverb = true;
     [Export]
-    /// <summary>Whether this emitter is used as a reference point for calculating relative reverb gain and direction</summary>
+    /// <summary>
+    /// Whether this emitter is used as a reference point for calculating relative reverb gain and direction.
+    /// Mutually exclusive with AffectsGroupedEAX - both can't be true at the same time.
+    /// </summary>
     public bool HasRelativeReverb
     {
         get => _HasRelativeReverb;
@@ -133,6 +140,9 @@ public partial class VAEmitter : Node3D
 
             if (emitter != null)
                 emitter.HasRelativeReverb = value;
+
+            if (value)
+                AffectsGroupedEAX = false;
         }
     }
 
