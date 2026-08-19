@@ -101,6 +101,67 @@ public partial class VAWorld : Node3D
     }
 
 
+    [ExportGroup("OpenAL")]
+
+    float _MasterVolume = 1;
+    [Export(PropertyHint.Range, "0.0,1.0,or_greater")]
+    /// <summary>
+    /// Master output volume, as a linear multiplier. 1.0 is unchanged, 0.0 is silent. Defaults
+    /// to 1. Forwarded to the process-wide ALManager singleton; if multiple VAWorlds exist,
+    /// the last one to set this wins.
+    /// </summary>
+    public float MasterVolume
+    {
+        get => _MasterVolume;
+        set
+        {
+            _MasterVolume = MathF.Max(0, value);
+
+            if (ALManager.instance != null)
+                ALManager.instance.MasterVolume = _MasterVolume;
+        }
+    }
+
+    ALDistanceModel _DistanceModel = ALDistanceModel.InverseDistance;
+    [Export]
+    /// <summary>
+    /// OpenAL distance attenuation model. Defaults to InverseDistance. Forwarded to the
+    /// process-wide ALManager singleton; if multiple VAWorlds exist, the last one to set this
+    /// wins.
+    /// </summary>
+    public ALDistanceModel DistanceModel
+    {
+        get => _DistanceModel;
+        set
+        {
+            _DistanceModel = value;
+
+            if (ALManager.instance != null)
+                ALManager.instance.DistanceModel = _DistanceModel;
+        }
+    }
+
+    bool _ReverbOnly = false;
+    [Export]
+    /// <summary>
+    /// When true, only the reverb send plays - direct/dry sound is muted. Defaults to false.
+    /// Forwarded to the process-wide ALManager singleton; if multiple VAWorlds exist, the last
+    /// one to set this wins.
+    /// </summary>
+    public bool ReverbOnly
+    {
+        get => _ReverbOnly;
+        set
+        {
+            _ReverbOnly = value;
+
+            if (ALManager.instance != null)
+                ALManager.instance.ReverbOnly = _ReverbOnly;
+        }
+    }
+
+
+
     [ExportGroup("Reverb")]
 
     int _MaximumGroupedEAXCount = 3;
@@ -252,67 +313,6 @@ public partial class VAWorld : Node3D
                 world.ReferenceFrequencyHF = _ReferenceFrequencyHF;
         }
     }
-
-
-    [ExportGroup("OpenAL")]
-
-    float _MasterVolume = 1;
-    [Export(PropertyHint.Range, "0.0,1.0,or_greater")]
-    /// <summary>
-    /// Master output volume, as a linear multiplier. 1.0 is unchanged, 0.0 is silent. Defaults
-    /// to 1. Forwarded to the process-wide ALManager singleton; if multiple VAWorlds exist,
-    /// the last one to set this wins.
-    /// </summary>
-    public float MasterVolume
-    {
-        get => _MasterVolume;
-        set
-        {
-            _MasterVolume = MathF.Max(0, value);
-
-            if (ALManager.instance != null)
-                ALManager.instance.MasterVolume = _MasterVolume;
-        }
-    }
-
-    ALDistanceModel _DistanceModel = ALDistanceModel.InverseDistance;
-    [Export]
-    /// <summary>
-    /// OpenAL distance attenuation model. Defaults to InverseDistance. Forwarded to the
-    /// process-wide ALManager singleton; if multiple VAWorlds exist, the last one to set this
-    /// wins.
-    /// </summary>
-    public ALDistanceModel DistanceModel
-    {
-        get => _DistanceModel;
-        set
-        {
-            _DistanceModel = value;
-
-            if (ALManager.instance != null)
-                ALManager.instance.DistanceModel = _DistanceModel;
-        }
-    }
-
-    bool _ReverbOnly = false;
-    [Export]
-    /// <summary>
-    /// When true, only the reverb send plays - direct/dry sound is muted. Defaults to false.
-    /// Forwarded to the process-wide ALManager singleton; if multiple VAWorlds exist, the last
-    /// one to set this wins.
-    /// </summary>
-    public bool ReverbOnly
-    {
-        get => _ReverbOnly;
-        set
-        {
-            _ReverbOnly = value;
-
-            if (ALManager.instance != null)
-                ALManager.instance.ReverbOnly = _ReverbOnly;
-        }
-    }
-
 
     [ExportGroup("Emitters")]
 
