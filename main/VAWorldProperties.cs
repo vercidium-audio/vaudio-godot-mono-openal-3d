@@ -127,7 +127,10 @@ public partial class VAWorld : Node3D
     float _MetersPerUnit = 1;
     [Export(PropertyHint.Range, "0.0001,1.0,or_greater")]
     /// <summary>
-    /// Gets meters per world unit. Affects air absorption and reverb calculation.
+    /// Gets meters per world unit. Affects air absorption and reverb calculation. Also
+    /// forwarded to the process-wide ALManager singleton, which only affects OpenAL's own
+    /// air-absorption and reverb decay math; if multiple VAWorlds exist, the last one to set
+    /// this wins.
     /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity or less than or equal to 0</exception>
     /// </summary>
     public float MetersPerUnit
@@ -149,7 +152,9 @@ public partial class VAWorld : Node3D
 
     [Export(PropertyHint.Range, "0.0001,1000.0,1,or_greater")]
     /// <summary>
-    /// Speed of sound in seconds per meter. Defaults to 343.0f. Affects reverb calculation
+    /// Speed of sound in seconds per meter. Defaults to 343.0f. Affects reverb calculation.
+    /// Also forwarded to the process-wide ALManager singleton, which only affects OpenAL's
+    /// own Doppler calculation; if multiple VAWorlds exist, the last one to set this wins.
     /// </summary>
     /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity or less than or equal to 0</exception>
     public float SpeedOfSound
@@ -253,7 +258,11 @@ public partial class VAWorld : Node3D
 
     float _MasterVolume = 1;
     [Export(PropertyHint.Range, "0.0,1.0,or_greater")]
-    /// <summary>Master output volume, forwarded to the AL listener gain. Defaults to 1</summary>
+    /// <summary>
+    /// Master output volume, as a linear multiplier. 1.0 is unchanged, 0.0 is silent. Defaults
+    /// to 1. Forwarded to the process-wide ALManager singleton; if multiple VAWorlds exist,
+    /// the last one to set this wins.
+    /// </summary>
     public float MasterVolume
     {
         get => _MasterVolume;
@@ -268,7 +277,11 @@ public partial class VAWorld : Node3D
 
     ALDistanceModel _DistanceModel = ALDistanceModel.InverseDistance;
     [Export]
-    /// <summary>OpenAL distance attenuation model. Defaults to InverseDistance</summary>
+    /// <summary>
+    /// OpenAL distance attenuation model. Defaults to InverseDistance. Forwarded to the
+    /// process-wide ALManager singleton; if multiple VAWorlds exist, the last one to set this
+    /// wins.
+    /// </summary>
     public ALDistanceModel DistanceModel
     {
         get => _DistanceModel;
@@ -283,7 +296,11 @@ public partial class VAWorld : Node3D
 
     bool _ReverbOnly = false;
     [Export]
-    /// <summary>When true, only the reverb send plays - direct/dry sound is muted. Defaults to false</summary>
+    /// <summary>
+    /// When true, only the reverb send plays - direct/dry sound is muted. Defaults to false.
+    /// Forwarded to the process-wide ALManager singleton; if multiple VAWorlds exist, the last
+    /// one to set this wins.
+    /// </summary>
     public bool ReverbOnly
     {
         get => _ReverbOnly;
