@@ -1,4 +1,6 @@
 using Godot.Collections;
+using godot_mono_openal;
+using OpenAL;
 
 namespace vaudio_godot_mono_openal_3d;
 
@@ -137,6 +139,9 @@ public partial class VAWorld : Node3D
 
             if (world != null)
                 world.MetersPerUnit = _MetersPerUnit;
+
+            if (ALManager.instance != null)
+                ALManager.instance.MetersPerUnit = _MetersPerUnit;
         }
     }
 
@@ -156,6 +161,9 @@ public partial class VAWorld : Node3D
 
             if (world != null)
                 world.InverseSpeedOfSound = 1.0f / _SpeedOfSound;
+
+            if (ALManager.instance != null)
+                ALManager.instance.SpeedOfSound = _SpeedOfSound;
         }
     }
 
@@ -237,6 +245,54 @@ public partial class VAWorld : Node3D
 
             if (world != null)
                 world.ReferenceFrequencyHF = _ReferenceFrequencyHF;
+        }
+    }
+
+
+    [ExportGroup("OpenAL")]
+
+    float _MasterVolume = 1;
+    [Export(PropertyHint.Range, "0.0,1.0,or_greater")]
+    /// <summary>Master output volume, forwarded to the AL listener gain. Defaults to 1</summary>
+    public float MasterVolume
+    {
+        get => _MasterVolume;
+        set
+        {
+            _MasterVolume = MathF.Max(0, value);
+
+            if (ALManager.instance != null)
+                ALManager.instance.MasterVolume = _MasterVolume;
+        }
+    }
+
+    ALDistanceModel _DistanceModel = ALDistanceModel.InverseDistance;
+    [Export]
+    /// <summary>OpenAL distance attenuation model. Defaults to InverseDistance</summary>
+    public ALDistanceModel DistanceModel
+    {
+        get => _DistanceModel;
+        set
+        {
+            _DistanceModel = value;
+
+            if (ALManager.instance != null)
+                ALManager.instance.DistanceModel = _DistanceModel;
+        }
+    }
+
+    bool _ReverbOnly = false;
+    [Export]
+    /// <summary>When true, only the reverb send plays - direct/dry sound is muted. Defaults to false</summary>
+    public bool ReverbOnly
+    {
+        get => _ReverbOnly;
+        set
+        {
+            _ReverbOnly = value;
+
+            if (ALManager.instance != null)
+                ALManager.instance.ReverbOnly = _ReverbOnly;
         }
     }
 

@@ -58,7 +58,7 @@ public partial class VAWorld : Node3D
 
         if (!GodotOpenALEnabled)
         {
-            LogError("The godot-mono-openal addon is not enabled. Ensure godot-mono-openal is enabled (try toggling it off and on), and ensure the ALManager autoload is enabled in Project Settings > Globals");
+            LogError("The godot-mono-openal addon is not enabled. Ensure godot-mono-openal is enabled in Project Settings > Plugins (try toggling it off and on if it's already enabled)");
         }
 
         // Register for device destroyed/recreated callbacks to clean up and recreate reverb effects
