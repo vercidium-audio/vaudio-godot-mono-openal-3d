@@ -133,7 +133,7 @@ func _setup_project():
 			print("[vaudio-godot-mono-openal-3d] Added vaudio references to ", ProjectSettings.globalize_path(csproj_path))
 
 	if dll_exists:
-		print("[vaudio-godot-mono-openal-3d] csproj configured correctly")
+		print("[vaudio-godot-mono-openal-3d] vaudio.dll found")
 	else:
 		push_error("[vaudio-godot-mono-openal-3d] vaudio.dll not found - please copy your vaudio.dll into %s, then disable and enable the Vercidium Audio plugin" % ProjectSettings.globalize_path(dll_res_path.get_base_dir()))
 
