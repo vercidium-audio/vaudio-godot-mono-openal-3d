@@ -1,0 +1,238 @@
+namespace vaudio_godot_mono_openal_3d;
+
+/// <summary>
+/// Custom acoustic material resource for the Vercidium Audio plugin.
+/// Must be defined as a child Node of a VAWorld node.
+/// Can be created in the Godot editor and assigned to collision shapes.
+/// </summary>
+[Tool]
+[GlobalClass]
+public partial class VACustomMaterial : Node
+{
+    VAWorld vercidiumAudio;
+    vaudio.MaterialProperties vaudioMaterial;
+
+    // Auto-assigned by VAWorld.RegisterCustomMaterial, not user-facing
+    int materialType;
+
+    public override void _EnterTree()
+    {
+        if (Engine.IsEditorHint())
+            return;
+
+        vercidiumAudio = this.GetVAWorldParent();
+
+        // Custom materials only register themselves in the running VAWorld at runtime - unlike
+        // VADefaultMaterial, they're expected to be defined alongside (and after) the level's
+        // VAWorld, since they need it to be able to claim a free material ID.
+        if (vercidiumAudio == null)
+            return;
+
+        materialType = vercidiumAudio.RegisterCustomMaterial(this);
+
+        vaudioMaterial = new vaudio.MaterialProperties(
+            AbsorptionLF,
+            AbsorptionHF,
+            Scattering,
+            TransmissionLF,
+            TransmissionHF,
+            FlatTransmissionLF,
+            FlatTransmissionHF
+        );
+
+        vercidiumAudio.world.AddMaterial((vaudio.MaterialType)materialType, vaudioMaterial, GetDebugColor());
+    }
+
+    string _materialName = "CustomMaterial";
+
+    /// <summary>
+    /// Material name for debugging and identification. Matched against the "Vercidium Audio"
+    /// Inspector material dropdown (see VAWorldMaterials.GetMaterial), so can be freely renamed
+    /// at runtime - the material's internal ID (assigned by VAWorld.RegisterCustomMaterial) never changes.
+    /// </summary>
+    [Export(PropertyHint.None, "")]
+    public string MaterialName
+    {
+        get => _materialName;
+        set
+        {
+            _materialName = value;
+            UpdateConfigurationWarnings();
+        }
+    }
+
+    float _AbsorptionLF = 0.02f;
+    float _AbsorptionHF = 0.1f;
+    float _Scattering = 0.1f;
+    float _TransmissionLF = 10;
+    float _TransmissionHF = 5f;
+    float _FlatTransmissionLF = 0.1f;
+    float _FlatTransmissionHF = 0.25f;
+    Color _DebugColor = new(1, 0, 1);
+
+    /// <summary>
+    /// Low-frequency absorption coefficient (0.0 to 1.0)
+    /// </summary>
+    [Export(PropertyHint.Range, "0.0,1.0")]
+    public float AbsorptionLF
+    {
+        get => _AbsorptionLF;
+        set
+        {
+            if (value == _AbsorptionLF)
+                return;
+
+            _AbsorptionLF = value;
+
+            if (vaudioMaterial != null)
+                vaudioMaterial.AbsorptionLF = value;
+        }
+    }
+
+    /// <summary>
+    /// High-frequency absorption coefficient (0.0 to 1.0)
+    /// </summary>
+    [Export(PropertyHint.Range, "0.0,1.0")]
+    public float AbsorptionHF
+    {
+        get => _AbsorptionHF;
+        set
+        {
+            if (value == _AbsorptionHF)
+                return;
+
+            _AbsorptionHF = value;
+
+            if (vaudioMaterial != null)
+                vaudioMaterial.AbsorptionHF = value;
+        }
+    }
+
+    /// <summary>
+    /// Scattering coefficient (0.0 to 1.0)
+    /// </summary>
+    [Export(PropertyHint.Range, "0.0,1.0")]
+    public float Scattering
+    {
+        get => _Scattering;
+        set
+        {
+            if (value == _Scattering)
+                return;
+
+            _Scattering = value;
+
+            if (vaudioMaterial != null)
+                vaudioMaterial.Scattering = value;
+        }
+    }
+
+    /// <summary>
+    /// Low-frequency transmission in dB/m (0.0 or greater)
+    /// </summary>
+    [Export(PropertyHint.Range, "0.0001f,10.0,0.001f,or_greater")]
+    public float TransmissionLF
+    {
+        get => _TransmissionLF;
+        set
+        {
+            if (value == _TransmissionLF)
+                return;
+
+            _TransmissionLF = value;
+
+            if (vaudioMaterial != null)
+                vaudioMaterial.TransmissionLF = value;
+        }
+    }
+
+    /// <summary>
+    /// High-frequency transmission in dB/m (0.0 or greater)
+    /// </summary>
+    [Export(PropertyHint.Range, "0.0001f,10.0,0.001f,or_greater")]
+    public float TransmissionHF
+    {
+        get => _TransmissionHF;
+        set
+        {
+            if (value == _TransmissionHF)
+                return;
+
+            _TransmissionHF = value;
+
+            if (vaudioMaterial != null)
+                vaudioMaterial.TransmissionHF = value;
+        }
+    }
+
+    /// <summary>
+    /// Percentage of low-frequency energy lost when a ray passes through a flat primitive
+    /// </summary>
+    [Export(PropertyHint.Range, "0.0,1.0")]
+    public float FlatTransmissionLF
+    {
+        get => _FlatTransmissionLF;
+        set
+        {
+            if (value == _FlatTransmissionLF)
+                return;
+
+            _FlatTransmissionLF = value;
+
+            if (vaudioMaterial != null)
+                vaudioMaterial.FlatTransmissionLF = value;
+        }
+    }
+
+    /// <summary>
+    /// Percentage of high-frequency energy lost when a ray passes through a flat primitive
+    /// </summary>
+    [Export(PropertyHint.Range, "0.0,1.0")]
+    public float FlatTransmissionHF
+    {
+        get => _FlatTransmissionHF;
+        set
+        {
+            if (value == _FlatTransmissionHF)
+                return;
+
+            _FlatTransmissionHF = value;
+
+            if (vaudioMaterial != null)
+                vaudioMaterial.FlatTransmissionHF = value;
+        }
+    }
+
+    /// <summary>
+    /// Debug color for the VAudio debug renderer
+    /// </summary>
+    [Export]
+    public Color DebugColor
+    {
+        get => _DebugColor;
+        set
+        {
+            _DebugColor = value;
+
+            vercidiumAudio?.world.SetMaterialColor((vaudio.MaterialType)materialType, GetDebugColor());
+        }
+    }
+
+    /// <summary>
+    /// Gets the debug color as a vaudio.Color
+    /// </summary>
+    public vaudio.Color GetDebugColor() => new(DebugColor.R, DebugColor.G, DebugColor.B, 1.0f);
+
+    /// <summary>
+    /// Validates the material configuration and returns warnings
+    /// </summary>
+    public override string[] _GetConfigurationWarnings()
+    {
+        var warnings = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(MaterialName))
+            warnings.Add("Material Name should not be empty.");
+
+        return [.. warnings];
+    }
+}

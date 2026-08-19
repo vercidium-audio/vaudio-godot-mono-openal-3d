@@ -9,7 +9,8 @@ extends EditorInspectorPlugin
 
 const VAWorld = preload("res://addons/vaudio-godot-mono-openal-3d/main/VAWorld.cs")
 const VAEmitter = preload("res://addons/vaudio-godot-mono-openal-3d/emitter/VAEmitter.cs")
-const VAMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAMaterial.cs")
+const VADefaultMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VADefaultMaterial.cs")
+const VACustomMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VACustomMaterial.cs")
 const VASource = preload("res://addons/vaudio-godot-mono-openal-3d/source/VASource.cs")
 const VASourceRelative = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceRelative.cs")
 const VASourceAmbient = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceAmbient.cs")
@@ -34,9 +35,9 @@ func _can_handle(object):
 
 	# Audio control/geometry-source nodes, not raytraced geometry - excluded the same way the
 	# native VAMaterialInspectorPlugin excludes them.
-	return not (object is VAWorld or object is VAEmitter or object is VAMaterial
-		or object is VASource or object is VASourceRelative or object is VASourceAmbient
-		or object is VASourceLeech)
+	return not (object is VAWorld or object is VAEmitter or object is VADefaultMaterial
+		or object is VACustomMaterial or object is VASource or object is VASourceRelative
+		or object is VASourceAmbient or object is VASourceLeech)
 
 func _parse_end(object):
 	var node := object as Node3D
@@ -166,9 +167,9 @@ func _sync_running_game(node: Node3D) -> void:
 	var node_path := scene_root.get_path_to(node)
 	debugger_plugin.sync_primitive(scene_root.name, node_path, material, use_flat_transmission)
 
-# VAMaterial nodes only register themselves in customMaterials at runtime (VAMaterial._EnterTree
-# bails out early when Engine.IsEditorHint() is true), so the edited scene tree has to be walked
-# directly to find their names while in the editor.
+# VACustomMaterial nodes only register themselves in customMaterials at runtime
+# (VACustomMaterial._EnterTree bails out early when Engine.IsEditorHint() is true), so the edited
+# scene tree has to be walked directly to find their names while in the editor.
 func _find_custom_materials(node: Node3D) -> Array:
 	var scene_root := EditorInterface.get_edited_scene_root()
 	if scene_root == null:
@@ -179,7 +180,7 @@ func _find_custom_materials(node: Node3D) -> Array:
 	return names
 
 func _find_custom_materials_recursive(node: Node, names: Array):
-	if node is VAMaterial:
+	if node is VACustomMaterial:
 		names.append(node.MaterialName)
 
 	for child in node.get_children():

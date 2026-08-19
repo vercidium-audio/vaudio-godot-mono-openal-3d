@@ -2,7 +2,25 @@ namespace vaudio_godot_mono_openal_3d;
 
 public partial class VAWorld : Node3D
 {
-    public Dictionary<int, VAMaterial> customMaterials = [];
+    const int FirstCustomMaterialId = 1000;
+
+    public Dictionary<int, VACustomMaterial> customMaterials = [];
+
+    /// <summary>
+    /// Assigns a VACustomMaterial the lowest material ID not already claimed by another custom
+    /// material in this world, starting at FirstCustomMaterialId
+    /// </summary>
+    public int RegisterCustomMaterial(VACustomMaterial material)
+    {
+        int type = FirstCustomMaterialId;
+
+        foreach (var id in customMaterials.Keys)
+            if (id >= type)
+                type = id + 1;
+
+        customMaterials[type] = material;
+        return type;
+    }
 
     /// <summary>
     /// Extract a material type from a node. Returns MaterialType.Air if no materials are found

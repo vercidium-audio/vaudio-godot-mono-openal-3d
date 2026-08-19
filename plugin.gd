@@ -3,7 +3,8 @@ extends EditorPlugin
 
 const VAWorld = preload("res://addons/vaudio-godot-mono-openal-3d/main/VAWorld.cs")
 const VAEmitter = preload("res://addons/vaudio-godot-mono-openal-3d/emitter/VAEmitter.cs")
-const VAMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAMaterial.cs")
+const VADefaultMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VADefaultMaterial.cs")
+const VACustomMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VACustomMaterial.cs")
 
 const VASource = preload("res://addons/vaudio-godot-mono-openal-3d/source/VASource.cs")
 const VASourceRelative = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceRelative.cs")
@@ -34,7 +35,8 @@ func _enter_tree():
 
 	add_custom_type("VAWorld", "Node3D", VAWorld, icon)
 	add_custom_type("VAEmitter", "Node3D", VAEmitter, icon)
-	add_custom_type("VAMaterial", "Node3D", VAMaterial, icon)
+	add_custom_type("VADefaultMaterial", "Node3D", VADefaultMaterial, icon)
+	add_custom_type("VACustomMaterial", "Node3D", VACustomMaterial, icon)
 
 	add_custom_type("VASource", "Node3D", VASource, iconAL)
 	add_custom_type("VASourceRelative", "Node", VASourceRelative, iconAL)
@@ -64,7 +66,8 @@ func _enter_tree():
 func _exit_tree():
 	remove_custom_type("VAWorld")
 	remove_custom_type("VAEmitter")
-	remove_custom_type("VAMaterial")
+	remove_custom_type("VADefaultMaterial")
+	remove_custom_type("VACustomMaterial")
 
 	remove_custom_type("VASource")
 	remove_custom_type("VASourceRelative")
