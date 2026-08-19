@@ -1,12 +1,19 @@
-namespace vaudio_godot_openal;
+namespace vaudio_godot_mono_openal_3d;
 
-public partial class VAWorld : Node
+public partial class VAWorld : Node3D
 {
-    void AddPrimitive(Node node, vaudio.MaterialType material, bool recursive)
+    void AddPrimitive(Node node, vaudio.MaterialType material, bool recursive) =>
+        AddPrimitive(node, material, false, recursive);
+
+    void AddPrimitive(Node node, vaudio.MaterialType material, bool useFlatTransmission, bool recursive)
     {
         // Use this specific material rather than the parent material
         if (node.HasMeta(MATERIAL_META_KEY))
             material = GetMaterial(node);
+
+        // Use this specific transmission setting rather than the parent's
+        if (node.HasMeta(USE_FLAT_TRANSMISSION_META_KEY))
+            useFlatTransmission = node.GetMeta(USE_FLAT_TRANSMISSION_META_KEY).As<bool>();
 
         // Ignore nodes without materials
         if (material != vaudio.MaterialType.Air)
@@ -24,12 +31,41 @@ public partial class VAWorld : Node
             else if (node is CollisionShape3D collisionShape)
                 CreateVAudioPrimitive(collisionShape, material);
             else if (node is MeshInstance3D meshInstance)
-                CreateVAudioPrimitive(meshInstance, material);
+                CreateVAudioPrimitive(meshInstance, material, useFlatTransmission);
         }
 
         if (recursive)
             foreach (Node child in node.GetChildren())
-                AddPrimitive(child, material, true);
+                AddPrimitive(child, material, useFlatTransmission, true);
+    }
+
+    // Re-registers a single node's raytracing primitive after its "Vercidium Audio" material or
+    // use-flat-transmission metadata changed in the Inspector while the game is running - removes
+    // the old primitive if one exists, then re-adds it using the node's current metadata. Only
+    // ever called on the running game's own VAWorld instance, via the debugger message capture
+    // registered in VAWorldDebugger.cs - a custom EditorInspectorPlugin control has no way to
+    // reach this VAWorld directly, since it only ever runs against the editor's own local copy of
+    // the scene, whose world is always null.
+    public void SyncPrimitive(Node node)
+    {
+        // Guards against being called before InitializeScene has run this frame - should always be
+        // non-null in practice, since this is only invoked via the debugger message capture, which
+        // is only registered once the running game exists.
+        if (world == null)
+            return;
+
+        // Recursive, matching InitializeScene's own top-level AddPrimitive calls - the edited node
+        // itself often has no geometry of its own (e.g. a plain Node3D grouping node), with the
+        // material/use-flat-transmission override only taking effect on its descendants. Unlike
+        // OnNodeAdded/OnNodeRemoved (non-recursive - the NodeAdded/NodeRemoved signals they handle
+        // already fire once per node), this is a single one-shot call for the whole edited subtree,
+        // so it has to walk it itself.
+        RemovePrimitive(node, true);
+
+        // AddPrimitive re-reads each node's current vercidium_audio_material/
+        // vercidium_audio_use_flat_transmission metadata itself - MaterialType.Air/true here are
+        // just the fallback for a node with no metadata at all.
+        AddPrimitive(node, vaudio.MaterialType.Air, true, true);
     }
 
     void RemovePrimitive(Node node, bool recursive)
@@ -492,7 +528,7 @@ public partial class VAWorld : Node
         }
     }
 
-    void CreateVAudioPrimitive(MeshInstance3D meshInstance, vaudio.MaterialType material)
+    void CreateVAudioPrimitive(MeshInstance3D meshInstance, vaudio.MaterialType material, bool useFlatTransmission)
     {
         Debug.Assert(material != vaudio.MaterialType.Air);
 
@@ -520,8 +556,7 @@ public partial class VAWorld : Node
 
         vaudio.MeshPrimitive prim = new(material, triangles, min, max, transform)
         {
-            // TODO - make this a metadata / inspector flag in godot
-            Supports3DPermeation = true
+            UseFlatTransmission = useFlatTransmission
         };
 
         world.AddPrimitive(prim);

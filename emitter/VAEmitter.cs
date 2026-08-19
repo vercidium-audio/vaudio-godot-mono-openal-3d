@@ -1,11 +1,26 @@
 using System.Linq;
+using Godot.Collections;
 
-namespace vaudio_godot_openal;
+namespace vaudio_godot_mono_openal_3d;
 
 [Tool]
 [GlobalClass]
 public partial class VAEmitter : Node3D
 {
+    // IsMainListener is set by VAListener alone (see VAListener.cs) - a plain VAEmitter should
+    // never toggle it, so hide it from the inspector rather than exposing a footgun checkbox.
+    public override void _ValidateProperty(Dictionary property)
+    {
+        string name = property["name"].AsStringName();
+
+        if (name == "IsMainListener")
+        {
+            var usage = property["usage"].As<PropertyUsageFlags>();
+            usage &= ~PropertyUsageFlags.Editor;
+            property["usage"] = (int)usage;
+        }
+    }
+
     VAWorld vercidiumAudio;
     public vaudio.Emitter emitter;
 
@@ -25,7 +40,7 @@ public partial class VAEmitter : Node3D
 
         if (vercidiumAudio == null)
         {
-            GD.PushWarning($"[vaudio-godot-openal] Failed to initialise node {Name} because there is no VAWorld node. Ensure a VAWorld node exists higher up the tree");
+            GD.PushWarning($"[vaudio-godot-mono-openal-3d] Failed to initialise node {Name} because there is no VAWorld node. Ensure a VAWorld node exists higher up the tree");
             return;
         }
 
@@ -101,10 +116,10 @@ public partial class VAEmitter : Node3D
 
         ApplyRaytracingResults();
 
+        OnRaytracedByAnotherEmitterCallback?.Invoke(emitter);
+
         if (RaytraceOnce)
             RemoveEmitter();
-
-        OnRaytracedByAnotherEmitterCallback?.Invoke(emitter);
     }
 
     public override void _Process(double delta)
@@ -189,30 +204,5 @@ public partial class VAEmitter : Node3D
             _RaytraceOnce = value;
         }
     }
-
-    [ExportGroup("Orientation")]
-
-    float _Pitch;
-    [Export]
-    public float Pitch
-    {
-        get => _Pitch;
-        set
-        {
-            _Pitch = value;
-        }
-    }
-
-    float _Yaw;
-    [Export]
-    public float Yaw
-    {
-        get => _Yaw;
-        set
-        {
-            _Yaw = value;
-        }
-    }
-
 
 }

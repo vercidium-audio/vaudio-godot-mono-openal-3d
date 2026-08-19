@@ -1,6 +1,6 @@
 using System.Linq;
 using Godot.Collections;
-namespace vaudio_godot_openal;
+namespace vaudio_godot_mono_openal_3d;
 
 /// <summary>
 /// Custom acoustic material resource for the Vercidium Audio plugin.
@@ -61,8 +61,8 @@ public partial class VAMaterial : Node
             mat.Scattering = Scattering;
             mat.TransmissionLF = TransmissionLF;
             mat.TransmissionHF = TransmissionHF;
-            mat.PlaneTransmissionLF = PlaneTransmissionLF;
-            mat.PlaneTransmissionHF = PlaneTransmissionHF;
+            mat.FlatTransmissionLF = FlatTransmissionLF;
+            mat.FlatTransmissionHF = FlatTransmissionHF;
 
             vercidiumAudio.world.SetMaterialColor(defaultMaterialType, GetDebugColor());
             return;
@@ -82,8 +82,8 @@ public partial class VAMaterial : Node
             Scattering,
             TransmissionLF,
             TransmissionHF,
-            PlaneTransmissionLF,
-            PlaneTransmissionHF
+            FlatTransmissionLF,
+            FlatTransmissionHF
         );
 
         vercidiumAudio.world.AddMaterial((vaudio.MaterialType)MaterialType, vaudioMaterial, GetDebugColor());
@@ -181,8 +181,8 @@ public partial class VAMaterial : Node
     float _Scattering = 0.1f;
     float _TransmissionLF = 10;
     float _TransmissionHF = 5f;
-    float _PlaneTransmissionLF = 0.1f;
-    float _PlaneTransmissionHF = 0.25f;
+    float _FlatTransmissionLF = 0.1f;
+    float _FlatTransmissionHF = 0.25f;
     Color _DebugColor = new(1, 0, 1);
 
     /// <summary>
@@ -289,19 +289,19 @@ public partial class VAMaterial : Node
     /// Percentage of low-frequency energy lost when a ray passes through a flat primitive
     /// </summary>
     [Export(PropertyHint.Range, "0.0,1.0")]
-    public float PlaneTransmissionLF
+    public float FlatTransmissionLF
     {
-        get => _PlaneTransmissionLF;
+        get => _FlatTransmissionLF;
         set
         {
             // Prevent redundant sets
-            if (value == _PlaneTransmissionLF)
+            if (value == _FlatTransmissionLF)
                 return;
 
-            _PlaneTransmissionLF = value;
+            _FlatTransmissionLF = value;
 
             if (vercidiumAudio != null)
-                vaudioMaterial.PlaneTransmissionLF = value;
+                vaudioMaterial.FlatTransmissionLF = value;
         }
     }
 
@@ -309,19 +309,19 @@ public partial class VAMaterial : Node
     /// Percentage of high-frequency energy lost when a ray passes through a flat primitive
     /// </summary>
     [Export(PropertyHint.Range, "0.0,1.0")]
-    public float PlaneTransmissionHF
+    public float FlatTransmissionHF
     {
-        get => _PlaneTransmissionHF;
+        get => _FlatTransmissionHF;
         set
         {
             // Prevent redundant sets
-            if (value == _PlaneTransmissionHF)
+            if (value == _FlatTransmissionHF)
                 return;
 
-            _PlaneTransmissionHF = value;
+            _FlatTransmissionHF = value;
 
             if (vercidiumAudio != null)
-                vaudioMaterial.PlaneTransmissionHF = value;
+                vaudioMaterial.FlatTransmissionHF = value;
         }
     }
 

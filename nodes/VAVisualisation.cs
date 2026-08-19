@@ -1,15 +1,16 @@
-namespace vaudio_godot_openal;
+namespace vaudio_godot_mono_openal_3d;
 
 /// <summary>
 /// Renders an emitter's <see cref="vaudio.Emitter.VisualisationCallback"/> ray-bounce results as
-/// fading diamond sprites. Must be a direct child of a <see cref="VAEmitter"/> (or a node
-/// inheriting it, e.g. VASource) - this node finds that parent, registers itself as the
-/// visualisation callback target, and pushes the exported RayCount/BounceCount/UpdateFrequencyMs
-/// onto the parent's emitter. Each callback invocation (every UpdateFrequencyMs) writes one
-/// MultiMesh instance per VisualisationData entry; per-frame fading is entirely GPU-side (a
-/// ShaderMaterial reads each instance's spawn time out of its custom data and the
-/// FadeInMs/FadeOutMs/DurationMs/Color uniforms below), so nothing here does per-instance work
-/// outside the callback itself.
+/// fading diamond sprites. Must be a direct child of a <see cref="VAEmitter"/> - this node finds
+/// that parent, registers itself as the visualisation callback target, and pushes the exported
+/// RayCount/BounceCount/UpdateFrequencyMs onto the parent's emitter. Adding this as a child of a
+/// <see cref="VASource"/> also works: VASource reparents it onto its own internally-created
+/// VAEmitter child once that exists (see VASource.CreateEmitter). Each callback invocation (every
+/// UpdateFrequencyMs) writes one MultiMesh instance per VisualisationData entry; per-frame fading
+/// is entirely GPU-side (a ShaderMaterial reads each instance's spawn time out of its custom data
+/// and the FadeInMs/FadeOutMs/DurationMs/Color uniforms below), so nothing here does per-instance
+/// work outside the callback itself.
 /// </summary>
 [Tool]
 [GlobalClass]
@@ -116,7 +117,7 @@ public partial class VAVisualisation : Node3D
 
         if (emitter == null)
         {
-            GD.PushWarning($"[vaudio-godot-openal] {Name} must be a direct child of a VAEmitter (or VASource) to render its visualisation rays.");
+            GD.PushWarning($"[vaudio-godot-mono-openal-3d] {Name} must be a direct child of a VAEmitter (or VASource) to render its visualisation rays.");
             return;
         }
 

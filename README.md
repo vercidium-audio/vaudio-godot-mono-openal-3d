@@ -1,11 +1,10 @@
 # Vercidium Audio
 
-Raytraced audio addon with realistic muffling, reverb, ambience and visualisation for Mono Godot 4, using OpenAL Soft as the audio backend.
+Raytraced audio addon for Mono Godot 4,with realistic muffling, reverb, ambience and visualisation, using OpenAL Soft as the audio backend.
 
-> [!WARNING]
-> This plugin is experimental and requires testing and feedback
+For Standard Godot (not C#), please use [this plugin](https://github.com/vercidium-audio/vaudio-godot-native-openal-3d-release/releases).
 
-This repository requires Vercidium Audio v1.6.3 and OpenAL Soft to run:
+This repository requires Vercidium Audio v1.7.0 and OpenAL Soft to run:
 - Download the Vercidium Audio SDK from [vercidium.com](https://vercidium.com)
 - Download the OpenAL Soft DLL from [github.com/kcat/openal-soft](https://github.com/kcat/openal-soft/releases/tag/1.25.2)
 
@@ -20,18 +19,20 @@ This repository requires Vercidium Audio v1.6.3 and OpenAL Soft to run:
 - Dynamic scene updates - automatically handles moving objects
 
 ## References
-- [godot-openal repo](https://github.com/vercidium-audio/godot-openal)
+- [godot-mono-openal repo](https://github.com/vercidium-audio/godot-mono-openal)
 - [Vercidum Audio documentation](https://vercidium.com/docs)
 
 ## Requirements
 
-- This plugin depends on the [godot-openal](https://github.com/vercidium-audio/godot-openal) plugin. If you wish to use other audio middleware instead, use the raw [vaudio-godot](https://github.com/vercidium-audio/vaudio-godot) plugin
+- This plugin depends on the [godot-mono-openal](https://github.com/vercidium-audio/godot-mono-openal) plugin.
 - Godot 4.x with C# support
 - [Vercidium Audio SDK](https://vercidium.com)
 
 ## Installation
 
 Setup instructions are [available here](https://vercidium.com/docs/godot/getting-started).
+
+Copy `vaudio.dll` from the Vercidium Audio SDK into `addons/vaudio-godot-mono-openal-3d/bin/` (this folder is git-ignored). The plugin will automatically reference it from your `.csproj`.
 
 ## Visual Studio
 

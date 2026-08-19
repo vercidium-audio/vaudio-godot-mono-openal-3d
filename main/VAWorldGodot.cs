@@ -1,13 +1,19 @@
-using godot_openal;
+using godot_mono_openal;
 
-namespace vaudio_godot_openal;
+namespace vaudio_godot_mono_openal_3d;
 
-public partial class VAWorld : Node
+public partial class VAWorld : Node3D
 {
     public bool Initialised => world != null;
 
     public override void _EnterTree()
     {
+        // Node3D.Position/Transform can't be overridden or shadowed in a way the engine/editor
+        // will actually call (Inspector edits and gizmo drags go straight through the engine's
+        // native set_position, bypassing any C# property) - NOTIFICATION_TRANSFORM_CHANGED is
+        // the only hook that fires uniformly for all three, so opt into it here.
+        SetNotifyTransform(true);
+
         if (Engine.IsEditorHint())
             return;
 
@@ -17,8 +23,8 @@ public partial class VAWorld : Node
         world = new();
         
         world.LogCallback = Log;
-        world.Position = new(Position.X, Position.Y, Position.Z);
-        world.Size = new(Size.X, Size.Y, Size.Z);
+        world.Position = ToVAudio(Position);
+        world.Size = ToVAudio(Size);
         world.Epsilon = Epsilon;
         world.WorldIsIndoors = WorldIsIndoors;
 
@@ -36,7 +42,8 @@ public partial class VAWorld : Node
         world.EmittersOutsideTheWorldAreMuffled = EmittersOutsideTheWorldAreMuffled;
 
         // Threading
-        world.MaximumConcurrencyLevel = MaximumConcurrencyLevel;
+        // 0 maps to processor count - 1, matching the native plugin's behaviour
+        world.MaximumConcurrencyLevel = MaximumConcurrencyLevel == 0 ? vaudio.ThreadStatistics.BackgroundThreadCount : MaximumConcurrencyLevel;
         world.WorkItemCount = WorkItemCount;
 
         world.RenderingEnabled = RenderingEnabled;
@@ -51,7 +58,7 @@ public partial class VAWorld : Node
 
         if (!GodotOpenALEnabled)
         {
-            LogError("The godot-openal addon is not enabled. Ensure godot-openal is enabled (try toggling it off and on), and ensure the ALManager autoload is enabled in Project Settings > Globals");
+            LogError("The godot-mono-openal addon is not enabled. Ensure godot-mono-openal is enabled (try toggling it off and on), and ensure the ALManager autoload is enabled in Project Settings > Globals");
         }
 
         // Register for device destroyed/recreated callbacks to clean up and recreate reverb effects
@@ -60,6 +67,27 @@ public partial class VAWorld : Node
 
         // Wait a frame for the scene to be fully loaded
         CallDeferred(nameof(InitializeScene));
+
+        RegisterDebuggerCapture();
+    }
+
+    public override void _Notification(int what)
+    {
+        if (what != NotificationTransformChanged)
+            return;
+
+        // The bounds AABB is always axis-aligned (see VAWorldProperties._ValidateProperty, which
+        // hides rotation/scale in the Inspector) - but the viewport's Rotate tool bypasses the
+        // Inspector and can still rotate the node directly, so snap it back out here too.
+        if (Quaternion != Quaternion.Identity)
+            Quaternion = Quaternion.Identity;
+
+        // Rebuild the bounds gizmo whenever the node moves, whether from the viewport gizmo,
+        // the Inspector's Position field, or code.
+        UpdateGizmos();
+
+        if (world != null)
+            world.Position = ToVAudio(Position);
     }
 
     void OnDeviceRecreated()
@@ -105,6 +133,8 @@ public partial class VAWorld : Node
         GetTree().NodeAdded -= OnNodeAdded;
         GetTree().NodeRemoved -= OnNodeRemoved;
 
+        UnregisterDebuggerCapture();
+
         // Remove vercidium_audio_* metadata fields from all nodes in the scene
         RemovePrimitive(SceneRoot, true);
 
@@ -138,17 +168,19 @@ public partial class VAWorld : Node
         }
 
         // Sync the AL listener to our main listener
+        Vector3 listenerRotation = listener.GlobalRotation;
+
         if (GodotOpenALEnabled)
         {
             ALManager.instance.ListenerPosition = listener.GlobalPosition;
-            ALManager.instance.ListenerPitch = listener.Pitch;
-            ALManager.instance.ListenerYaw = listener.Yaw;
+            ALManager.instance.ListenerPitch = listenerRotation.X;
+            ALManager.instance.ListenerYaw = listenerRotation.Y;
         }
 
         // Render the debug window from the perspective of the main listener
         world.CameraPosition = ToVAudio(listener.GlobalPosition);
-        world.CameraPitch = listener.Pitch;
-        world.CameraYaw = listener.Yaw;
+        world.CameraPitch = listenerRotation.X;
+        world.CameraYaw = listenerRotation.Y;
         world.FieldOfView = float.DegreesToRadians(90);
 
         world.Update();

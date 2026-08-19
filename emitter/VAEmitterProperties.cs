@@ -1,4 +1,4 @@
-namespace vaudio_godot_openal;
+namespace vaudio_godot_mono_openal_3d;
 
 public partial class VAEmitter : Node3D
 {
@@ -107,7 +107,8 @@ public partial class VAEmitter : Node3D
     bool _AffectsGroupedEAX = true;
     [Export]
     /// <summary>
-    /// Controls whether this Emitter's EAX is blended to produced grouped EAX. Set this to false for listener emitters
+    /// Controls whether this Emitter's EAX is blended to produced grouped EAX. Set this to false for listener emitters.
+    /// Mutually exclusive with HasRelativeReverb - both can't be true at the same time.
     /// </summary>
     public bool AffectsGroupedEAX
     {
@@ -118,12 +119,18 @@ public partial class VAEmitter : Node3D
 
             if (emitter != null)
                 emitter.AffectsGroupedEAX = value;
+
+            if (value)
+                HasRelativeReverb = false;
         }
     }
 
     bool _HasRelativeReverb = true;
     [Export]
-    /// <summary>Whether this emitter is used as a reference point for calculating relative reverb gain and direction</summary>
+    /// <summary>
+    /// Whether this emitter is used as a reference point for calculating relative reverb gain and direction.
+    /// Mutually exclusive with AffectsGroupedEAX - both can't be true at the same time.
+    /// </summary>
     public bool HasRelativeReverb
     {
         get => _HasRelativeReverb;
@@ -133,7 +140,19 @@ public partial class VAEmitter : Node3D
 
             if (emitter != null)
                 emitter.HasRelativeReverb = value;
+
+            if (value)
+                AffectsGroupedEAX = false;
         }
+    }
+
+    bool _UseListenerReverb = true;
+    [Export]
+    /// <summary>If true, this emitter's reverb send uses the listener's reverb effect rather than its own</summary>
+    public bool UseListenerReverb
+    {
+        get => _UseListenerReverb;
+        set => _UseListenerReverb = value;
     }
 
     float _RelativeReverbInnerThreshold = 0.6f;
@@ -364,55 +383,22 @@ public partial class VAEmitter : Node3D
         }
     }
 
-    [ExportGroup("Visualisation")]
-
-    int _VisualisationRayCount = 0;
-    [Export]
-    /// <summary>Number of visualisation rays cast</summary>
-    public int VisualisationRayCount
-    { 
-        get => _VisualisationRayCount;
-        set
-        {
-            _VisualisationRayCount = Math.Max(0, value);
-
-            if (emitter != null)
-                emitter.VisualisationRayCount = _VisualisationRayCount;
-        }
-    }
-
-    int _VisualisationBounceCount = 0;
-    [Export]
-    /// <summary>Number of times each visualisation ray bounces</summary>
-    public int VisualisationBounceCount
-    {
-        get => _VisualisationBounceCount;
-        set
-        {
-            _VisualisationBounceCount = Math.Max(0, value);
-
-            if (emitter != null)
-                emitter.VisualisationBounceCount = _VisualisationBounceCount;
-        }
-    }
-    
-    int _VisualisationUpdateFrequency = 500;
-    [Export]
-    /// <summary>How often - in milliseconds - to cast visualisation rays. Defaults to 500</summary>
-    public int VisualisationUpdateFrequency
-    { 
-        get => _VisualisationUpdateFrequency;
-        set
-        {
-            _VisualisationUpdateFrequency = Math.Max(0, value);
-
-            if (emitter != null)
-                emitter.VisualisationUpdateFrequency = _VisualisationUpdateFrequency;
-        }
-    }
-
-
     [ExportGroup("Debug Rendering")]
+
+    bool _RandomTrailColor = false;
+    [Export]
+    /// <summary>If true, renders each trail a different color in the debug window (dev build only)</summary>
+    public bool RandomTrailColor
+    {
+        get => _RandomTrailColor;
+        set
+        {
+            _RandomTrailColor = value;
+
+            if (emitter != null)
+                emitter.RandomTrailColor = value;
+        }
+    }
 
     Godot.Color _TrailColor = new(1.0f, 1.0f, 1.0f, 0.1f);
     [Export]

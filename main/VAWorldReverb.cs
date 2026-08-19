@@ -1,6 +1,6 @@
-namespace vaudio_godot_openal;
+namespace vaudio_godot_mono_openal_3d;
 
-public partial class VAWorld : Node
+public partial class VAWorld : Node3D
 {
     public ALReverbEffect GetReverbEffect(vaudio.Emitter emitter)
     {
@@ -30,6 +30,12 @@ public partial class VAWorld : Node
 
             return groupedReverbEffects[emitter.GroupedEAXIndex];
         }
+
+        // Doesn't cast reverb rays or affect a grouped EAX zone - falls back to the listener's
+        // reverb effect only if this emitter opted into that via UseListenerReverb, otherwise
+        // it gets no reverb send at all.
+        if (!emitter.UseListenerReverb)
+            return null;
 
         return listenerReverbEffect;
     }
@@ -95,7 +101,8 @@ public partial class VAWorld : Node
         if (isGroupedEAX && eax.RelativeDirections != null && eax.RelativeDirections.TryGetValue(listener.emitter, out var pan))
         {
             // Convert to a listener-relative vector for OpenAL
-            pan = world.CalculateListenerRelativePan(pan, listener.Pitch, listener.Yaw);
+            Vector3 listenerRotation = listener.GlobalRotation;
+            pan = world.CalculateListenerRelativePan(pan, listenerRotation.X, listenerRotation.Y);
 
             effect.effectSlotGain = eax.RelativeGains[listener.emitter];
             effect.effectSlotGain = Math.Max(0, effect.effectSlotGain);

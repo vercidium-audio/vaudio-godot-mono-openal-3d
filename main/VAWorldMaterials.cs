@@ -1,6 +1,6 @@
-namespace vaudio_godot_openal;
+namespace vaudio_godot_mono_openal_3d;
 
-public partial class VAWorld : Node
+public partial class VAWorld : Node3D
 {
     public Dictionary<int, VAMaterial> customMaterials = [];
 

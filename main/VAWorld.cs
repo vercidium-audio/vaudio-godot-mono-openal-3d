@@ -1,7 +1,10 @@
-namespace vaudio_godot_openal;
+namespace vaudio_godot_mono_openal_3d;
 
+// This is a Node3D purely so the editor can draw a gizmo showing the world's Position/Size AABB
+// (see VAWorldGizmoPlugin.gd) - the node's transform is otherwise unused by vaudio, which always
+// treats Position/Size as absolute world-space coordinates.
 [Tool]
-public partial class VAWorld : Node
+public partial class VAWorld : Node3D
 {
     // Temp
     public List<vaudio.Emitter> emitters = [];
@@ -49,12 +52,8 @@ public partial class VAWorld : Node
             AmbientOcclusionEnergyCap = node.AmbientOcclusionEnergyCap,
             AmbientPermeationEnergyCap = node.AmbientPermeationEnergyCap,
 
-            // Visualisation
-            VisualisationRayCount = node.VisualisationRayCount,
-            VisualisationBounceCount = node.VisualisationBounceCount,
-            VisualisationUpdateFrequency = node.VisualisationUpdateFrequency,
-
             // Debug rendering
+            RandomTrailColor = node.RandomTrailColor,
             TrailColor = ToVAudio(node.TrailColor),
             OcclusionColor = ToVAudio(node.OcclusionColor),
             PermeationColor = ToVAudio(node.PermeationColor),
@@ -125,7 +124,7 @@ public partial class VAWorld : Node
     // Log to both - in case we're launched from vs2026 or from the Godot Editor
     public Action<string> Log = (message) =>
     {
-        var prefixed = $"[vaudio-godot-openal] {message}";
+        var prefixed = $"[vaudio-godot-mono-openal-3d] {message}";
 
         Console.WriteLine(prefixed);
         GD.Print(prefixed);
@@ -133,7 +132,7 @@ public partial class VAWorld : Node
 
     public Action<string> LogWarning = (message) =>
     {
-        var prefixed = $"[vaudio-godot-openal] {message}";
+        var prefixed = $"[vaudio-godot-mono-openal-3d] {message}";
 
         Console.WriteLine(prefixed);
         GD.PushWarning(prefixed);
@@ -141,7 +140,7 @@ public partial class VAWorld : Node
 
     public Action<string> LogError = (message) =>
     {
-        var prefixed = $"[vaudio-godot-openal] {message}";
+        var prefixed = $"[vaudio-godot-mono-openal-3d] {message}";
 
         Console.Error.WriteLine(prefixed);
         GD.PushError(prefixed);

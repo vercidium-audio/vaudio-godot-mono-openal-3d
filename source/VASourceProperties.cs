@@ -1,7 +1,7 @@
-using godot_openal;
+using godot_mono_openal;
 using System.Linq;
 
-namespace vaudio_godot_openal;
+namespace vaudio_godot_mono_openal_3d;
 
 public partial class VASource : ALSource3D
 {
@@ -125,6 +125,21 @@ public partial class VASource : ALSource3D
 
             if (emitter != null)
                 emitter.AffectsGroupedEAX = value;
+        }
+    }
+
+    bool _UseListenerReverb = true;
+    [Export]
+    /// <summary>If true, this source's reverb send uses the listener's reverb effect rather than its own</summary>
+    public bool UseListenerReverb
+    {
+        get => _UseListenerReverb;
+        set
+        {
+            _UseListenerReverb = value;
+
+            if (emitter != null)
+                emitter.UseListenerReverb = value;
         }
     }
 
@@ -275,61 +290,22 @@ public partial class VASource : ALSource3D
     }
 
 
-    [ExportGroup("Visualisation")]
-
-    int _VisualisationRayCount = 0;
-    [Export]
-    /// <summary>Number of visualisation rays cast</summary>
-    public int VisualisationRayCount
-    {
-        get => _VisualisationRayCount;
-        set
-        {
-            _VisualisationRayCount = Math.Max(0, value);
-
-            if (emitter != null)
-            {
-                emitter.VisualisationRayCount = _VisualisationRayCount;
-            }
-        }
-    }
-
-    int _VisualisationBounceCount = 0;
-    [Export]
-    /// <summary>Number of times each visualisation ray bounces</summary>
-    public int VisualisationBounceCount
-    {
-        get => _VisualisationBounceCount;
-        set
-        {
-            _VisualisationBounceCount = Math.Max(0, value);
-
-            if (emitter != null)
-            {
-                emitter.VisualisationBounceCount = _VisualisationBounceCount;
-            }
-        }
-    }
-
-    int _VisualisationUpdateFrequency = 500;
-    [Export]
-    /// <summary>How often - in milliseconds - to cast visualisation rays. Defaults to 500</summary>
-    public int VisualisationUpdateFrequency
-    {
-        get => _VisualisationUpdateFrequency;
-        set
-        {
-            _VisualisationUpdateFrequency = Math.Max(0, value);
-
-            if (emitter != null)
-            {
-                emitter.VisualisationUpdateFrequency = _VisualisationUpdateFrequency;
-            }
-        }
-    }
-
-
     [ExportGroup("Debug Rendering")]
+
+    bool _RandomTrailColor = false;
+    [Export]
+    /// <summary>If true, renders each trail a different color in the debug window (dev build only)</summary>
+    public bool RandomTrailColor
+    {
+        get => _RandomTrailColor;
+        set
+        {
+            _RandomTrailColor = value;
+
+            if (emitter != null)
+                emitter.RandomTrailColor = value;
+        }
+    }
 
     Godot.Color _TrailColor = new(1, 1, 1, 0.1f);
     [Export]
