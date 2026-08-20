@@ -15,11 +15,13 @@ const VAWorldGizmoPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/edi
 const VAMaterialInspectorPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VAMaterialInspectorPlugin.gd")
 const VAConversionContextMenuPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VAConversionContextMenuPlugin.gd")
 const VADebuggerPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VADebuggerPlugin.gd")
+const VADeviceRefreshInspectorPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VADeviceRefreshInspectorPlugin.gd")
 
 var world_gizmo_plugin
 var material_inspector_plugin
 var conversion_context_menu_plugin
 var debugger_plugin
+var device_refresh_inspector_plugin
 
 const VAUDIO_DLL_HINT_PATH = "addons\\vaudio-godot-mono-openal-3d\\bin\\vaudio.dll"
 
@@ -53,6 +55,9 @@ func _enter_tree():
 	material_inspector_plugin.set_debugger_plugin(debugger_plugin)
 	add_inspector_plugin(material_inspector_plugin)
 
+	device_refresh_inspector_plugin = VADeviceRefreshInspectorPlugin.new()
+	add_inspector_plugin(device_refresh_inspector_plugin)
+
 	conversion_context_menu_plugin = VAConversionContextMenuPlugin.new()
 	add_context_menu_plugin(EditorContextMenuPlugin.CONTEXT_SLOT_SCENE_TREE, conversion_context_menu_plugin)
 
@@ -81,6 +86,10 @@ func _exit_tree():
 	if material_inspector_plugin:
 		remove_inspector_plugin(material_inspector_plugin)
 		material_inspector_plugin = null
+
+	if device_refresh_inspector_plugin:
+		remove_inspector_plugin(device_refresh_inspector_plugin)
+		device_refresh_inspector_plugin = null
 
 	if debugger_plugin:
 		remove_debugger_plugin(debugger_plugin)

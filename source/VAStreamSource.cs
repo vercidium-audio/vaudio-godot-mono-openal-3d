@@ -90,4 +90,20 @@ public partial class VAStreamSource : VARaytracedSource
         base.OnDeviceDestroyed();
         streamSource = null;
     }
+
+    static readonly StringName[] hiddenProperties =
+    [
+        PropertyName.Streams,
+        PropertyName.Looping,
+        PropertyName.Autoplay,
+        PropertyName.PitchRandomness,
+        PropertyName.VolumeRandomnessDb,
+        PropertyName.PlaybackNoRepeat,
+    ];
+
+    public override void _ValidateProperty(Godot.Collections.Dictionary property)
+    {
+        if (Array.IndexOf(hiddenProperties, property["name"].AsStringName()) >= 0)
+            property["usage"] = (int)PropertyUsageFlags.None;
+    }
 }
