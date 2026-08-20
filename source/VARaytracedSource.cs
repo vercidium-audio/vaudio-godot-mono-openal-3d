@@ -1,0 +1,176 @@
+using godot_mono_openal;
+using System.Linq;
+
+namespace vaudio_godot_mono_openal_3d;
+
+// Shared raytracing surface for any spatialised source that casts its own reverb/ambience/
+// visualisation rays, regardless of how it gets audio into OpenAL (a fixed decoded buffer for
+// VASource, a live pushed/callback buffer for VAStreamSource). Factored out of what used to be
+// VASource's own private child-VAEmitter machinery so both classes get identical
+// reverb/muffling/ambience behaviour instead of duplicating ~25 properties - like an ALSource and
+// an ALStreamSource both having all the AL stuff, then either being wired into a VASource or
+// VAStreamSource - they're pretty much the same from the VA perspective, it's just that they have
+// a different AL base class that does the playback.
+//
+// Deliberately owns nothing about *when*/*how* playback starts (that's still each subclass's own
+// Play()/OpenStream() override) - only the emitter lifecycle, its exported tuning-knob property
+// surface, and per-frame application of the listener's raytracing results onto this node's
+// filter/reverb slot (inherited from ALSource).
+// Not [GlobalClass] - matches native's register_abstract_class<VARaytracedSource>(), which keeps
+// it out of the editor's Create Node dialog since it's only meant to be used via a subclass (e.g.
+// VASource, VAStreamSource).
+[Tool]
+public partial class VARaytracedSource : ALSource3D
+{
+    protected VAWorld vercidiumAudio;
+    protected VAEmitter emitter;
+
+    public bool Raytraced => emitter != null && emitter.Raytraced;
+
+    private bool _RaytraceOnce = true;
+
+    [Export]
+    public bool RaytraceOnce
+    {
+        get => _RaytraceOnce;
+        set => _RaytraceOnce = value;
+    }
+
+    // Read-only muffling stats
+    public float MufflingGainLF => emitter?.GainLF ?? 0;
+    public float MufflingGainHF => emitter?.GainHF ?? 0;
+
+    public override void _EnterTree()
+    {
+        vercidiumAudio = this.GetVAWorldParent();
+
+        // Must create the emitter after the parent VAWorld node is initialised
+        CreateEmitter();
+    }
+
+    public override string[] _GetConfigurationWarnings()
+    {
+        var baseWarnings = base._GetConfigurationWarnings();
+
+        var sceneRoot = Engine.IsEditorHint() ? GetTree()?.EditedSceneRoot : GetTree()?.CurrentScene;
+        if (sceneRoot == null)
+            return baseWarnings;
+
+        var vercidiumAudioNode = sceneRoot.GetChildren().OfType<VAWorld>().FirstOrDefault();
+        if (vercidiumAudioNode == null)
+            return [.. baseWarnings, "No VAWorld node found. Ensure a VAWorld node exists higher up the tree."];
+
+        // Find the top-level ancestor of this node (direct child of scene root)
+        var ancestor = this as Node;
+        while (ancestor.GetParent() != sceneRoot)
+            ancestor = ancestor.GetParent();
+
+        if (ancestor.GetIndex() < vercidiumAudioNode.GetIndex())
+            return [.. baseWarnings, "This node must be lower in the scene tree than the VAWorld node."];
+
+        return baseWarnings;
+    }
+
+    // Matches VASource.cs's CreateEmitter: a private child VAEmitter, never the listener, that
+    // never casts its own occlusion/permeation rays (only reverb rays) - this node is heard via
+    // the listener's rays targeting it, not by casting its own muffling rays.
+    // Virtual so subclasses (e.g. VASource) can apply their own extra properties (e.g. Debug
+    // Rendering colors) onto the emitter once it exists.
+    public virtual void CreateEmitter()
+    {
+        emitter = new VAEmitter()
+        {
+            Name = $"{Name}-Emitter",
+            OnRaytracedByAnotherEmitterCallback = OnRaytracedByAnotherEmitter,
+            OnEmitterRemovedCallback = OnEmitterRemoved,
+            RaytraceOnce = RaytraceOnce,
+
+            // Reverb
+            ReverbRayCount = ReverbRayCount,
+            ReverbBounceCount = ReverbBounceCount,
+            ReverbEnergyCap = ReverbEnergyCap,
+            MaxVolume = MaxVolume,
+            MaxEchogramTime = MaxEchogramTime,
+            EchogramGranularity = EchogramGranularity,
+            AffectsGroupedEAX = AffectsGroupedEAX,
+            UseListenerReverb = UseListenerReverb,
+            HasRelativeReverb = false,
+
+            // Muffling
+            OcclusionRayCount = 0,
+            OcclusionBounceCount = 0,
+            PermeationRayCount = 0,
+            PermeationBounceCount = 0,
+            OcclusionEnergyCap = OcclusionEnergyCap,
+            PermeationEnergyCap = PermeationEnergyCap,
+
+            // Ambience
+            AmbientOcclusionRayCount = AmbientOcclusionRayCount,
+            AmbientOcclusionBounceCount = AmbientOcclusionBounceCount,
+            AmbientPermeationRayCount = AmbientPermeationRayCount,
+            AmbientPermeationBounceCount = AmbientPermeationBounceCount,
+            AmbientOcclusionEnergyCap = AmbientOcclusionEnergyCap,
+            AmbientPermeationEnergyCap = AmbientPermeationEnergyCap,
+
+            // Advanced
+            Type = Type,
+            RefreshRayCount = RefreshRayCount,
+            RefreshDistanceThreshold = RefreshDistanceThreshold,
+            ScatteringSeed = ScatteringSeed,
+            ClampPosition = ClampPosition,
+        };
+
+        AddChild(emitter);
+
+        // VAVisualisation must be a direct child of a VAEmitter to render, but this node's own
+        // VAEmitter is only created here, at runtime - reparent any VAVisualisation nodes added
+        // under this node in the editor onto it now that it exists.
+        foreach (var visualisation in GetChildren().OfType<VAVisualisation>().ToArray())
+        {
+            RemoveChild(visualisation);
+            emitter.AddChild(visualisation);
+        }
+    }
+
+    protected virtual void OnRaytracedByAnotherEmitter(vaudio.Emitter other)
+    {
+        ApplyRaytracingResults(other);
+    }
+
+    void OnEmitterRemoved()
+    {
+        Debug.Assert(emitter != null);
+
+        RemoveChild(emitter);
+        emitter = null;
+    }
+
+    public override void _Process(double delta)
+    {
+        base._Process(delta);
+
+        if (Raytraced)
+            ApplyRaytracingResults(vercidiumAudio.listener.emitter);
+    }
+
+    // Resolves this node's reverb slot via its own child emitter's AffectsGroupedEAX/
+    // GroupedEAXIndex (VAWorld.GetReverbEffect - the listener slot if this node doesn't cast
+    // reverb rays into a grouped zone), then - if the listener has raytraced this node's emitter
+    // as a target - pushes the resulting muffling gain with fullReverb=true (reverb send always
+    // gets the clean/unfiltered signal; only the direct path is muffled).
+    protected void ApplyRaytracingResults(vaudio.Emitter other)
+    {
+        effect = vercidiumAudio.GetReverbEffect(emitter);
+
+        if (other.HasRaytracedTarget(emitter.emitter))
+        {
+            var vaudioFilter = other.GetTargetFilter(emitter.emitter);
+            UpdateFilter(vaudioFilter.GainLF, vaudioFilter.GainHF, true);
+        }
+    }
+
+    public override void _ExitTree()
+    {
+        base._ExitTree();
+    }
+}

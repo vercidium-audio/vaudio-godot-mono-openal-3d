@@ -4,7 +4,7 @@ namespace vaudio_godot_mono_openal_3d;
 
 [Tool]
 [GlobalClass]
-public partial class VASourceAmbient : ALSource3D
+public partial class VASourceAmbient : ALSourceRelative
 {
     private VAWorld vercidiumAudio;
     private bool played = false;

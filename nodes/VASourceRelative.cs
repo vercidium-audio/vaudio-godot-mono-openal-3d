@@ -3,7 +3,7 @@ using godot_mono_openal;
 namespace vaudio_godot_mono_openal_3d;
 
 [GlobalClass]
-public partial class VASourceRelative : ALSource3D
+public partial class VASourceRelative : ALSourceRelative
 {
     private VAWorld vercidiumAudio;
 
@@ -13,14 +13,6 @@ public partial class VASourceRelative : ALSource3D
             return;
 
         vercidiumAudio = this.GetVAWorldParent();
-    }
-
-    public override void _Ready()
-    {
-        if (Engine.IsEditorHint())
-            return;
-
-        Relative = true;
     }
 
     public override bool Play()
