@@ -1,5 +1,3 @@
-using godot_mono_openal;
-
 namespace vaudio_godot_mono_openal_3d;
 
 public partial class VARaytracedSource : ALSource3D

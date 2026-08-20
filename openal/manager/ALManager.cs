@@ -1,0 +1,133 @@
+namespace vaudio_godot_mono_openal_3d;
+
+public static unsafe partial class ALManager
+{
+    public static bool Initialised => ALDevice != null;
+
+    // Lazily creates the OpenAL device/context on first access - a plain static class has no
+    // scene-tree lifecycle to race against, so this can safely be called from anywhere, including
+    // from inside another node's _EnterTree() (which is exactly how GodotOpenALEnabled/
+    // ALManager.Ensure() is used - see Extensions.cs in vaudio-godot-mono-openal-3d). Never
+    // initialises in the editor - CreateDeviceAndContext() opens a real OpenAL device, which
+    // should only happen at game runtime.
+    public static void Ensure()
+    {
+        if (Initialised || Engine.IsEditorHint())
+            return;
+
+        // Log to both - in case we're launched from vs2026 or from the Godot Editor
+        OpenAL.Logger.Log = (message) =>
+        {
+            Console.WriteLine(message);
+            GD.Print(message);
+        };
+        OpenAL.Logger.Error = (message) =>
+        {
+            Console.Error.WriteLine(message);
+            GD.PushError(message);
+        };
+
+        CreateDeviceAndContext();
+    }
+
+    // Called once per frame by VAWorld._Process (main/VAWorldGodot.cs) - matches how VAWorld
+    // already calls world.Update() for the raytracer every frame. No longer a Node._Process
+    // override, since ALManager is no longer a Node.
+    public static void Update()
+    {
+        if (Engine.IsEditorHint() || !Initialised)
+            return;
+
+        ALContext.Process();
+        DisposeFinishedSources();
+    }
+
+    static float _masterVolume = 1;
+    static ALDistanceModel _distanceModel = ALDistanceModel.InverseDistance;
+    static float _metersPerUnit = 1;
+    static float _speedOfSound = 343;
+    static Vector3 _listenerPosition;
+    static Vector3 _listenerVelocity;
+    static float _listenerPitch;
+    static float _listenerYaw;
+    static bool _reverbOnly;
+
+    // MasterVolume/DistanceModel/MetersPerUnit/SpeedOfSound/ReverbOnly/ListenerPosition/
+    // ListenerVelocity/ListenerPitch/ListenerYaw are runtime-API-only (no inspector UI),
+    // matching native's shape - call the Set* methods below directly from code.
+
+    public static Vector3 ListenerPosition
+    {
+        get => _listenerPosition;
+        set => UpdateProperty(ref _listenerPosition, value, SetListenerPosition);
+    }
+
+    public static Vector3 ListenerVelocity
+    {
+        get => _listenerVelocity;
+        set => UpdateProperty(ref _listenerVelocity, value, SetListenerVelocity);
+    }
+
+    public static float ListenerPitch
+    {
+        get => _listenerPitch;
+        set => UpdateProperty(ref _listenerPitch, value, SetListenerPitch);
+    }
+
+    public static float ListenerYaw
+    {
+        get => _listenerYaw;
+        set => UpdateProperty(ref _listenerYaw, value, SetListenerYaw);
+    }
+
+    public static float MasterVolume
+    {
+        get => _masterVolume;
+        set => UpdateProperty(ref _masterVolume, MathF.Max(0, value), SetListenerGain);
+    }
+
+    public static ALDistanceModel DistanceModel
+    {
+        get => _distanceModel;
+        set => UpdateProperty(ref _distanceModel, value, SetDistanceModel);
+    }
+
+    public static float MetersPerUnit
+    {
+        get => _metersPerUnit;
+        set => UpdateProperty(ref _metersPerUnit, MathF.Max(0, value), SetMetersPerUnit);
+    }
+
+    public static float SpeedOfSound
+    {
+        get => _speedOfSound;
+        set => UpdateProperty(ref _speedOfSound, MathF.Max(0, value), SetSpeedOfSound);
+    }
+
+    public static bool ReverbOnly
+    {
+        get => _reverbOnly;
+        set => UpdateProperty(ref _reverbOnly, value, SetReverbOnly);
+    }
+
+    // MaximumAuxiliarySends, SampleRate, HRTFEnabled, MaximumMonoSources and MaximumStereoSources
+    // are read once from Project Settings (audio/vaudio/*) during CreateDeviceAndContext() - see
+    // ALManagerDevice.cs - matching native's read_settings_from_project_settings(); they're not
+    // settable at runtime there either, since ALManager's only bound device-switching method
+    // (set_output_device) reuses whatever these were at initialize() time.
+
+    // Read once from Project Settings (audio/vaudio/output_device) during
+    // CreateDeviceAndContext() - see ALManagerDevice.cs - no longer an inspector-editable
+    // property, matching native's output device now only being configurable via Project
+    // Settings (or ALManager.SetOutputDevice at runtime).
+    static string _outputDeviceName;
+
+    static void UpdateProperty<T>(ref T field, T value, Action<T> updateAction = null) where T : struct
+    {
+        if (!field.Equals(value))
+        {
+            field = value;
+            updateAction?.Invoke(value);
+        }
+    }
+}
