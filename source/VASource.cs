@@ -99,7 +99,7 @@ public partial class VASource : VARaytracedSource
         }
 
         // Unregister the device recreated callback (only registered when not in editor)
-        ALManager.instance?.UnregisterDeviceRecreatedCallback(OnDeviceRecreated);
+        ALManager.UnregisterDeviceRecreatedCallback(OnDeviceRecreated);
 
         base._ExitTree();
     }

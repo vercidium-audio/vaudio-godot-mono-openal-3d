@@ -117,8 +117,8 @@ public partial class VAWorld : Node3D
         {
             _MasterVolume = MathF.Max(0, value);
 
-            if (ALManager.instance != null)
-                ALManager.instance.MasterVolume = _MasterVolume;
+            if (ALManager.Initialised)
+                ALManager.MasterVolume = _MasterVolume;
         }
     }
 
@@ -136,8 +136,8 @@ public partial class VAWorld : Node3D
         {
             _DistanceModel = value;
 
-            if (ALManager.instance != null)
-                ALManager.instance.DistanceModel = _DistanceModel;
+            if (ALManager.Initialised)
+                ALManager.DistanceModel = _DistanceModel;
         }
     }
 
@@ -155,8 +155,8 @@ public partial class VAWorld : Node3D
         {
             _ReverbOnly = value;
 
-            if (ALManager.instance != null)
-                ALManager.instance.ReverbOnly = _ReverbOnly;
+            if (ALManager.Initialised)
+                ALManager.ReverbOnly = _ReverbOnly;
         }
     }
 
@@ -204,8 +204,8 @@ public partial class VAWorld : Node3D
             if (world != null)
                 world.MetersPerUnit = _MetersPerUnit;
 
-            if (ALManager.instance != null)
-                ALManager.instance.MetersPerUnit = _MetersPerUnit;
+            if (ALManager.Initialised)
+                ALManager.MetersPerUnit = _MetersPerUnit;
         }
     }
 
@@ -228,8 +228,8 @@ public partial class VAWorld : Node3D
             if (world != null)
                 world.InverseSpeedOfSound = 1.0f / _SpeedOfSound;
 
-            if (ALManager.instance != null)
-                ALManager.instance.SpeedOfSound = _SpeedOfSound;
+            if (ALManager.Initialised)
+                ALManager.SpeedOfSound = _SpeedOfSound;
         }
     }
 

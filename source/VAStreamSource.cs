@@ -38,7 +38,7 @@ public partial class VAStreamSource : VARaytracedSource
         source.SetPitch(Pitch);
         ConfigureSource(source);
 
-        var directFilter = ALManager.instance.ReverbOnly ? silenceFilter : filter;
+        var directFilter = ALManager.ReverbOnly ? silenceFilter : filter;
         source.SetFilter(effect, directFilter, fullFilter);
 
         sources.Add(source);

@@ -6,9 +6,7 @@ using godot_mono_openal;
 
 namespace vaudio_godot_mono_openal_3d;
 
-// A VAStreamSource fed automatically by a local input (microphone) capture device. Owns its own
-// ALCaptureDevice, separate from ALManager's global microphone, so multiple nodes can each capture
-// from a different device/format at once. See VANetworkedStreamSource for the network equivalent.
+// A VAStreamSource fed automatically by a local input (microphone) capture device. Owns its own ALCaptureDevice, so multiple nodes can each capture from a different device/format at once. SeeVANetworkedStreamSource for the network equivalent.
 [Tool]
 [GlobalClass]
 public partial class VAInputStreamSource : VAStreamSource

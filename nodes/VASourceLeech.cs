@@ -121,7 +121,7 @@ public partial class VASourceLeech : ALSource3D
         }
 
         // Unregister the device recreated callback (only registered when not in editor)
-        ALManager.instance?.UnregisterDeviceRecreatedCallback(OnDeviceRecreated);
+        ALManager.UnregisterDeviceRecreatedCallback(OnDeviceRecreated);
 
         emitter = null;
 

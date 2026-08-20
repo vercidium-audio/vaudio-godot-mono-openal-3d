@@ -126,9 +126,8 @@ public partial class VAWorld : Node3D
         if (Engine.IsEditorHint())
             return;
 
-        // instance may be null if ALManager was never initialised
-        ALManager.instance?.UnregisterDeviceDestroyedCallback(OnDeviceDestroyed);
-        ALManager.instance?.UnregisterDeviceRecreatedCallback(OnDeviceRecreated);
+        ALManager.UnregisterDeviceDestroyedCallback(OnDeviceDestroyed);
+        ALManager.UnregisterDeviceRecreatedCallback(OnDeviceRecreated);
 
         GetTree().NodeAdded -= OnNodeAdded;
         GetTree().NodeRemoved -= OnNodeRemoved;
@@ -172,9 +171,9 @@ public partial class VAWorld : Node3D
 
         if (GodotOpenALEnabled)
         {
-            ALManager.instance.ListenerPosition = listener.GlobalPosition;
-            ALManager.instance.ListenerPitch = listenerRotation.X;
-            ALManager.instance.ListenerYaw = listenerRotation.Y;
+            ALManager.ListenerPosition = listener.GlobalPosition;
+            ALManager.ListenerPitch = listenerRotation.X;
+            ALManager.ListenerYaw = listenerRotation.Y;
         }
 
         // Render the debug window from the perspective of the main listener
@@ -182,6 +181,10 @@ public partial class VAWorld : Node3D
         world.CameraPitch = listenerRotation.X;
         world.CameraYaw = listenerRotation.Y;
         world.FieldOfView = float.DegreesToRadians(90);
+
+        // ALManager is a static class with no Node._Process of its own - VAWorld drives its tick
+        // the same way it already drives world.Update() for the raytracer.
+        ALManager.Update();
 
         world.Update();
     }
