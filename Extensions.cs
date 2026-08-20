@@ -26,8 +26,8 @@ internal static class Extensions
         );
     }
 
-    public static bool GodotOpenALEnabled => ALManager.instance != null;
+    public static bool GodotOpenALEnabled => ALManager.Instance != null;
 
-    public static void RegisterDeviceRecreatedCallback(Action callback) => ALManager.instance?.RegisterDeviceRecreatedCallback(callback);
-    public static void RegisterDeviceDestroyedCallback(Action callback) => ALManager.instance?.RegisterDeviceDestroyedCallback(callback);
+    public static void RegisterDeviceRecreatedCallback(Action callback) => ALManager.Instance?.RegisterDeviceRecreatedCallback(callback);
+    public static void RegisterDeviceDestroyedCallback(Action callback) => ALManager.Instance?.RegisterDeviceDestroyedCallback(callback);
 }
