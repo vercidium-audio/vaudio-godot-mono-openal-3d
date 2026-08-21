@@ -77,14 +77,14 @@ public partial class VAWorld : Node3D
             }
             else
             {
-                LogWarning($"The {listener.Name} node has already been set as the IsMainListener node, but the {node.Name} node also has IsMainListener set to true. Only one node can be the main listener");
+                LogWarning($"The {listener.Name} node is already the VAListener, but {node.Name} is also a VAListener. Only one VAListener node is allowed");
             }
         }
         else
         {
             if (listener == null)
             {
-                LogWarning($"Emitters cannot be added before the main listener emitter is created. Ensure a VAEmitter node exists as a child node of VAWorld, with IsMainListener set to true");
+                LogWarning($"Emitters cannot be added before the main listener emitter is created. Ensure a VAListener node exists as a child node of VAWorld");
             }
             else
             {

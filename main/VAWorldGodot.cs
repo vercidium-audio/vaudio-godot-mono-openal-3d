@@ -157,7 +157,7 @@ public partial class VAWorld : Node3D
         {
             if (!NoListenerErrorLogged)
             {
-                LogError($"Failed to update node {Name} because there is no main listener. Ensure a VAEmitter exists with `IsMainListener` set to true");
+                LogError($"Failed to update node {Name} because there is no main listener. Ensure a VAListener node exists");
                 NoListenerErrorLogged = true;
             }
 
