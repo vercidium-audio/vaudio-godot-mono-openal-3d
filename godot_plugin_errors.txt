@@ -1,4 +1,4 @@
-  ERROR: res://addons/vaudio-godot-mono-openal-3d/editor/VAMaterialInspectorPlugin.gd:183 - Parse Error: Expression is of type "Node" so it can't be of type "res://addons/vaudio-godot-mono-openal-3d/nodes/VACustomMaterial.cs".
+ERROR: res://addons/vaudio-godot-mono-openal-3d/editor/VAMaterialInspectorPlugin.gd:184 - Parse Error: Expression is of type "Node" so it can't be of type "res://addons/vaudio-godot-mono-openal-3d/nodes/VACustomMaterial.cs".
   ERROR: res://addons/vaudio-godot-mono-openal-3d/editor/VADeviceRefreshInspectorPlugin.gd:26 - Parse Error: Expression is of type "Object" so it can't be of type "res://addons/vaudio-godot-mono-openal-3d/nodes/VAInputStreamSource.cs".
   ERROR: res://addons/vaudio-godot-mono-openal-3d/plugin.gd:0 - Compile Error: Failed to compile depended scripts.
   ERROR: modules/gdscript/gdscript_resource_format.cpp:46 - Failed to load script "res://addons/vaudio-godot-mono-openal-3d/plugin.gd" with error "Compilation failed".

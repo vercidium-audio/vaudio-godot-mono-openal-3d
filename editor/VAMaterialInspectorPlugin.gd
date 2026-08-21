@@ -30,14 +30,15 @@ const BUILTIN_MATERIAL_NAMES = [
 ]
 
 func _can_handle(object):
-	if not (object is Node3D):
+	# Audio control/geometry-source nodes, not raytraced geometry - excluded the same way the
+	# native VAMaterialInspectorPlugin excludes them. VADefaultMaterial/VACustomMaterial are plain
+	# Nodes (not Node3D), so this check has to happen before the Node3D check below.
+	if (object is VAWorld or object is VAEmitter or object is VADefaultMaterial
+		or object is VACustomMaterial or object is VASource or object is VASourceRelative
+		or object is VASourceAmbient or object is VASourceLeech):
 		return false
 
-	# Audio control/geometry-source nodes, not raytraced geometry - excluded the same way the
-	# native VAMaterialInspectorPlugin excludes them.
-	return not (object is VAWorld or object is VAEmitter or object is VADefaultMaterial
-		or object is VACustomMaterial or object is VASource or object is VASourceRelative
-		or object is VASourceAmbient or object is VASourceLeech)
+	return object is Node3D
 
 func _parse_end(object):
 	var node := object as Node3D
