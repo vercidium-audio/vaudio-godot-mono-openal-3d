@@ -111,7 +111,14 @@ public partial class VAWorld : Node3D
 
     void InitializeScene()
     {
-        foreach (var child in SceneRoot.GetChildren())
+        // SceneRoot can be null if this node isn't under CurrentScene (e.g. added as a sibling autoload) -
+        // scan from the tree root instead so primitives already baked into the scene aren't missed.
+        Node root = GetTree()?.Root;
+
+        if (root == null)
+            return;
+
+        foreach (var child in root.GetChildren())
             AddPrimitive(child, vaudio.MaterialType.Air, true);
 
         // Listen for scene tree changes
@@ -132,8 +139,10 @@ public partial class VAWorld : Node3D
 
         UnregisterDebuggerCapture();
 
-        // Remove vercidium_audio_* metadata fields from all nodes in the scene
-        RemovePrimitive(SceneRoot, true);
+        // Remove vercidium_audio_* metadata fields from all nodes in the scene.
+        // SceneRoot can be null if the tree has no scene loaded (e.g. exiting during shutdown).
+        if (SceneRoot != null)
+            RemovePrimitive(SceneRoot, true);
 
         world?.Dispose();
     }
@@ -146,7 +155,7 @@ public partial class VAWorld : Node3D
     //  Child nodes are invoked first
     void OnNodeRemoved(Node node) => RemovePrimitive(node, false);
 
-    bool NoListenerErrorLogged;
+    bool NoListenerWarningLogged;
 
     public override void _Process(double delta)
     {
@@ -155,30 +164,30 @@ public partial class VAWorld : Node3D
 
         if (listener == null)
         {
-            if (!NoListenerErrorLogged)
+            if (!NoListenerWarningLogged)
             {
-                LogError($"Failed to update node {Name} because there is no main listener. Ensure a VAListener node exists");
-                NoListenerErrorLogged = true;
+                LogWarning($"Node {Name} has no main listener, so reverb cannot be updated. Add a VAListener node to this scene");
+                NoListenerWarningLogged = true;
+            }
+        }
+        else
+        {
+            // Sync the AL listener to our main listener
+            Vector3 listenerRotation = listener.GlobalRotation;
+
+            if (GodotOpenALEnabled)
+            {
+                ALManager.ListenerPosition = listener.GlobalPosition;
+                ALManager.ListenerPitch = listenerRotation.X;
+                ALManager.ListenerYaw = listenerRotation.Y;
             }
 
-            return;
+            // Render the debug window from the perspective of the main listener
+            world.CameraPosition = ToVAudio(listener.GlobalPosition);
+            world.CameraPitch = listenerRotation.X;
+            world.CameraYaw = listenerRotation.Y;
+            world.FieldOfView = float.DegreesToRadians(90);
         }
-
-        // Sync the AL listener to our main listener
-        Vector3 listenerRotation = listener.GlobalRotation;
-
-        if (GodotOpenALEnabled)
-        {
-            ALManager.ListenerPosition = listener.GlobalPosition;
-            ALManager.ListenerPitch = listenerRotation.X;
-            ALManager.ListenerYaw = listenerRotation.Y;
-        }
-
-        // Render the debug window from the perspective of the main listener
-        world.CameraPosition = ToVAudio(listener.GlobalPosition);
-        world.CameraPitch = listenerRotation.X;
-        world.CameraYaw = listenerRotation.Y;
-        world.FieldOfView = float.DegreesToRadians(90);
 
         // ALManager is a static class with no Node._Process of its own - VAWorld drives its tick
         // the same way it already drives world.Update() for the raytracer.
