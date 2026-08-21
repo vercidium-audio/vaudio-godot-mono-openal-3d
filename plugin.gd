@@ -1,15 +1,34 @@
 @tool
 extends EditorPlugin
 
-const VAWorld = preload("res://addons/vaudio-godot-mono-openal-3d/main/VAWorld.cs")
-const VAEmitter = preload("res://addons/vaudio-godot-mono-openal-3d/emitter/VAEmitter.cs")
-const VADefaultMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VADefaultMaterial.cs")
-const VACustomMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VACustomMaterial.cs")
+const VAWorld 
+const VAEmitter
+const VADefaultMaterial
+const VACustomMaterial
 
-const VASource = preload("res://addons/vaudio-godot-mono-openal-3d/source/VASource.cs")
+const VASource
+const VASourceRelative
+const VASourceAmbient
+const VASourceLeech 
+
+
+const VAEmitter = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAEmitter.cs")
+const VAListener = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAListener.cs")
+const ALSource = preload("res://addons/vaudio-godot-mono-openal-3d/openal/nodes/ALSource.cs")
+const ALSource3D = preload("res://addons/vaudio-godot-mono-openal-3d/openal/nodes/ALSource3D.cs")
+const VAStreamSource = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAStreamSource.cs")
+const VAInputStreamSource = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAInputStreamSource.cs")
+const VANetworkedStreamSource = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VANetworkedStreamSource.cs")
+const VASource = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASource.cs")
+const VASourceLeech = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceLeech.cs")
+
+const ALSourceRelative = preload("res://addons/vaudio-godot-mono-openal-3d/openal/nodes/ALSourceRelative.cs")
 const VASourceRelative = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceRelative.cs")
 const VASourceAmbient = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceAmbient.cs")
-const VASourceLeech = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceLeech.cs")
+const VAVisualisation = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAVisualisation.cs")
+const VAWorld = preload("res://addons/vaudio-godot-mono-openal-3d/world/VAWorld.cs")
+const VADefaultMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VADefaultMaterial.cs")
+const VACustomMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VACustomMaterial.cs")
 
 const VAWorldGizmoPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VAWorldGizmoPlugin.gd")
 const VAMaterialInspectorPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VAMaterialInspectorPlugin.gd")
@@ -53,15 +72,25 @@ func _enter_tree():
 	var icon = preload("res://addons/vaudio-godot-mono-openal-3d/icons/vercidium.svg")
 	var iconAL = preload("res://addons/vaudio-godot-mono-openal-3d/icons/vercidium_al.svg")
 
-	add_custom_type("VAWorld", "Node3D", VAWorld, icon)
 	add_custom_type("VAEmitter", "Node3D", VAEmitter, icon)
-	add_custom_type("VADefaultMaterial", "Node3D", VADefaultMaterial, icon)
-	add_custom_type("VACustomMaterial", "Node3D", VACustomMaterial, icon)
+	add_custom_type("VAListener", "Node3D", VAListener, icon)
 
+	add_custom_type("ALSource", "Node", ALSource, iconAL)
+	add_custom_type("ALSource3D", "Node3D", ALSource3D, iconAL)
+	add_custom_type("VAStreamSource", "Node3D", VAStreamSource, iconAL)
+	add_custom_type("VAInputStreamSource", "Node3D", VAInputStreamSource, iconAL)
+	add_custom_type("VANetworkedStreamSource", "Node3D", VANetworkedStreamSource, iconAL)
 	add_custom_type("VASource", "Node3D", VASource, iconAL)
+	add_custom_type("VASourceLeech", "Node3D", VASourceLeech, iconAL)
+
+	add_custom_type("ALSourceRelative", "Node", ALSourceRelative, iconAL)
 	add_custom_type("VASourceRelative", "Node", VASourceRelative, iconAL)
 	add_custom_type("VASourceAmbient", "Node", VASourceAmbient, iconAL)
-	add_custom_type("VASourceLeech", "Node3D", VASourceLeech, iconAL)
+
+	add_custom_type("VAVisualisation", "Node3D", VAVisualisation, icon)
+	add_custom_type("VAWorld", "Node3D", VAWorld, icon)
+	add_custom_type("VADefaultMaterial", "Node", VADefaultMaterial, icon)
+	add_custom_type("VACustomMaterial", "Node", VACustomMaterial, icon)
 
 	world_gizmo_plugin = VAWorldGizmoPlugin.new()
 	add_node_3d_gizmo_plugin(world_gizmo_plugin)
