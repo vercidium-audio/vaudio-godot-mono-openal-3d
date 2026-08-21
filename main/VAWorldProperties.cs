@@ -31,12 +31,12 @@ public partial class VAWorld : Node3D
     [ExportGroup("World")]
 
     Vector3 _Size = new(200, 100, 200);
-    [Export]
     /// <summary>
     /// The size of the world. <br />
     /// <see cref="Emitter"/>s outside the world will not be raytraced, and <see cref="Primitive"/>s that are fully outside these bounds will be ignored
     /// </summary>
     /// <exception cref="ArgumentException">Thrown when worldSize is NaN, Infinity, or less than or equal to (0, 0, 0)</exception>
+    [Export]
     public Vector3 Size
     {
         get => _Size;
@@ -51,10 +51,10 @@ public partial class VAWorld : Node3D
     }
 
     Color _BoundsColor = new(0.0f, 0.0f, 0.0f, 0.25f);
-    [Export]
     /// <summary>
     /// Editor-only color used to draw the world bounds gizmo in the 3D viewport. Not forwarded to vaudio.
     /// </summary>
+    [Export]
     public Color BoundsColor
     {
         get => _BoundsColor;
@@ -66,10 +66,10 @@ public partial class VAWorld : Node3D
     }
 
     float _Epsilon = 0.01f;
-    [Export]
     /// <summary>
     /// The epsilon value used for ray offsets, world bounds clamping and line-of-sight tests. Defaults to 0.01f
     /// </summary>
+    [Export]
     public float Epsilon
     {
         get => _Epsilon;
@@ -83,10 +83,10 @@ public partial class VAWorld : Node3D
     }
 
     bool _WorldIsIndoors = true;
-    [Export]
     /// <summary>
     /// Whether the entire world is considered indoors or outdoors. When false, reverb rays stop checking for line-of-sight after hitting the world edge. Defaults to false.
     /// </summary>
+    [Export]
     public bool WorldIsIndoors
     {
         get => _WorldIsIndoors;
@@ -103,12 +103,12 @@ public partial class VAWorld : Node3D
     [ExportGroup("OpenAL")]
 
     float _MasterVolume = 1;
-    [Export(PropertyHint.Range, "0.0,1.0,or_greater")]
     /// <summary>
     /// Master output volume, as a linear multiplier. 1.0 is unchanged, 0.0 is silent. Defaults
     /// to 1. Forwarded to the process-wide ALManager singleton; if multiple VAWorlds exist,
     /// the last one to set this wins.
     /// </summary>
+    [Export(PropertyHint.Range, "0.0,1.0,or_greater")]
     public float MasterVolume
     {
         get => _MasterVolume;
@@ -122,12 +122,12 @@ public partial class VAWorld : Node3D
     }
 
     ALDistanceModel _DistanceModel = ALDistanceModel.InverseDistance;
-    [Export]
     /// <summary>
     /// OpenAL distance attenuation model. Defaults to InverseDistance. Forwarded to the
     /// process-wide ALManager singleton; if multiple VAWorlds exist, the last one to set this
     /// wins.
     /// </summary>
+    [Export]
     public ALDistanceModel DistanceModel
     {
         get => _DistanceModel;
@@ -141,12 +141,12 @@ public partial class VAWorld : Node3D
     }
 
     bool _ReverbOnly = false;
-    [Export]
     /// <summary>
     /// When true, only the reverb send plays - direct/dry sound is muted. Defaults to false.
     /// Forwarded to the process-wide ALManager singleton; if multiple VAWorlds exist, the last
     /// one to set this wins.
     /// </summary>
+    [Export]
     public bool ReverbOnly
     {
         get => _ReverbOnly;
@@ -164,11 +164,11 @@ public partial class VAWorld : Node3D
     [ExportGroup("Reverb")]
 
     int _MaximumGroupedEAXCount = 3;
-    [Export]
     /// <summary>
     /// The maximum number of grouped EAX reverb properties created for all emitters. Higher values increase accuracy but are more expensive to run. Defaults to 3
     /// </summary>
     /// <exception cref="ArgumentException">Thrown when the value is less than 1</exception>
+    [Export]
     public int MaximumGroupedEAXCount
     {
         get => _MaximumGroupedEAXCount;
@@ -185,7 +185,6 @@ public partial class VAWorld : Node3D
     [ExportGroup("AirAbsorption")]
 
     float _MetersPerUnit = 1;
-    [Export(PropertyHint.Range, "0.0001,1.0,or_greater")]
     /// <summary>
     /// Gets meters per world unit. Affects air absorption and reverb calculation. Also
     /// forwarded to the process-wide ALManager singleton, which only affects OpenAL's own
@@ -193,6 +192,7 @@ public partial class VAWorld : Node3D
     /// this wins.
     /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity or less than or equal to 0</exception>
     /// </summary>
+    [Export(PropertyHint.Range, "0.0001,1.0,or_greater")]
     public float MetersPerUnit
     {
         get => _MetersPerUnit;
@@ -210,13 +210,13 @@ public partial class VAWorld : Node3D
 
     float _SpeedOfSound = 343.0f;
 
-    [Export(PropertyHint.Range, "0.0001,1000.0,1,or_greater")]
     /// <summary>
     /// Speed of sound in seconds per meter. Defaults to 343.0f. Affects reverb calculation.
     /// Also forwarded to the process-wide ALManager singleton, which only affects OpenAL's
     /// own Doppler calculation; if multiple VAWorlds exist, the last one to set this wins.
     /// </summary>
     /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity or less than or equal to 0</exception>
+    [Export(PropertyHint.Range, "0.0001,1000.0,1,or_greater")]
     public float SpeedOfSound
     {
         get => _SpeedOfSound;
@@ -233,8 +233,8 @@ public partial class VAWorld : Node3D
     }
 
     float _Humidity = 0.1f;
-    [Export(PropertyHint.Range, "0.0,1.0")]
     /// <summary>Relative humidity as a percentage (0–1). Defaults to 0.1f</summary>
+    [Export(PropertyHint.Range, "0.0,1.0")]
     public float Humidity
     {
         get => _Humidity;
@@ -248,8 +248,8 @@ public partial class VAWorld : Node3D
     }
 
     float _Temperature = 26;
-    [Export(PropertyHint.Range, "-273.15f,100.0f,1,or_greater")]
     /// <summary>Air temperature in degrees Celsius. Defaults to 26</summary>
+    [Export(PropertyHint.Range, "-273.15f,100.0f,1,or_greater")]
     public float Temperature
     {
         get => _Temperature;
@@ -263,8 +263,8 @@ public partial class VAWorld : Node3D
     }
 
     float _Pressure = 101325;
-    [Export(PropertyHint.Range, "0.0,1000000,1,or_greater")]
     /// <summary>Atmospheric pressure in Pascals. Defaults to 101325</summary>
+    [Export(PropertyHint.Range, "0.0,1000000,1,or_greater")]
     public float Pressure
     {
         get => _Pressure;
@@ -278,11 +278,11 @@ public partial class VAWorld : Node3D
     }
 
     float _ReferenceFrequencyLF = 300;
-    [Export(PropertyHint.Range, "0.0001,1000,1,or_greater")]
     /// <summary>
     /// Low-frequency reference (Hz) for air absorption, reverb, and material scattering
     /// </summary>
     /// <exception cref="ArgumentException">Thrown when the value is NaN or Infinity, or less than or equal to 0</exception>
+    [Export(PropertyHint.Range, "0.0001,1000,1,or_greater")]
     public float ReferenceFrequencyLF
     {
         get => _ReferenceFrequencyLF;
@@ -296,11 +296,11 @@ public partial class VAWorld : Node3D
     }
 
     float _ReferenceFrequencyHF = 4000;
-    [Export(PropertyHint.Range, "0.0001,20000,1,or_greater")]
     /// <summary>
     /// High-frequency reference (Hz) for air absorption, reverb, and material scattering
     /// </summary>
     /// <exception cref="ArgumentException">Thrown when the value is NaN or Infinity, or less than or equal to 0</exception>
+    [Export(PropertyHint.Range, "0.0001,20000,1,or_greater")]
     public float ReferenceFrequencyHF
     {
         get => _ReferenceFrequencyHF;
@@ -316,10 +316,10 @@ public partial class VAWorld : Node3D
     [ExportGroup("Emitters")]
 
     bool _EmittersOutsideTheWorldAreMuffled = true;
-    [Export]
     /// <summary>
     /// Whether <see cref="Emitter"/>s outside the world have 0 occlusion/permeation energy (true) or maximum energy (false).
     /// </summary>
+    [Export]
     public bool EmittersOutsideTheWorldAreMuffled
     {
         get => _EmittersOutsideTheWorldAreMuffled;
@@ -351,11 +351,11 @@ public partial class VAWorld : Node3D
     }
 
     int _WorkItemCount = 128;
-    [Export(PropertyHint.Range, "1,256,1,or_greater")]
     /// <summary>
     /// The number of work items to split trails across for load balancing. A higher workItemCount helps evenly distribute work across all threads.
     /// </summary>
     /// <exception cref="ArgumentException">Thrown when the value is less than 1</exception>
+    [Export(PropertyHint.Range, "1,256,1,or_greater")]
     public int WorkItemCount
     {
         get => _WorkItemCount;
@@ -369,11 +369,11 @@ public partial class VAWorld : Node3D
     }
 
     bool _PendingShutdown = false;
-    [Export]
     /// <summary>
     /// When set to true, <see cref="Update"/> will stop submitting work to background threads. <br />
     /// When <see cref="ThreadsRunning"/> becomes false, it is safe to call <see cref="World.Dispose"/>.
     /// </summary>
+    [Export]
     public bool PendingShutdown
     {
         get => _PendingShutdown;
@@ -390,8 +390,8 @@ public partial class VAWorld : Node3D
     [ExportGroup("Rendering")]
 
     bool _RenderingEnabled = true;
-    [Export]
     /// <summary>Whether to render the raytracing scene in a separate window. Only one world can have rendering enabled</summary>
+    [Export]
     public bool RenderingEnabled
     {
         get => _RenderingEnabled;

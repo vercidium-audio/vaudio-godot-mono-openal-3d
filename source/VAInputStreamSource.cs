@@ -128,7 +128,7 @@ public partial class VAInputStreamSource : VAStreamSource
                 Format = format,
                 SampleRate = frequency,
                 BufferSize = bufferSizeFrames,
-                LogCallback = GD.PushWarning,
+                LogCallback = LogWarning,
                 DataCallback = (samples, sampleCount) =>
                 {
                     var numBytes = sampleCount * AL.GetBytesPerFrame(format);

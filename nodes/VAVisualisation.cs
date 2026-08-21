@@ -117,7 +117,7 @@ public partial class VAVisualisation : Node3D
 
         if (emitter == null)
         {
-            GD.PushWarning($"[vaudio-godot-mono-openal-3d] {Name} must be a direct child of a VAEmitter (or VASource) to render its visualisation rays.");
+            LogWarning($"[vaudio-godot-mono-openal-3d] {Name} must be a direct child of a VAEmitter (or VASource) to render its visualisation rays.");
             return;
         }
 
@@ -298,8 +298,8 @@ public partial class VAVisualisation : Node3D
     [ExportGroup("Ray Casting")]
 
     int _RayCount = 32;
-    [Export]
     /// <summary>Number of visualisation rays cast</summary>
+    [Export]
     public int RayCount
     {
         get => _RayCount;
@@ -313,8 +313,8 @@ public partial class VAVisualisation : Node3D
     }
 
     int _BounceCount = 4;
-    [Export]
     /// <summary>Number of times each visualisation ray bounces</summary>
+    [Export]
     public int BounceCount
     {
         get => _BounceCount;
@@ -328,8 +328,8 @@ public partial class VAVisualisation : Node3D
     }
 
     int _UpdateFrequencyMs = 500;
-    [Export]
     /// <summary>How often - in milliseconds - to cast visualisation rays</summary>
+    [Export]
     public int UpdateFrequencyMs
     {
         get => _UpdateFrequencyMs;
@@ -345,8 +345,8 @@ public partial class VAVisualisation : Node3D
     [ExportGroup("Appearance")]
 
     int _FadeInMs = 100;
-    [Export]
     /// <summary>How long - in milliseconds - each diamond takes to fade in</summary>
+    [Export]
     public int FadeInMs
     {
         get => _FadeInMs;
@@ -358,8 +358,8 @@ public partial class VAVisualisation : Node3D
     }
 
     int _FadeOutMs = 400;
-    [Export]
     /// <summary>How long - in milliseconds - each diamond takes to fade out</summary>
+    [Export]
     public int FadeOutMs
     {
         get => _FadeOutMs;
@@ -371,8 +371,8 @@ public partial class VAVisualisation : Node3D
     }
 
     int _DurationMs = 1500;
-    [Export]
     /// <summary>Total lifetime - in milliseconds - of each diamond, including fade in/out</summary>
+    [Export]
     public int DurationMs
     {
         get => _DurationMs;
@@ -384,8 +384,8 @@ public partial class VAVisualisation : Node3D
     }
 
     Color _Color = new(0.11f, 0.97f, 1.0f, 0.75f);
-    [Export]
     /// <summary>RGB is the diamond colour, A is the maximum opacity once faded in</summary>
+    [Export]
     public Color Color
     {
         get => _Color;
@@ -397,8 +397,8 @@ public partial class VAVisualisation : Node3D
     }
 
     float _Size = 0.1f;
-    [Export(PropertyHint.Range, "0.01,5.0,0.01,or_greater")]
     /// <summary>Size of each diamond. Only affects future instance writes, not retroactive</summary>
+    [Export(PropertyHint.Range, "0.01,5.0,0.01,or_greater")]
     public float Size
     {
         get => _Size;
@@ -406,8 +406,8 @@ public partial class VAVisualisation : Node3D
     }
 
     float _NormalOffset = 0.02f;
-    [Export(PropertyHint.Range, "0.0,1.0,0.001,or_greater")]
     /// <summary>World units each diamond is pushed along its hit normal, to avoid z-fighting with the surface it landed on</summary>
+    [Export(PropertyHint.Range, "0.0,1.0,0.001,or_greater")]
     public float NormalOffset
     {
         get => _NormalOffset;
@@ -415,8 +415,8 @@ public partial class VAVisualisation : Node3D
     }
 
     float _MaxDistance = 20.0f;
-    [Export(PropertyHint.Range, "0.0,500.0,0.1,or_greater")]
     /// <summary>Maximum distance from the parent emitter a ray bounce can be to be rendered. 0 = unlimited</summary>
+    [Export(PropertyHint.Range, "0.0,500.0,0.1,or_greater")]
     public float MaxDistance
     {
         get => _MaxDistance;

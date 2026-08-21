@@ -5,8 +5,8 @@ public partial class VARaytracedSource : ALSource3D
     [ExportGroup("Reverb")]
 
     int _ReverbRayCount = 0;
-    [Export]
     /// <summary>Number of reverb rays cast</summary>
+    [Export]
     public int ReverbRayCount
     {
         get => _ReverbRayCount;
@@ -22,8 +22,8 @@ public partial class VARaytracedSource : ALSource3D
     }
 
     int _ReverbBounceCount = 0;
-    [Export]
     /// <summary>Number of bounces per reverb ray</summary>
+    [Export]
     public int ReverbBounceCount
     {
         get => _ReverbBounceCount;
@@ -39,11 +39,11 @@ public partial class VARaytracedSource : ALSource3D
     }
 
     float _ReverbEnergyCap = 0.15f;
-    [Export(PropertyHint.Range, "0.0,1.0")]
     /// <summary>
     /// The percentage of returning energy required for reverb to be at maximum volume. Defaults to 15% of this emitter's <see cref="ReverbRayCount"/> * <see cref="ReverbBounceCount"/>.
     /// </summary>
     /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity, less than 0 or greater than 1</exception>
+    [Export(PropertyHint.Range, "0.0,1.0")]
     public float ReverbEnergyCap
     {
         get => _ReverbEnergyCap;
@@ -57,11 +57,11 @@ public partial class VARaytracedSource : ALSource3D
     }
 
     float _MaxVolume = 1.0f;
-    [Export(PropertyHint.Range, "0.0,1.0")]
     /// <summary>
     /// The loudest linear volume (0–1) this emitter's dry source will ever be played at by the consuming application. Used to estimate how long the emitter's reverb tail stays audible in <see cref="EAXUtils.GetEffectiveTailSeconds"/> - a quieter source reaches an inaudible reverb tail sooner. Defaults to 1 (full volume)
     /// </summary>
     /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity, less than 0 or greater than 1</exception>
+    [Export(PropertyHint.Range, "0.0,1.0")]
     public float MaxVolume
     {
         get => _MaxVolume;
@@ -75,8 +75,8 @@ public partial class VARaytracedSource : ALSource3D
     }
 
     int _MaxEchogramTime = 5000;
-    [Export]
     /// <summary>How long (in milliseconds) the echogram records data for. Returning reverb rays after this period will be ignored</summary>
+    [Export]
     public int MaxEchogramTime
     {
         get => _MaxEchogramTime;
@@ -92,8 +92,8 @@ public partial class VARaytracedSource : ALSource3D
     }
 
     int _EchogramGranularity = 200;
-    [Export]
     /// <summary>The length (in milliseconds) of each entry in the echogram</summary>
+    [Export]
     public int EchogramGranularity
     {
         get => _EchogramGranularity;
@@ -109,10 +109,10 @@ public partial class VARaytracedSource : ALSource3D
     }
 
     bool _AffectsGroupedEAX = true;
-    [Export]
     /// <summary>
     /// Controls whether this Emitter's EAX is blended to produced grouped EAX. Set this to false for listener emitters
     /// </summary>
+    [Export]
     public bool AffectsGroupedEAX
     {
         get => _AffectsGroupedEAX;
@@ -126,8 +126,8 @@ public partial class VARaytracedSource : ALSource3D
     }
 
     bool _UseListenerReverb = true;
-    [Export]
     /// <summary>If true, this source's reverb send uses the listener's reverb effect rather than its own</summary>
+    [Export]
     public bool UseListenerReverb
     {
         get => _UseListenerReverb;
@@ -144,11 +144,11 @@ public partial class VARaytracedSource : ALSource3D
     [ExportGroup("Muffling")]
 
     float _OcclusionEnergyCap = 0.15f;
-    [Export(PropertyHint.Range, "0.0,1.0")]
     /// <summary>
     /// The percentage of occlusion energy required for this emitter to be at full volume. Defaults to 15% of the other emitter's <see cref="OcclusionRayCount"/>.
     /// </summary>
     /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity, or less than 0</exception>
+    [Export(PropertyHint.Range, "0.0,1.0")]
     public float OcclusionEnergyCap
     {
         get => _OcclusionEnergyCap;
@@ -162,11 +162,11 @@ public partial class VARaytracedSource : ALSource3D
     }
 
     float _PermeationEnergyCap = 0.15f;
-    [Export(PropertyHint.Range, "0.0,1.0")]
     /// <summary>
     /// The percentage of permeation energy required for this emitter to be at full volume. Defaults to 15% of the other emitter's <see cref="PermeationRayCount"/> * <see cref="PermeationBounceCount"/>.
     /// </summary>
     /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity, or less than 0</exception>
+    [Export(PropertyHint.Range, "0.0,1.0")]
     public float PermeationEnergyCap
     {
         get => _PermeationEnergyCap;
@@ -183,8 +183,8 @@ public partial class VARaytracedSource : ALSource3D
     [ExportGroup("Ambience")]
 
     int _AmbientOcclusionRayCount = 0;
-    [Export]
     /// <summary>Number of ambient occlusion rays cast</summary>
+    [Export]
     public int AmbientOcclusionRayCount
     {
         get => _AmbientOcclusionRayCount;
@@ -200,8 +200,8 @@ public partial class VARaytracedSource : ALSource3D
     }
 
     int _AmbientOcclusionBounceCount = 0;
-    [Export]
     /// <summary>Number of bounces per ambient occlusion ray</summary>
+    [Export]
     public int AmbientOcclusionBounceCount
     {
         get => _AmbientOcclusionBounceCount;
@@ -217,11 +217,11 @@ public partial class VARaytracedSource : ALSource3D
     }
 
     float _AmbientOcclusionEnergyCap = 0.15f;
-    [Export(PropertyHint.Range, "0.0,1.0")]
     /// <summary>
     /// The percentage of occlusion energy required for the emitter to be at full volume. Defaults to 15% of this emitter's <see cref="AmbientOcclusionRayCount"/>.
     /// </summary>
     /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity, or less than 0</exception>
+    [Export(PropertyHint.Range, "0.0,1.0")]
     public float AmbientOcclusionEnergyCap
     {
         get => _AmbientOcclusionEnergyCap;
@@ -235,8 +235,8 @@ public partial class VARaytracedSource : ALSource3D
     }
 
     int _AmbientPermeationRayCount = 0;
-    [Export]
     /// <summary>Number of ambient permeation rays cast</summary>
+    [Export]
     public int AmbientPermeationRayCount
     {
         get => _AmbientPermeationRayCount;
@@ -252,8 +252,8 @@ public partial class VARaytracedSource : ALSource3D
     }
 
     int _AmbientPermeationBounceCount = 0;
-    [Export]
     /// <summary>Number of bounces per ambient permeation ray</summary>
+    [Export]
     public int AmbientPermeationBounceCount
     {
         get => _AmbientPermeationBounceCount;
@@ -269,11 +269,11 @@ public partial class VARaytracedSource : ALSource3D
     }
 
     float _AmbientPermeationEnergyCap = 0.15f;
-    [Export(PropertyHint.Range, "0.0,1.0")]
     /// <summary>
     /// The percentage of permeation energy required for the emitter to be at full volume. Defaults to 15% of this emitter's <see cref="AmbientPermeationRayCount"/> * <see cref="AmbientPermeationBounceCount"/>.
     /// </summary>
     /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity, or less than 0</exception>
+    [Export(PropertyHint.Range, "0.0,1.0")]
     public float AmbientPermeationEnergyCap
     {
         get => _AmbientPermeationEnergyCap;
@@ -290,8 +290,8 @@ public partial class VARaytracedSource : ALSource3D
     [ExportGroup("Advanced")]
 
     int _Type;
-    [Export]
     /// <summary>User-defined type for this emitter</summary>
+    [Export]
     public int Type
     {
         get => _Type;
@@ -305,10 +305,10 @@ public partial class VARaytracedSource : ALSource3D
     }
 
     int _RefreshRayCount = 16;
-    [Export]
     /// <summary>
     /// The number of trails that are rebuilt from scratch each frame to prevent staleness when the listener moves. Clamped to minimum of 0.
     /// </summary>
+    [Export]
     public int RefreshRayCount
     {
         get => _RefreshRayCount;
@@ -322,10 +322,10 @@ public partial class VARaytracedSource : ALSource3D
     }
 
     float _RefreshDistanceThreshold = 1.0f;
-    [Export]
     /// <summary>
     /// A ray trail will be re-created if an old ray bounce position is too far away from the new ray bounce position. This setting controls the allowed distance between old and new ray bounce positions. Defaults to 1.0f. Clamped to minimum of 0.
     /// </summary>
+    [Export]
     public float RefreshDistanceThreshold
     {
         get => _RefreshDistanceThreshold;
@@ -339,8 +339,8 @@ public partial class VARaytracedSource : ALSource3D
     }
 
     int _ScatteringSeed = Random.Shared.Next();
-    [Export]
     /// <summary>A seed used to randomise scattering vectors</summary>
+    [Export]
     public int ScatteringSeed
     {
         get => _ScatteringSeed;
@@ -354,8 +354,8 @@ public partial class VARaytracedSource : ALSource3D
     }
 
     bool _ClampPosition = true;
-    [Export]
     /// <summary>Whether to clamp this emitter's position to the world bounds, to prevent it from going out of bounds</summary>
+    [Export]
     public bool ClampPosition
     {
         get => _ClampPosition;

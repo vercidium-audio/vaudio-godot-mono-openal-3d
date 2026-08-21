@@ -27,13 +27,13 @@ public partial class VAEmitter : Node3D
 
         if (vercidiumAudio == null)
         {
-            GD.PushWarning($"[vaudio-godot-mono-openal-3d] Failed to initialise node {Name} because there is no VAWorld node. Ensure a VAWorld node exists higher up the tree");
+            LogWarning($"[vaudio-godot-mono-openal-3d] Failed to initialise node {Name} because there is no VAWorld node. Ensure a VAWorld node exists higher up the tree");
             return;
         }
 
         if (!vercidiumAudio.Initialised)
         {
-            vercidiumAudio.LogWarning($"Failed to initialise node {Name} because the VAWorld node is not initialised yet. Ensure the VAWorld node is higher up the tree");
+            LogWarning($"Failed to initialise node {Name} because the VAWorld node is not initialised yet. Ensure the VAWorld node is higher up the tree");
             return;
         }
 
@@ -75,9 +75,7 @@ public partial class VAEmitter : Node3D
         if (emitter == null)
             throw new InvalidOperationException("Emitter already removed");
 
-        // Don't null out `emitter` here: if AffectsEAXAfterRemoval is set, the underlying vaudio.Emitter
-        // stays alive (pendingRemoval) for its reverb tail and keeps polling Position — this node (and
-        // anything it's attached to, e.g. VASource) must stay in the tree until OnEmitterRemoved fires.
+        // Don't null out emitter here, need to wait for its pending reverb tail to finish
         vercidiumAudio.RemoveEmitter(emitter);
     }
 
@@ -89,7 +87,6 @@ public partial class VAEmitter : Node3D
 
     void OnRaytracingComplete()
     {
-        // Our own reverb and ambient permeation rays have been cast
         OnRaytracingCompleteCallback?.Invoke();
     }
 
@@ -123,9 +120,11 @@ public partial class VAEmitter : Node3D
     {
         effect = vercidiumAudio.GetReverbEffect(this);
 
+        // If no listener, we can't know how muffled we are
         if (vercidiumAudio.listener == null)
             return;
 
+        // Apply filter if we aren't the listener
         if (this != vercidiumAudio.listener)
         {
             if (vercidiumAudio.listener.HasRaytracedTarget(this))
@@ -142,7 +141,6 @@ public partial class VAEmitter : Node3D
 
     public override void _ExitTree()
     {
-        // Remove emitter from the raytracing scene
         if (emitter != null)
             RemoveEmitter();
 

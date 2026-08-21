@@ -57,10 +57,7 @@ public static unsafe partial class ALManager
             MaximumAuxiliarySends = _maximumAuxiliarySends,
             MaximumMonoSources = _maximumMonoSources,
             MaximumStereoSources = _maximumStereoSources,
-            LogWarning = (message) => {
-                Console.WriteLine(message);
-                GD.PushWarning(message);
-            },
+            LogWarning = LogWarning,
         };
 
         ALContext = new(ALDevice, settings);
