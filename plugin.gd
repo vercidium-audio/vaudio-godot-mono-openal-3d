@@ -1,17 +1,6 @@
 @tool
 extends EditorPlugin
 
-const VAWorld 
-const VAEmitter
-const VADefaultMaterial
-const VACustomMaterial
-
-const VASource
-const VASourceRelative
-const VASourceAmbient
-const VASourceLeech 
-
-
 const VAEmitter = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAEmitter.cs")
 const VAListener = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAListener.cs")
 const ALSource = preload("res://addons/vaudio-godot-mono-openal-3d/openal/nodes/ALSource.cs")
@@ -122,15 +111,22 @@ func _enter_tree():
 	print("[vaudio-godot-mono-openal-3d] Vercidium Audio (vaudio) plugin enabled")
 
 func _exit_tree():
-	remove_custom_type("VAWorld")
 	remove_custom_type("VAEmitter")
-	remove_custom_type("VADefaultMaterial")
-	remove_custom_type("VACustomMaterial")
-
+	remove_custom_type("VAListener")
+	remove_custom_type("ALSource")
+	remove_custom_type("ALSource3D")
+	remove_custom_type("VAStreamSource")
+	remove_custom_type("VAInputStreamSource")
+	remove_custom_type("VANetworkedStreamSource")
 	remove_custom_type("VASource")
+	remove_custom_type("VASourceLeech")
+	remove_custom_type("ALSourceRelative")
 	remove_custom_type("VASourceRelative")
 	remove_custom_type("VASourceAmbient")
-	remove_custom_type("VASourceLeech")
+	remove_custom_type("VAVisualisation")
+	remove_custom_type("VAWorld")
+	remove_custom_type("VADefaultMaterial")
+	remove_custom_type("VACustomMaterial")
 
 	if world_gizmo_plugin:
 		remove_node_3d_gizmo_plugin(world_gizmo_plugin)

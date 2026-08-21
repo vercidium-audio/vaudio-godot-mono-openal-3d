@@ -5,11 +5,11 @@ extends EditorContextMenuPlugin
 # or AudioStreamPlayer to VASourceRelative / VASourceAmbient. Mirrors the conversion offered by the native
 # (C++ GDExtension) plugin's ConversionContextMenuPlugin, adapted to this addon's node/property names.
 
-const VASource = preload("res://addons/vaudio-godot-mono-openal-3d/source/VASource.cs")
+const VASource = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASource.cs")
 const VASourceRelative = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceRelative.cs")
 const VASourceAmbient = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceAmbient.cs")
 const VASourceLeech = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceLeech.cs")
-const VAEmitter = preload("res://addons/vaudio-godot-mono-openal-3d/emitter/VAEmitter.cs")
+const VAEmitter = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAEmitter.cs")
 
 func _popup_menu(paths: PackedStringArray) -> void:
 	if paths.is_empty():

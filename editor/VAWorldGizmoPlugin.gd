@@ -7,7 +7,7 @@ extends EditorNode3DGizmoPlugin
 # on that axis while shrinking/growing Size to compensate, so the opposite +face stays fixed in
 # world space.
 
-const VAWorld = preload("res://addons/vaudio-godot-mono-openal-3d/main/VAWorld.cs")
+const VAWorld = preload("res://addons/vaudio-godot-mono-openal-3d/world/VAWorld.cs")
 
 enum BoundsHandle { MAX_X, MAX_Y, MAX_Z, MIN_X, MIN_Y, MIN_Z }
 

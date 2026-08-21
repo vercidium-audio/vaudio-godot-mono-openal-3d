@@ -7,11 +7,11 @@ extends EditorInspectorPlugin
 # Both settings are inherited down the scene tree at runtime (see VAWorldPrimitives.AddPrimitive),
 # so setting either on a plain Node3D configures its whole subtree at once.
 
-const VAWorld = preload("res://addons/vaudio-godot-mono-openal-3d/main/VAWorld.cs")
-const VAEmitter = preload("res://addons/vaudio-godot-mono-openal-3d/emitter/VAEmitter.cs")
+const VAWorld = preload("res://addons/vaudio-godot-mono-openal-3d/world/VAWorld.cs")
+const VAEmitter = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAEmitter.cs")
 const VADefaultMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VADefaultMaterial.cs")
 const VACustomMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VACustomMaterial.cs")
-const VASource = preload("res://addons/vaudio-godot-mono-openal-3d/source/VASource.cs")
+const VASource = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASource.cs")
 const VASourceRelative = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceRelative.cs")
 const VASourceAmbient = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceAmbient.cs")
 const VASourceLeech = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceLeech.cs")

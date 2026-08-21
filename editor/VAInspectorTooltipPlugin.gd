@@ -19,9 +19,9 @@ extends EditorInspectorPlugin
 # only control the doc comments on our own types - see VAMaterialInspectorPlugin.gd/
 # VADeviceRefreshInspectorPlugin.gd for the same _can_handle pattern.
 
-const VAWorld = preload("res://addons/vaudio-godot-mono-openal-3d/main/VAWorld.cs")
-const VAEmitter = preload("res://addons/vaudio-godot-mono-openal-3d/emitter/VAEmitter.cs")
-const VASource = preload("res://addons/vaudio-godot-mono-openal-3d/source/VASource.cs")
+const VAWorld = preload("res://addons/vaudio-godot-mono-openal-3d/world/VAWorld.cs")
+const VAEmitter = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAEmitter.cs")
+const VASource = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASource.cs")
 const VASourceRelative = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceRelative.cs")
 const VASourceAmbient = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceAmbient.cs")
 const VASourceLeech = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceLeech.cs")

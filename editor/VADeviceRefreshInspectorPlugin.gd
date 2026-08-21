@@ -12,7 +12,7 @@ extends EditorInspectorPlugin
 # property after the device dropdown rather than the dropdown property itself. Mirrors the native
 # plugin's VADeviceRefreshInspectorPlugin (va_conversion_plugin.cpp).
 
-const VAInputStreamSource = preload("res://addons/vaudio-godot-mono-openal-3d/source/VAInputStreamSource.cs")
+const VAInputStreamSource = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAInputStreamSource.cs")
 
 func _can_handle(object) -> bool:
 	return object is VAInputStreamSource
