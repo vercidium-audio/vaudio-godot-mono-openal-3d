@@ -174,6 +174,12 @@ func _parse_doc_xml(xml_path: String) -> Dictionary:
 		elif node_type == XMLParser.NODE_TEXT and in_summary:
 			summary_text += xml.get_node_data()
 
+		# <see cref="..."/> (from <see cref="OtherProperty"/> in the source doc comment) is a
+		# self-closing element with no text node of its own, so without this it would silently
+		# vanish from the tooltip instead of reading as the member name it points to.
+		elif node_type == XMLParser.NODE_ELEMENT and xml.get_node_name() == "see" and in_summary:
+			summary_text += _cref_display_name(xml.get_named_attribute_value_safe("cref"))
+
 		elif node_type == XMLParser.NODE_ELEMENT_END and xml.get_node_name() == "summary":
 			in_summary = false
 
@@ -204,6 +210,17 @@ func _split_member_id(member_id: String) -> Array:
 	var class_name_only := type_name.substr(namespace_dot + 1) if namespace_dot >= 0 else type_name
 
 	return [class_name_only, property_name]
+
+# "P:vaudio_godot_mono_openal_3d.VAEmitter.AmbientOcclusionRayCount" -> "AmbientOcclusionRayCount".
+# cref values carry the same "Kind:Full.Type.Member" shape as the outer <member name="..."> id
+# (just without a guaranteed P:/F: kind - <see cref> can also point at a method or type), so this
+# only needs the trailing segment after the last '.', not the full class-qualified split.
+func _cref_display_name(cref: String) -> String:
+	var colon := cref.find(":")
+	var without_prefix := cref.substr(colon + 1) if colon >= 0 else cref
+
+	var last_dot := without_prefix.rfind(".")
+	return without_prefix.substr(last_dot + 1) if last_dot >= 0 else without_prefix
 
 # Collapses the XML doc's indentation/line-wrapping down to single-spaced lines, trimming blank
 # lines at the start/end - the raw text node data is otherwise full of the source file's leading

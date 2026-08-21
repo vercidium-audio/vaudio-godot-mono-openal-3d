@@ -23,14 +23,15 @@ public partial class VAListener : VAEmitter
 
     // Hides inherited properties from the inspector that aren't meaningful on a listener:
     // AffectsGroupedEAX/OcclusionEnergyCap/PermeationEnergyCap only apply to emitters that can be
-    // occluded/permeated, not the listener itself.
+    // occluded/permeated, not the listener itself. RaytraceOnce only applies to emitters that get
+    // raytraced against the listener, not the listener itself.
     public override void _ValidateProperty(Dictionary property)
     {
         base._ValidateProperty(property);
 
         string name = property["name"].AsStringName();
 
-        if (name == "AffectsGroupedEAX" || name == "OcclusionEnergyCap" || name == "PermeationEnergyCap")
+        if (name == "AffectsGroupedEAX" || name == "OcclusionEnergyCap" || name == "PermeationEnergyCap" || name == "RaytraceOnce")
         {
             var usage = property["usage"].As<PropertyUsageFlags>();
             usage &= ~PropertyUsageFlags.Editor;
