@@ -120,30 +120,4 @@ public partial class VAWorld : Node3D
 
         world.RemoveEmitter(emitter);
     }
-
-    // Log to both - in case we're launched from vs2026 or from the Godot Editor
-    public Action<string> Log = (message) =>
-    {
-        var prefixed = $"[vaudio-godot-mono-openal-3d] {message}";
-
-        Console.WriteLine(prefixed);
-        GD.Print(prefixed);
-    };
-
-    public Action<string> LogWarning = (message) =>
-    {
-        var prefixed = $"[vaudio-godot-mono-openal-3d] {message}";
-
-        Console.WriteLine(prefixed);
-        GD.PushWarning(prefixed);
-    };
-
-    public Action<string> LogError = (message) =>
-    {
-        var prefixed = $"[vaudio-godot-mono-openal-3d] {message}";
-
-        Console.Error.WriteLine(prefixed);
-        GD.PushError(prefixed);
-    };
-
 }

@@ -59,10 +59,7 @@ public static class Conversions
             var normalsVariant = arrays[(int)Mesh.ArrayType.Normal];
 
             if (normalsVariant.VariantType != Variant.Type.Nil)
-            {
-                // TODO - does AsVector3Array() copy the data? If so is there a faster alternative?
                 normals = normalsVariant.AsVector3Array();
-            }
 
             var indicesVariant = arrays[(int)Mesh.ArrayType.Index];
 
@@ -84,7 +81,6 @@ public static class Conversions
             else
             {
                 // Use indices to build triangles
-                // TODO - does AsInt32Array() copy the data? If so is there a faster alternative?
                 var indices = indicesVariant.AsInt32Array();
 
                 for (int i = 0; i < indices.Length; i += 3)
@@ -111,7 +107,7 @@ public static class Conversions
             min = vaudio.Vector.Zero;
             max = vaudio.Vector.Zero;
 
-            world.LogWarning($"Mesh {name} will not affect raytracing as it has no vertices");
+            LogWarning($"Mesh {name} will not affect raytracing as it has no vertices");
         }
 
         minOut = min;
@@ -129,7 +125,7 @@ public static class Conversions
             min = new vaudio.Vector(0, 0, 0);
             max = new vaudio.Vector(0, 0, 0);
 
-            world.LogWarning($"ConcavePolygonShape3D {name} will not affect raytracing as it has no faces");
+            LogWarning($"ConcavePolygonShape3D {name} will not affect raytracing as it has no faces");
             return [];
         }
 
@@ -167,7 +163,7 @@ public static class Conversions
             min = new vaudio.Vector(0, 0, 0);
             max = new vaudio.Vector(0, 0, 0);
 
-            world.LogWarning($"ConvexPolygonShape3D {name} will not affect raytracing as it cannot be triangulated");
+            LogWarning($"ConvexPolygonShape3D {name} will not affect raytracing as it cannot be triangulated");
             return [];
         }
 
@@ -186,7 +182,7 @@ public static class Conversions
             min = new vaudio.Vector(0, 0, 0);
             max = new vaudio.Vector(0, 0, 0);
 
-            world.LogWarning($"HeightMapShape3D {name} will not affect raytracing as its dimensions are less than 2x2");
+            LogWarning($"HeightMapShape3D {name} will not affect raytracing as its dimensions are less than 2x2");
             return [];
         }
 
