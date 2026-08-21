@@ -32,6 +32,8 @@ const DLL_SOURCE_WINDOWS = "addons/vaudio-godot-mono-openal-3d/bin/soft_oal.dll"
 const DLL_SOURCE_LINUX = "addons/vaudio-godot-mono-openal-3d/bin/libopenal.so.1"
 
 var _setup_done := false
+var _no_csproj_error_shown := false
+var _needs_rebuild_error_shown := false
 
 func _enter_tree():
 	if not ProjectSettings.settings_changed.is_connected(_on_settings_changed):
@@ -60,7 +62,9 @@ func _setup_project():
 	var csproj_path = _get_csproj_path()
 
 	if not FileAccess.file_exists(csproj_path):
-		push_error("[vaudio-godot-mono-openal-3d] No C# solution found. This plugin requires C# - please create a C# solution (Project → Tools → C# → Create C# Solution) and then re-enable this plugin")
+		if not _no_csproj_error_shown:
+			_no_csproj_error_shown = true
+			push_error("[vaudio-godot-mono-openal-3d] No C# solution found. This plugin requires C# - please create a C# solution (Project → Tools → C# → Create C# Solution) and then re-enable this plugin")
 		return
 
 	var file = FileAccess.open(csproj_path, FileAccess.READ)
@@ -99,13 +103,24 @@ func _setup_project():
 		# are not yet resolvable. Bail out here rather than falling through to load plugin_main.gd;
 		# Godot will rebuild the assembly on its own, and re-enabling the plugin afterwards will
 		# see both markers already present and proceed past this block.
-		push_error("[vaudio-godot-mono-openal-3d] Updated your .csproj with the vaudio references. Godot needs to rebuild the C# assembly before the plugin can fully load - please rebuild the project (Project → Tools → C# → ...) and then disable and re-enable this plugin")
+		push_error("[vaudio-godot-mono-openal-3d] Updated your .csproj with the vaudio references. Godot needs to rebuild the C# assembly before the plugin can fully load - please rebuild the project (Alt + B, or hammer icon in the top right) and then disable and re-enable this plugin")
 		return
 
 	if dll_exists:
 		print("[vaudio-godot-mono-openal-3d] vaudio.dll found")
 	else:
 		push_error("[vaudio-godot-mono-openal-3d] vaudio.dll not found - please copy your vaudio.dll into %s, then disable and enable the Vercidium Audio plugin" % ProjectSettings.globalize_path(dll_res_path.get_base_dir()))
+
+	# The .csproj already having both markers only proves they were inserted at some point - it
+	# doesn't prove the C# assembly has been rebuilt SINCE then. If it hasn't, the .cs node scripts
+	# below are still unresolvable and plugin_main.gd's `is SomeVaudioType` checks will parse-error
+	# (see the header comment). Confirm a C# script actually resolves to a real class first.
+	var probe_script = load("res://addons/vaudio-godot-mono-openal-3d/nodes/VAEmitter.cs")
+	if probe_script == null or probe_script.get_instance_base_type() == "":
+		if not _needs_rebuild_error_shown:
+			_needs_rebuild_error_shown = true
+			push_error("[vaudio-godot-mono-openal-3d] Godot needs to rebuild the C# assembly before the plugin can fully load - please rebuild the project (Alt + B, or hammer icon in the top right) and then disable and re-enable this plugin")
+		return
 
 	_copy_dll()
 

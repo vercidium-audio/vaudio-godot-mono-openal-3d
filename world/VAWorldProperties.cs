@@ -337,6 +337,10 @@ public partial class VAWorld : Node3D
 
     // 0 maps to processor count - 1, matching the native plugin's behaviour
     int _MaximumConcurrencyLevel = 0;
+    
+    /// <summary>
+    /// The maximum amount of threads that can run in parallel. Set to 0 to use the number of threads minus 1.
+    /// </summary>
     [Export(PropertyHint.Range, "0,32,1,or_greater")]
     public int MaximumConcurrencyLevel
     {
