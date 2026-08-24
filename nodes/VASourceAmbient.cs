@@ -26,6 +26,9 @@ public partial class VASourceAmbient : ALSourceRelative
         cancelWaitForVAWorld?.Invoke();
         cancelWaitForVAWorld = null;
 
+        if (!Engine.IsEditorHint())
+            ALManager.UnregisterDeviceRecreatedCallback(OnDeviceRecreated);
+
         base._ExitTree();
     }
 
