@@ -9,6 +9,11 @@ public partial class VAWorld : Node3D
     // Temp
     public List<vaudio.Emitter> emitters = [];
 
+    // Emitters that registered before the listener existed - drained into the listener's targets
+    // once one registers, instead of being permanently left untargeted. Matches the native
+    // plugin's pending_targets.
+    List<vaudio.Emitter> pendingTargets = [];
+
     public vaudio.Emitter CreateEmitter(VAEmitter node, Action OnRaytracingComplete, Action<vaudio.Emitter> OnRaytracedByAnotherEmitter)
     {
         // RaytraceOnce emitters cast their rays once and are done — freeze their position at that
@@ -74,6 +79,13 @@ public partial class VAWorld : Node3D
             if (listener == null)
             {
                 listener = node;
+
+                // Wire up any emitters that registered before this listener existed, instead of
+                // leaving them permanently untargeted.
+                foreach (var pendingTarget in pendingTargets)
+                    listener.AddTarget(pendingTarget);
+
+                pendingTargets.Clear();
             }
             else
             {
@@ -84,7 +96,9 @@ public partial class VAWorld : Node3D
         {
             if (listener == null)
             {
-                LogWarning($"Emitters cannot be added before the main listener emitter is created. Ensure a VAListener node exists as a child node of VAWorld");
+                // The scene added this emitter before the main listener node - hold onto it and
+                // add it as a target once the listener registers, instead of dropping it.
+                pendingTargets.Add(emitter);
             }
             else
             {
@@ -119,5 +133,20 @@ public partial class VAWorld : Node3D
         }
 
         world.RemoveEmitter(emitter);
+    }
+
+    // No-op unless this emitter was still waiting in pendingTargets for a listener to appear.
+    public void UnregisterPendingTarget(vaudio.Emitter emitter) => pendingTargets.Remove(emitter);
+
+    // No-op unless this is the current listener - avoids a dangling reference if it's removed
+    // before this VAWorld. Resets NoListenerWarningLogged so a future missing-listener state
+    // (e.g. after a scene reload) warns again.
+    public void UnregisterListener(VAEmitter node)
+    {
+        if (listener != node)
+            return;
+
+        listener = null;
+        NoListenerWarningLogged = false;
     }
 }

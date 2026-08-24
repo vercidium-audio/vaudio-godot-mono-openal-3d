@@ -25,12 +25,18 @@ public partial class VASourceLeech : ALSource3D
 
     bool played = false;
 
+    Action cancelWaitForVAWorld;
+
     public override void _EnterTree()
     {
         if (Engine.IsEditorHint())
             return;
 
-        vercidiumAudio = this.GetVAWorldParent();
+        cancelWaitForVAWorld = this.WaitForVAWorld(world =>
+        {
+            cancelWaitForVAWorld = null;
+            vercidiumAudio = world;
+        });
 
         emitter = GetParent() as VAEmitter;
 
@@ -120,6 +126,9 @@ public partial class VASourceLeech : ALSource3D
 
         // Unregister the device recreated callback (only registered when not in editor)
         ALManager.UnregisterDeviceRecreatedCallback(OnDeviceRecreated);
+
+        cancelWaitForVAWorld?.Invoke();
+        cancelWaitForVAWorld = null;
 
         emitter = null;
 

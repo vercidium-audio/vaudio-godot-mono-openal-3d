@@ -1,5 +1,3 @@
-using System.Linq;
-
 namespace vaudio_godot_mono_openal_3d;
 
 [Tool]
@@ -18,24 +16,22 @@ public partial class VAEmitter : Node3D
     public float GainHF => filter?.gainHF ?? 0;
     public bool Raytraced => emitter != null && !emitter.Initialising;
 
+    // Set while waiting for a VAWorld to appear - lets _ExitTree cancel the pending retry if this
+    // node leaves the tree before one is found.
+    Action cancelWaitForVAWorld;
+
     public override void _EnterTree()
     {
         if (Engine.IsEditorHint())
             return;
 
-        vercidiumAudio = this.GetVAWorldParent();
+        cancelWaitForVAWorld = this.WaitForVAWorld(OnVAWorldFound);
+    }
 
-        if (vercidiumAudio == null)
-        {
-            LogWarning($"[vaudio-godot-mono-openal-3d] Failed to initialise node {Name} because there is no VAWorld node. Ensure a VAWorld node exists higher up the tree");
-            return;
-        }
-
-        if (!vercidiumAudio.Initialised)
-        {
-            LogWarning($"Failed to initialise node {Name} because the VAWorld node is not initialised yet. Ensure the VAWorld node is higher up the tree");
-            return;
-        }
+    void OnVAWorldFound(VAWorld world)
+    {
+        cancelWaitForVAWorld = null;
+        vercidiumAudio = world;
 
         CreateEmitter();
     }
@@ -46,17 +42,11 @@ public partial class VAEmitter : Node3D
         if (sceneRoot == null)
             return [];
 
-        var vercidiumAudioNode = sceneRoot.GetChildren().OfType<VAWorld>().FirstOrDefault();
-        if (vercidiumAudioNode == null)
-            return ["No VAWorld node found. Ensure a VAWorld node exists higher up the tree."];
-
-        // Find the top-level ancestor of this node (direct child of scene root)
-        var ancestor = this as Node;
-        while (ancestor.GetParent() != sceneRoot)
-            ancestor = ancestor.GetParent();
-
-        if (ancestor.GetIndex() < vercidiumAudioNode.GetIndex())
-            return ["This node must be lower in the scene tree than the VAWorld node."];
+        // A VAWorld can be found anywhere in the tree, or added later from another scene - see
+        // NodeExtensions.GetVAWorldParent/WaitForVAWorld - so this is just a hint, not a hard
+        // requirement, and doesn't check tree order.
+        if (sceneRoot.GetVAWorldParent() == null)
+            return ["No VAWorld node found in the scene tree."];
 
         return [];
     }
@@ -141,8 +131,21 @@ public partial class VAEmitter : Node3D
 
     public override void _ExitTree()
     {
+        if (cancelWaitForVAWorld != null)
+        {
+            cancelWaitForVAWorld();
+            cancelWaitForVAWorld = null;
+
+            LogWarning($"[vaudio-godot-mono-openal-3d] '{Name}' left the tree without ever finding a VAWorld - no emitter was created for it. Make sure this node's scene was added under a VAWorld while it was in the tree.");
+        }
+
         if (emitter != null)
+        {
+            vercidiumAudio.UnregisterPendingTarget(emitter);
+            vercidiumAudio.UnregisterListener(this);
+
             RemoveEmitter();
+        }
 
         base._ExitTree();
     }

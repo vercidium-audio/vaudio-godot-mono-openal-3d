@@ -39,11 +39,20 @@ public partial class VARaytracedSource : ALSource3D
     public float MufflingGainLF => emitter?.GainLF ?? 0;
     public float MufflingGainHF => emitter?.GainHF ?? 0;
 
+    // Set while waiting for a VAWorld to appear - lets _ExitTree cancel the pending retry if this
+    // node leaves the tree before one is found.
+    Action cancelWaitForVAWorld;
+
     public override void _EnterTree()
     {
-        vercidiumAudio = this.GetVAWorldParent();
+        cancelWaitForVAWorld = this.WaitForVAWorld(OnVAWorldFound);
+    }
 
-        // Must create the emitter after the parent VAWorld node is initialised
+    void OnVAWorldFound(VAWorld world)
+    {
+        cancelWaitForVAWorld = null;
+        vercidiumAudio = world;
+
         CreateEmitter();
     }
 
@@ -55,17 +64,11 @@ public partial class VARaytracedSource : ALSource3D
         if (sceneRoot == null)
             return baseWarnings;
 
-        var vercidiumAudioNode = sceneRoot.GetChildren().OfType<VAWorld>().FirstOrDefault();
-        if (vercidiumAudioNode == null)
-            return [.. baseWarnings, "No VAWorld node found. Ensure a VAWorld node exists higher up the tree."];
-
-        // Find the top-level ancestor of this node (direct child of scene root)
-        var ancestor = this as Node;
-        while (ancestor.GetParent() != sceneRoot)
-            ancestor = ancestor.GetParent();
-
-        if (ancestor.GetIndex() < vercidiumAudioNode.GetIndex())
-            return [.. baseWarnings, "This node must be lower in the scene tree than the VAWorld node."];
+        // A VAWorld can be found anywhere in the tree, or added later from another scene - see
+        // NodeExtensions.GetVAWorldParent/WaitForVAWorld - so this is just a hint, not a hard
+        // requirement, and doesn't check tree order.
+        if (sceneRoot.GetVAWorldParent() == null)
+            return [.. baseWarnings, "No VAWorld node found in the scene tree."];
 
         return baseWarnings;
     }
@@ -170,6 +173,14 @@ public partial class VARaytracedSource : ALSource3D
 
     public override void _ExitTree()
     {
+        if (cancelWaitForVAWorld != null)
+        {
+            cancelWaitForVAWorld();
+            cancelWaitForVAWorld = null;
+
+            LogWarning($"[vaudio-godot-mono-openal-3d] '{Name}' left the tree without ever finding a VAWorld - no emitter was created for it. Make sure this node's scene was added under a VAWorld while it was in the tree.");
+        }
+
         base._ExitTree();
     }
 }

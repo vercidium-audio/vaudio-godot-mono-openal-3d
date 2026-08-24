@@ -155,7 +155,7 @@ public partial class VAWorld : Node3D
     //  Child nodes are invoked first
     void OnNodeRemoved(Node node) => RemovePrimitive(node, false);
 
-    bool NoListenerWarningLogged;
+    internal bool NoListenerWarningLogged;
 
     public override void _Process(double delta)
     {
@@ -169,24 +169,6 @@ public partial class VAWorld : Node3D
                 LogWarning($"Node {Name} has no main listener, so reverb cannot be updated. Add a VAListener node to this scene");
                 NoListenerWarningLogged = true;
             }
-        }
-        else
-        {
-            // Sync the AL listener to our main listener
-            Vector3 listenerRotation = listener.GlobalRotation;
-
-            if (GodotOpenALEnabled)
-            {
-                ALManager.ListenerPosition = listener.GlobalPosition;
-                ALManager.ListenerPitch = listenerRotation.X;
-                ALManager.ListenerYaw = listenerRotation.Y;
-            }
-
-            // Render the debug window from the perspective of the main listener
-            world.CameraPosition = ToVAudio(listener.GlobalPosition);
-            world.CameraPitch = listenerRotation.X;
-            world.CameraYaw = listenerRotation.Y;
-            world.FieldOfView = float.DegreesToRadians(90);
         }
 
         // ALManager is a static class with no Node._Process of its own - VAWorld drives its tick
