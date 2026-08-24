@@ -34,6 +34,7 @@ const DLL_SOURCE_LINUX = "addons/vaudio-godot-mono-openal-3d/bin/libopenal.so.1"
 var _setup_done := false
 var _no_csproj_error_shown := false
 var _needs_rebuild_error_shown := false
+var _wrong_godot_version_error_shown := false
 
 func _enter_tree():
 	if not ProjectSettings.settings_changed.is_connected(_on_settings_changed):
@@ -59,6 +60,12 @@ func _get_csproj_path() -> String:
 	return "res://%s.csproj" % project_name
 
 func _setup_project():
+	if not ClassDB.class_exists("CSharpScript"):
+		if not _wrong_godot_version_error_shown:
+			_wrong_godot_version_error_shown = true
+			push_error("[vaudio-godot-mono-openal-3d] This plugin requires the .NET (C#) version of Godot, but you're running the standard version. Please download Godot .NET from https://godotengine.org/download and disable this plugin in the meantime")
+		return
+
 	var csproj_path = _get_csproj_path()
 
 	if not FileAccess.file_exists(csproj_path):
