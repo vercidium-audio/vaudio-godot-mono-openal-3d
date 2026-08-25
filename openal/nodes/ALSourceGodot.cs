@@ -30,6 +30,9 @@ public partial class ALSource : Node3D
         if (Engine.IsEditorHint())
             return;
 
+        if (playRequested)
+            Play();
+
         for (int i = sources.Count - 1; i >= 0; i--)
         {
             var s = sources[i];

@@ -39,6 +39,12 @@ public partial class ALSource : Node3D
     int lastPlayedStreamIndex = -1;
     static Random random = new();
 
+    // Set when Play() is called but the stream's ALBuffer hasn't finished its background decode
+    // yet (TryCreateSource fails). Polled every _Process() so playback still starts as soon as
+    // the buffer becomes ready, instead of the one-shot attempt being silently lost - this matters
+    // most for Autoplay, which only ever calls Play() once, from _Ready().
+    bool playRequested = false;
+
     int PickStreamIndex()
     {
         if (_streams.Length == 0)
@@ -89,8 +95,14 @@ public partial class ALSource : Node3D
         }
 
         if (!ALManager.TryCreateSource(_streams[streamIndex], true, out var source))
+        {
+            // Buffer is still decoding in the background - remember to retry from _Process()
+            // once it's ready, rather than losing this Play() call entirely.
+            playRequested = true;
             return false;
+        }
 
+        playRequested = false;
         lastPlayedStreamIndex = streamIndex;
 
         // Matches AudioStreamRandomizer's random_pitch/random_volume_offset_db:
@@ -122,6 +134,8 @@ public partial class ALSource : Node3D
 
     public void Stop()
     {
+        playRequested = false;
+
         foreach (var s in sources)
             s.Stop();
     }
