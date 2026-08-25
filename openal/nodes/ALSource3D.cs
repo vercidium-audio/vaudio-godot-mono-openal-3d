@@ -6,7 +6,6 @@ namespace vaudio_godot_mono_openal_3d;
 // volume/pitch/streams) and ALSourceRelative for a non-spatialised source
 // pinned to the listener
 [Tool]
-[GlobalClass]
 public partial class ALSource3D : ALSource
 {
     float _maxDistance = 100;

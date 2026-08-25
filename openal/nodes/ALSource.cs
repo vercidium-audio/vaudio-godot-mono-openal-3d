@@ -3,7 +3,6 @@ using OpenALSource = global::OpenAL.managed.ALSource;
 namespace vaudio_godot_mono_openal_3d;
 
 [Tool]
-[GlobalClass]
 public partial class ALSource : Node3D
 {
     protected List<OpenALSource> sources = [];

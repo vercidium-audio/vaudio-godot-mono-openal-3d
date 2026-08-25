@@ -8,7 +8,6 @@ namespace vaudio_godot_mono_openal_3d;
 // mispositioned/panned audio since it left the node's GlobalPosition being
 // synced onto a relative source every frame
 [Tool]
-[GlobalClass]
 public partial class ALSourceRelative : ALSource
 {
     protected override void ConfigureSource(OpenALSource source)
