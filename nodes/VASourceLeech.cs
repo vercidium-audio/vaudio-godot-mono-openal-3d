@@ -29,6 +29,8 @@ public partial class VASourceLeech : ALSource3D
 
     public override void _EnterTree()
     {
+        base._EnterTree();
+
         if (Engine.IsEditorHint())
             return;
 

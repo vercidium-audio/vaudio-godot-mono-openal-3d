@@ -15,7 +15,7 @@ public partial class ALSource : Node3D
 
     public void UpdateFilter(float gain, float gainHF, bool fullReverb = false)
     {
-        if (!GodotOpenALEnabled)
+        if (!ALManager.Initialised)
             return;
 
         if (filter == null)
@@ -83,7 +83,7 @@ public partial class ALSource : Node3D
             return false;
         }
 
-        if (!GodotOpenALEnabled)
+        if (!ALManager.Initialised)
         {
             if (!alWarningLogged)
             {

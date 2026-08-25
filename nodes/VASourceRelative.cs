@@ -10,6 +10,8 @@ public partial class VASourceRelative : ALSourceRelative
 
     public override void _EnterTree()
     {
+        base._EnterTree();
+
         if (Engine.IsEditorHint())
             return;
 

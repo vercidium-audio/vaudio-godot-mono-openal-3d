@@ -4,12 +4,10 @@ public static unsafe partial class ALManager
 {
     public static bool Initialised => ALDevice != null;
 
-    // Lazily creates the OpenAL device/context on first access - a plain static class has no
-    // scene-tree lifecycle to race against, so this can safely be called from anywhere, including
-    // from inside another node's _EnterTree() (which is exactly how GodotOpenALEnabled/
-    // ALManager.Ensure() is used - see Extensions.cs in vaudio-godot-mono-openal-3d). Never
-    // initialises in the editor - CreateDeviceAndContext() opens a real OpenAL device, which
-    // should only happen at game runtime.
+    // Idempotent - a no-op once already Initialised, or in the editor (CreateDeviceAndContext()
+    // opens a real OpenAL device, which should only happen at game runtime). Every VA*/AL* node
+    // calls this at the top of its own _EnterTree() so OpenAL is ready by the time any of them
+    // need it, regardless of scene-tree order or which node happens to enter first.
     public static void Ensure()
     {
         if (Initialised || Engine.IsEditorHint())

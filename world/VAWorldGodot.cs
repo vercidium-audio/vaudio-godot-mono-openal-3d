@@ -15,6 +15,11 @@ public partial class VAWorld : Node3D
         if (Engine.IsEditorHint())
             return;
 
+        // Ensure the OpenAL device/context exists before creating reverb effects below - GenEffect
+        // silently fails with AL_INVALID_OPERATION (and returns effectID = 0) if called before a
+        // context is current.
+        ALManager.Ensure();
+
         // Cache the scene root since we access it often
         SceneRoot = GetTree().CurrentScene as Node3D;
 
@@ -54,7 +59,7 @@ public partial class VAWorld : Node3D
         // Create reverb effects
         OnDeviceRecreated();
 
-        if (!GodotOpenALEnabled)
+        if (!ALManager.Initialised)
         {
             LogError("The godot-mono-openal addon is not enabled. Ensure godot-mono-openal is enabled in Project Settings > Plugins (try toggling it off and on if it's already enabled)");
         }
@@ -170,7 +175,7 @@ public partial class VAWorld : Node3D
                 NoListenerWarningLogged = true;
             }
         }
-        else if (GodotOpenALEnabled)
+        else if (ALManager.Initialised)
         {
             // Sync the AL listener to our main listener
             Vector3 listenerRotation = listener.GlobalRotation;

@@ -45,6 +45,11 @@ public partial class VARaytracedSource : ALSource3D
 
     public override void _EnterTree()
     {
+        base._EnterTree();
+
+        if (Engine.IsEditorHint())
+            return;
+
         cancelWaitForVAWorld = this.WaitForVAWorld(OnVAWorldFound);
     }
 

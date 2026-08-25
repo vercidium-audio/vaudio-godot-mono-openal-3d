@@ -51,8 +51,8 @@ public partial class VAWorld : Node3D
         {
             var ambientGainLF = listener.AmbientFilter.GainLF;
             var ambientGainHF = listener.AmbientFilter.GainLF;
-            
-            if (GodotOpenALEnabled)
+
+            if (ALManager.Initialised)
             {
                 ambientFilter ??= new(ambientGainLF, ambientGainHF);
                 ambientFilter.SetGain(ambientGainLF, ambientGainHF);

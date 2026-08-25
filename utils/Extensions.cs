@@ -24,20 +24,6 @@ internal static class Extensions
         );
     }
 
-    // Ensures the OpenAL device/context is created (a no-op once already Initialised, and in the
-    // editor) before checking readiness - callers used to rely on ALManager.Instance's own lazy
-    // getter to do this; a static class has no property getter with side effects, so this is now
-    // explicit. Safe to call from anywhere, including from inside another node's _EnterTree() -
-    // see ALManager.Ensure()'s own comment for why.
-    public static bool GodotOpenALEnabled
-    {
-        get
-        {
-            ALManager.Ensure();
-            return ALManager.Initialised;
-        }
-    }
-
     public static void RegisterDeviceRecreatedCallback(Action callback) => ALManager.RegisterDeviceRecreatedCallback(callback);
     public static void RegisterDeviceDestroyedCallback(Action callback) => ALManager.RegisterDeviceDestroyedCallback(callback);
 }

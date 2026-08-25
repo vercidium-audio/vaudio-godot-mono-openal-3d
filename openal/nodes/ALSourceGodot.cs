@@ -19,6 +19,14 @@ public partial class ALSource : Node3D
         return warnings.ToArray();
     }
 
+    public override void _EnterTree()
+    {
+        if (Engine.IsEditorHint())
+            return;
+
+        ALManager.Ensure();
+    }
+
     public override void _Ready()
     {
         if (Autoplay && !Engine.IsEditorHint())

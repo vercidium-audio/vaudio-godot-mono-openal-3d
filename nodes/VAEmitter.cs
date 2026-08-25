@@ -25,6 +25,8 @@ public partial class VAEmitter : Node3D
         if (Engine.IsEditorHint())
             return;
 
+        ALManager.Ensure();
+
         cancelWaitForVAWorld = this.WaitForVAWorld(OnVAWorldFound);
     }
 
@@ -82,7 +84,7 @@ public partial class VAEmitter : Node3D
 
     void OnRaytracedByAnotherEmitter(vaudio.Emitter emitter)
     {        
-        if (GodotOpenALEnabled)
+        if (ALManager.Initialised)
         {
             Debug.Assert(filter == null);
             filter = new(1, 1);
