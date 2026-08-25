@@ -46,9 +46,7 @@ public partial class VACustomMaterial : Node
     string _materialName = "CustomMaterial";
 
     /// <summary>
-    /// Material name for debugging and identification. Matched against the "Vercidium Audio"
-    /// Inspector material dropdown (see VAWorldMaterials.GetMaterial), so can be freely renamed
-    /// at runtime - the material's internal ID (assigned by VAWorld.RegisterCustomMaterial) never changes.
+    /// Name of the custom material
     /// </summary>
     [Export(PropertyHint.None, "")]
     public string MaterialName
@@ -71,7 +69,7 @@ public partial class VACustomMaterial : Node
     Color _DebugColor = new(1, 0, 1);
 
     /// <summary>
-    /// Low-frequency absorption coefficient (0.0 to 1.0)
+    /// Percentage of low-frequency energy that is lost on each bounce
     /// </summary>
     [Export(PropertyHint.Range, "0.0,1.0")]
     public float AbsorptionLF
@@ -90,7 +88,7 @@ public partial class VACustomMaterial : Node
     }
 
     /// <summary>
-    /// High-frequency absorption coefficient (0.0 to 1.0)
+    /// Percentage of low-frequency energy that is lost on each bounce
     /// </summary>
     [Export(PropertyHint.Range, "0.0,1.0")]
     public float AbsorptionHF
@@ -109,7 +107,7 @@ public partial class VACustomMaterial : Node
     }
 
     /// <summary>
-    /// Scattering coefficient (0.0 to 1.0)
+    /// Scattering strength, where 0.0 has no scattering and 1.0 skews the ray reflection direction by up to 90 degrees
     /// </summary>
     [Export(PropertyHint.Range, "0.0,1.0")]
     public float Scattering
@@ -128,7 +126,7 @@ public partial class VACustomMaterial : Node
     }
 
     /// <summary>
-    /// Low-frequency transmission in dB/m (0.0 or greater)
+    /// How many meters a ray must travel through a primitive before it loses all low-frequency energy
     /// </summary>
     [Export(PropertyHint.Range, "0.0001f,10.0,0.001f,or_greater")]
     public float TransmissionLF
@@ -147,7 +145,7 @@ public partial class VACustomMaterial : Node
     }
 
     /// <summary>
-    /// High-frequency transmission in dB/m (0.0 or greater)
+    /// How many meters a ray must travel through a primitive before it loses all high-frequency energy
     /// </summary>
     [Export(PropertyHint.Range, "0.0001f,10.0,0.001f,or_greater")]
     public float TransmissionHF
@@ -166,7 +164,7 @@ public partial class VACustomMaterial : Node
     }
 
     /// <summary>
-    /// Percentage of low-frequency energy lost when a ray passes through a flat primitive
+    /// Percentage of low-frequency energy that is lost when a ray passes through a flat primitive
     /// </summary>
     [Export(PropertyHint.Range, "0.0,1.0")]
     public float FlatTransmissionLF
@@ -185,7 +183,7 @@ public partial class VACustomMaterial : Node
     }
 
     /// <summary>
-    /// Percentage of high-frequency energy lost when a ray passes through a flat primitive
+    /// Percentage of high-frequency energy that is lost when a ray passes through a flat primitive
     /// </summary>
     [Export(PropertyHint.Range, "0.0,1.0")]
     public float FlatTransmissionHF
@@ -204,7 +202,7 @@ public partial class VACustomMaterial : Node
     }
 
     /// <summary>
-    /// Debug color for the VAudio debug renderer
+    /// Debug color for the debug window
     /// </summary>
     [Export]
     public Color DebugColor
@@ -223,9 +221,6 @@ public partial class VACustomMaterial : Node
     /// </summary>
     public vaudio.Color GetDebugColor() => new(DebugColor.R, DebugColor.G, DebugColor.B, 1.0f);
 
-    /// <summary>
-    /// Validates the material configuration and returns warnings
-    /// </summary>
     public override string[] _GetConfigurationWarnings()
     {
         var warnings = new List<string>();

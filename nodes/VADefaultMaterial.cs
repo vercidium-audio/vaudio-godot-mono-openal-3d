@@ -130,7 +130,7 @@ public partial class VADefaultMaterial : Node
     Color _DebugColor = new(1, 1, 1);
 
     /// <summary>
-    /// Low-frequency absorption coefficient (0.0 to 1.0)
+    /// Percentage of low-frequency energy that is lost on each bounce
     /// </summary>
     [Export(PropertyHint.Range, "0.0,1.0")]
     public float AbsorptionLF
@@ -149,7 +149,7 @@ public partial class VADefaultMaterial : Node
     }
 
     /// <summary>
-    /// High-frequency absorption coefficient (0.0 to 1.0)
+    /// Percentage of low-frequency energy that is lost on each bounce
     /// </summary>
     [Export(PropertyHint.Range, "0.0,1.0")]
     public float AbsorptionHF
@@ -168,7 +168,7 @@ public partial class VADefaultMaterial : Node
     }
 
     /// <summary>
-    /// Scattering coefficient (0.0 to 1.0)
+    /// Scattering strength, where 0.0 has no scattering and 1.0 skews the ray reflection direction by up to 90 degrees
     /// </summary>
     [Export(PropertyHint.Range, "0.0,1.0")]
     public float Scattering
@@ -187,7 +187,7 @@ public partial class VADefaultMaterial : Node
     }
 
     /// <summary>
-    /// Low-frequency transmission in dB/m (0.0 or greater)
+    /// How many meters a ray must travel through a primitive before it loses all low-frequency energy
     /// </summary>
     [Export(PropertyHint.Range, "0.0001f,10.0,0.001f,or_greater")]
     public float TransmissionLF
@@ -206,7 +206,7 @@ public partial class VADefaultMaterial : Node
     }
 
     /// <summary>
-    /// High-frequency transmission in dB/m (0.0 or greater)
+    /// How many meters a ray must travel through a primitive before it loses all high-frequency energy
     /// </summary>
     [Export(PropertyHint.Range, "0.0001f,10.0,0.001f,or_greater")]
     public float TransmissionHF
@@ -225,7 +225,7 @@ public partial class VADefaultMaterial : Node
     }
 
     /// <summary>
-    /// Percentage of low-frequency energy lost when a ray passes through a flat primitive
+    /// Percentage of low-frequency energy that is lost when a ray passes through a flat primitive
     /// </summary>
     [Export(PropertyHint.Range, "0.0,1.0")]
     public float FlatTransmissionLF
@@ -244,7 +244,7 @@ public partial class VADefaultMaterial : Node
     }
 
     /// <summary>
-    /// Percentage of high-frequency energy lost when a ray passes through a flat primitive
+    /// Percentage of high-frequency energy that is lost when a ray passes through a flat primitive
     /// </summary>
     [Export(PropertyHint.Range, "0.0,1.0")]
     public float FlatTransmissionHF

@@ -25,6 +25,8 @@ const VASource = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourc
 const VASourceRelative = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceRelative.cs")
 const VASourceAmbient = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceAmbient.cs")
 const VASourceLeech = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceLeech.cs")
+const VADefaultMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VADefaultMaterial.cs")
+const VACustomMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VACustomMaterial.cs")
 
 # CSharpScript.get_base_script() always returns null (a known Godot engine limitation - C# scripts
 # don't expose their inheritance chain to the editor the way GDScript does, see
@@ -52,7 +54,8 @@ var _pending_tooltips := {}
 
 func _can_handle(object) -> bool:
 	return object is VAWorld or object is VAEmitter or object is VASource \
-		or object is VASourceRelative or object is VASourceAmbient or object is VASourceLeech
+		or object is VASourceRelative or object is VASourceAmbient or object is VASourceLeech \
+		or object is VADefaultMaterial or object is VACustomMaterial
 
 func _parse_begin(object) -> void:
 	_reload_if_changed()
