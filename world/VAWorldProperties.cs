@@ -52,7 +52,7 @@ public partial class VAWorld : Node3D
 
     Color _BoundsColor = new(0.0f, 0.0f, 0.0f, 0.25f);
     /// <summary>
-    /// Editor-only color used to draw the world bounds gizmo in the 3D viewport. Not forwarded to vaudio.
+    /// Editor-only color used to draw the world bounds gizmo in the 3D viewport
     /// </summary>
     [Export]
     public Color BoundsColor
@@ -67,7 +67,7 @@ public partial class VAWorld : Node3D
 
     float _Epsilon = 0.01f;
     /// <summary>
-    /// The epsilon value used for ray offsets, world bounds clamping and line-of-sight tests. Defaults to 0.01f
+    /// The epsilon value used for ray offsets, world bounds clamping and line-of-sight tests
     /// </summary>
     [Export]
     public float Epsilon
@@ -84,7 +84,7 @@ public partial class VAWorld : Node3D
 
     bool _WorldIsIndoors = true;
     /// <summary>
-    /// Whether the entire world is considered indoors or outdoors. When false, reverb rays stop checking for line-of-sight after hitting the world edge. Defaults to false.
+    /// Whether the entire world is considered indoors or outdoors. When false, reverb rays stop checking for line-of-sight after hitting the world edge
     /// </summary>
     [Export]
     public bool WorldIsIndoors
@@ -104,9 +104,8 @@ public partial class VAWorld : Node3D
 
     float _MasterVolume = 1;
     /// <summary>
-    /// Master output volume, as a linear multiplier. 1.0 is unchanged, 0.0 is silent. Defaults
-    /// to 1. Forwarded to the process-wide ALManager singleton; if multiple VAWorlds exist,
-    /// the last one to set this wins.
+    /// Master output volume, affects all sounds.
+    /// If multiple VAWorlds exist, the last one to set this wins.
     /// </summary>
     [Export(PropertyHint.Range, "0.0,1.0,or_greater")]
     public float MasterVolume
@@ -123,9 +122,8 @@ public partial class VAWorld : Node3D
 
     ALDistanceModel _DistanceModel = ALDistanceModel.InverseDistance;
     /// <summary>
-    /// OpenAL distance attenuation model. Defaults to InverseDistance. Forwarded to the
-    /// process-wide ALManager singleton; if multiple VAWorlds exist, the last one to set this
-    /// wins.
+    /// OpenAL distance attenuation model. 
+    /// If multiple VAWorlds exist, the last one to set this wins.
     /// </summary>
     [Export]
     public ALDistanceModel DistanceModel
@@ -142,9 +140,8 @@ public partial class VAWorld : Node3D
 
     bool _ReverbOnly = false;
     /// <summary>
-    /// When true, only the reverb send plays - direct/dry sound is muted. Defaults to false.
-    /// Forwarded to the process-wide ALManager singleton; if multiple VAWorlds exist, the last
-    /// one to set this wins.
+    /// When true, you'll only hear reverb - use for debugging.
+    /// If multiple VAWorlds exist, the last one to set this wins.
     /// </summary>
     [Export]
     public bool ReverbOnly
@@ -165,7 +162,7 @@ public partial class VAWorld : Node3D
 
     int _MaximumGroupedEAXCount = 3;
     /// <summary>
-    /// The maximum number of grouped EAX reverb properties created for all emitters. Higher values increase accuracy but are more expensive to run. Defaults to 3
+    /// The maximum number of grouped EAX reverb properties created for all emitters. Higher values increase accuracy but are more expensive to run
     /// </summary>
     /// <exception cref="ArgumentException">Thrown when the value is less than 1</exception>
     [Export]
@@ -186,10 +183,9 @@ public partial class VAWorld : Node3D
 
     float _MetersPerUnit = 1;
     /// <summary>
-    /// Gets meters per world unit. Affects air absorption and reverb calculation. Also
-    /// forwarded to the process-wide ALManager singleton, which only affects OpenAL's own
-    /// air-absorption and reverb decay math; if multiple VAWorlds exist, the last one to set
-    /// this wins.
+    /// Gets meters per world unit. Affects air absorption and reverb calculation.
+    /// Also affects OpenAL's own air-absorption and reverb decay math.
+    /// If multiple VAWorlds exist, the last one to set this wins.
     /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity or less than or equal to 0</exception>
     /// </summary>
     [Export(PropertyHint.Range, "0.0001,1.0,or_greater")]
@@ -212,8 +208,8 @@ public partial class VAWorld : Node3D
 
     /// <summary>
     /// Speed of sound in seconds per meter. Defaults to 343.0f. Affects reverb calculation.
-    /// Also forwarded to the process-wide ALManager singleton, which only affects OpenAL's
-    /// own Doppler calculation; if multiple VAWorlds exist, the last one to set this wins.
+    /// Also affects OpenAL's own Doppler calculation.    
+    /// If multiple VAWorlds exist, the last one to set this wins.
     /// </summary>
     /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity or less than or equal to 0</exception>
     [Export(PropertyHint.Range, "0.0001,1000.0,1,or_greater")]
@@ -233,7 +229,7 @@ public partial class VAWorld : Node3D
     }
 
     float _Humidity = 0.1f;
-    /// <summary>Relative humidity as a percentage (0–1). Defaults to 0.1f</summary>
+    /// <summary>Humidity as a percentage</summary>
     [Export(PropertyHint.Range, "0.0,1.0")]
     public float Humidity
     {
@@ -248,7 +244,7 @@ public partial class VAWorld : Node3D
     }
 
     float _Temperature = 26;
-    /// <summary>Air temperature in degrees Celsius. Defaults to 26</summary>
+    /// <summary>Air temperature in degrees Celsius</summary>
     [Export(PropertyHint.Range, "-273.15f,100.0f,1,or_greater")]
     public float Temperature
     {
@@ -263,7 +259,7 @@ public partial class VAWorld : Node3D
     }
 
     float _Pressure = 101325;
-    /// <summary>Atmospheric pressure in Pascals. Defaults to 101325</summary>
+    /// <summary>Atmospheric pressure in Pascals</summary>
     [Export(PropertyHint.Range, "0.0,1000000,1,or_greater")]
     public float Pressure
     {
@@ -394,7 +390,7 @@ public partial class VAWorld : Node3D
     [ExportGroup("Rendering")]
 
     bool _RenderingEnabled = true;
-    /// <summary>Whether to render the raytracing scene in a separate window. Only one world can have rendering enabled</summary>
+    /// <summary>Whether to render the raytracing scene in a separate window.</summary>
     [Export]
     public bool RenderingEnabled
     {
