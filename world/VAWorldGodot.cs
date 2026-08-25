@@ -170,6 +170,15 @@ public partial class VAWorld : Node3D
                 NoListenerWarningLogged = true;
             }
         }
+        else if (GodotOpenALEnabled)
+        {
+            // Sync the AL listener to our main listener
+            Vector3 listenerRotation = listener.GlobalRotation;
+
+            ALManager.ListenerPosition = listener.GlobalPosition;
+            ALManager.ListenerPitch = listenerRotation.X;
+            ALManager.ListenerYaw = listenerRotation.Y;
+        }
 
         // ALManager is a static class with no Node._Process of its own - VAWorld drives its tick
         // the same way it already drives world.Update() for the raytracer.
