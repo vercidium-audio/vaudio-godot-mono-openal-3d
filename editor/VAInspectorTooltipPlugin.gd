@@ -28,12 +28,18 @@ const VASourceLeech = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VA
 
 # CSharpScript.get_base_script() always returns null (a known Godot engine limitation - C# scripts
 # don't expose their inheritance chain to the editor the way GDScript does, see
-# https://github.com/godotengine/godot/issues/40815), so a subclass's base class name can't be
+# https://github.com/godotengine/godot/issues/40815), so a subclass's base class chain can't be
 # discovered at runtime here and has to be listed by hand instead. Only needs an entry for a type
-# that (a) is handled by this plugin and (b) doesn't redeclare its own [Export] properties, i.e.
-# inherits them all from a documented base - currently only VAListener : VAEmitter.
+# that (a) is handled by this plugin and (b) has any ancestor (not just its immediate parent) that
+# declares [Export] properties this type doesn't redeclare itself - e.g. VASourceRelative inherits
+# Volume/Pitch/etc. from ALSource, two hops up via ALSourceRelative. List the full chain in order
+# from nearest to furthest ancestor - _get_class_name_chain appends all of it, not just one level.
 const BASE_CLASS_NAMES := {
-	"VAListener": "VAEmitter",
+	"VAListener": ["VAEmitter"],
+	"VASource": ["VARaytracedSource", "ALSource3D", "ALSource"],
+	"VASourceLeech": ["ALSource3D", "ALSource"],
+	"VASourceRelative": ["ALSourceRelative", "ALSource"],
+	"VASourceAmbient": ["ALSourceRelative", "ALSource"],
 }
 
 # class_name -> (property_name -> tooltip text). Keyed by the C# class name as it appears in the
@@ -107,11 +113,12 @@ func _set_tooltip_recursive(node: Node, text: String) -> void:
 	for child in node.get_children():
 		_set_tooltip_recursive(child, text)
 
-# Returns this object's own C# class name followed by its documented base class name, if any (e.g.
-# VAListener -> ["VAListener", "VAEmitter"]), so a subclass that doesn't redeclare its parent's
-# [Export] properties (VAListener extends VAEmitter without redefining any of its reverb/
-# muffling/ambience properties) still finds tooltips documented on the parent's script. See
-# BASE_CLASS_NAMES for why this can't just walk script.get_base_script() instead.
+# Returns this object's own C# class name followed by its documented ancestor class names, if any
+# (e.g. VASourceRelative -> ["VASourceRelative", "ALSourceRelative", "ALSource"]), so a subclass
+# that doesn't redeclare an ancestor's [Export] properties (VASourceRelative extends ALSourceRelative
+# extends ALSource without redefining any of ALSource's Volume/Pitch/etc.) still finds tooltips
+# documented further up its chain. See BASE_CLASS_NAMES for why this can't just walk
+# script.get_base_script() instead.
 func _get_class_name_chain(object: Object) -> Array:
 	var names := []
 	var script := object.get_script()
@@ -122,9 +129,9 @@ func _get_class_name_chain(object: Object) -> Array:
 			var own_name := script_path.get_file().get_basename()
 			names.append(own_name)
 
-			var base_name = BASE_CLASS_NAMES.get(own_name)
-			if base_name != null:
-				names.append(base_name)
+			var base_names = BASE_CLASS_NAMES.get(own_name)
+			if base_names != null:
+				names.append_array(base_names)
 
 	return names
 
