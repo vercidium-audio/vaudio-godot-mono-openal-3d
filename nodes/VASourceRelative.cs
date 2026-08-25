@@ -1,5 +1,6 @@
 namespace vaudio_godot_mono_openal_3d;
 
+[Tool]
 [GlobalClass]
 public partial class VASourceRelative : ALSourceRelative
 {

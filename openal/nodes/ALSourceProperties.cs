@@ -145,6 +145,6 @@ public partial class ALSource : Node3D
         base._ValidateProperty(property);
 
         if (Array.IndexOf(scriptOnlyAliasProperties, property["name"].AsStringName()) >= 0)
-            property["usage"] = (int)(PropertyUsageFlags.ScriptVariable);
+            property["usage"] = (int)PropertyUsageFlags.None;
     }
 }
