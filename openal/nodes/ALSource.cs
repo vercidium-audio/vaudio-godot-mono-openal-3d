@@ -135,6 +135,15 @@ public partial class ALSource : Node3D
         return true;
     }
 
+    // Script-only snake_case aliases matching AudioStreamPlayer3D's play()/stop()/is_playing(), so a
+    // script written against AudioStreamPlayer3D keeps working unmodified after converting to this
+    // node. Godot only auto-converts PascalCase<->snake_case for its own built-in engine classes, not
+    // for a script's own members, so these need to exist as literal snake_case methods. Play() is
+    // forwarded rather than renamed since it's virtual/overridden by several subclasses.
+    public bool play() => Play();
+    public void stop() => Stop();
+    public bool is_playing() => IsPlaying();
+
     public virtual void OnDeviceDestroyed()
     {
         foreach (var s in sources)

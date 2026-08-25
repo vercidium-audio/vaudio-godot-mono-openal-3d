@@ -93,24 +93,58 @@ public partial class ALSource : Node3D
         set => _volumeRandomnessDb = value;
     }
 
+    // These three are deliberately named in snake_case, not PascalCase: unlike Godot's built-in
+    // engine classes, a C# script's own members are exposed to GDScript under their exact literal
+    // name (no auto PascalCase <-> snake_case conversion), so matching AudioStreamPlayer3D's
+    // "stream"/"pitch_scale"/"volume_db" for script compatibility requires the C# names themselves
+    // to be snake_case.
+    //
+    // They're [Export] purely so Godot registers them as script-exposed properties (required for
+    // GDScript get/set access) - they're not meant to be inspector-editable, since they just
+    // mirror Streams/Pitch/Volume above. They have no backing field, so Godot's C# exporter can't
+    // diff them against a default to decide whether to serialize them: it always writes them into
+    // the .tscn, and (having no sensible value to write for a delegating property) writes `null`.
+    // On scene load that null is coerced to default(float)/null, and the setter then pushes that
+    // straight through to Pitch/Volume/Streams, silently stomping whatever the user set on the
+    // "real" property. _ValidateProperty below hides them from the inspector and (crucially) drops
+    // PropertyUsageFlags.Storage so they're never serialized in the first place.
+
     /// <summary>Script-only alias for <see cref="Streams"/>, matching AudioStreamPlayer3D's single "stream" property. Lets a script written against AudioStreamPlayer3D keep working unmodified after converting to this node. Reads back the first entry of <see cref="Streams"/>; writes replace <see cref="Streams"/> with a one-entry array.</summary>
-    public AudioStream Stream
+    [Export]
+    public AudioStream stream
     {
         get => _streams.Length == 0 ? null : _streams[0];
         set => Streams = [value];
     }
 
     /// <summary>Script-only alias for <see cref="Pitch"/>, matching AudioStreamPlayer3D's "pitch_scale" property.</summary>
-    public float PitchScale
+    [Export]
+    public float pitch_scale
     {
         get => Pitch;
         set => Pitch = value;
     }
 
     /// <summary>Script-only alias for <see cref="Volume"/>, matching AudioStreamPlayer(3D)'s logarithmic "volume_db" property. Converts through LinearToDb/DbToLinear since <see cref="Volume"/> is linear.</summary>
-    public float VolumeDb
+    [Export]
+    public float volume_db
     {
         get => Mathf.LinearToDb(Volume);
         set => Volume = Mathf.DbToLinear(value);
+    }
+
+    static readonly StringName[] scriptOnlyAliasProperties =
+    [
+        PropertyName.stream,
+        PropertyName.pitch_scale,
+        PropertyName.volume_db,
+    ];
+
+    public override void _ValidateProperty(Godot.Collections.Dictionary property)
+    {
+        base._ValidateProperty(property);
+
+        if (Array.IndexOf(scriptOnlyAliasProperties, property["name"].AsStringName()) >= 0)
+            property["usage"] = (int)(PropertyUsageFlags.ScriptVariable);
     }
 }

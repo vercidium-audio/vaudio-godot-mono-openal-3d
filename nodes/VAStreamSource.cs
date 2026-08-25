@@ -101,6 +101,8 @@ public partial class VAStreamSource : VARaytracedSource
 
     public override void _ValidateProperty(Godot.Collections.Dictionary property)
     {
+        base._ValidateProperty(property);
+
         if (Array.IndexOf(hiddenProperties, property["name"].AsStringName()) >= 0)
             property["usage"] = (int)PropertyUsageFlags.None;
     }
