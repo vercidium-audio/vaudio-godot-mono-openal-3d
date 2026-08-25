@@ -11,6 +11,15 @@ namespace vaudio_godot_mono_openal_3d;
 /// is entirely GPU-side (a ShaderMaterial reads each instance's spawn time out of its custom data
 /// and the FadeInMs/FadeOutMs/DurationMs/Color uniforms below), so nothing here does per-instance
 /// work outside the callback itself.
+///
+/// Adding this node while the game is already running (e.g. editing the scene locally with
+/// Debug > Sync Scene Changes enabled) only runs its script in the editor's own tool-script
+/// preview context (Engine.IsEditorHint() is true there) - Godot Mono does not actually
+/// instantiate the new C# node inside the live running game process the way GDScript nodes do
+/// (this is an upstream Godot C# hot-reload limitation, not something fixable here - see
+/// godotengine/godot-proposals#7746/#9001/#9519). The native (GDExtension) plugin doesn't have
+/// this limitation since it has no separate script hot-reload layer to fail through. Restart the
+/// game to see a newly-added VAVisualisation render.
 /// </summary>
 [Tool]
 [GlobalClass]
