@@ -352,24 +352,28 @@ public partial class VAWorld : Node3D
             // Godot CapsuleShape3D: height is total height including hemispherical caps, radius is the radius
             // vaudio.CapsulePrimitive: length is the cylinder portion (not including caps), radius is the radius
             // The cylinder length = total height - 2 * radius
+            var capsuleTransform = RemoveScale(globalTransform, out var capsuleScale);
+
             float cylinderLength = capsule.Height - 2 * capsule.Radius;
             if (cylinderLength < 0) cylinderLength = 0;
 
             world.AddPrimitive(prim = new vaudio.CapsulePrimitive()
             {
-                radius = capsule.Radius * scale.X,
-                length = cylinderLength * scale.Y,
-                transform = ToVAudio(globalTransform),
+                radius = capsule.Radius * capsuleScale.X,
+                length = cylinderLength * capsuleScale.Y,
+                transform = ToVAudio(capsuleTransform),
                 material = material
             });
         }
         else if (shape is CylinderShape3D cylinder)
         {
+            var cylinderTransform = RemoveScale(globalTransform, out var cylinderScale);
+
             world.AddPrimitive(prim = new vaudio.CylinderPrimitive()
             {
-                radius = cylinder.Radius * scale.X,
-                length = cylinder.Height * scale.Y,
-                transform = ToVAudio(globalTransform),
+                radius = cylinder.Radius * cylinderScale.X,
+                length = cylinder.Height * cylinderScale.Y,
+                transform = ToVAudio(cylinderTransform),
                 material = material
             });
         }
@@ -485,23 +489,23 @@ public partial class VAWorld : Node3D
         else if (primitive is vaudio.CapsulePrimitive capsulePrim)
         {
             var capsule = collisionShape.Shape as CapsuleShape3D;
-            var scale = collisionShape.Scale;
+            var capsuleTransform = RemoveScale(globalTransform, out var capsuleScale);
 
             float cylinderLength = capsule.Height - 2 * capsule.Radius;
             if (cylinderLength < 0) cylinderLength = 0;
 
-            capsulePrim.radius = capsule.Radius * scale.X;
-            capsulePrim.length = cylinderLength * scale.Y;
-            capsulePrim.transform = ToVAudio(globalTransform);
+            capsulePrim.radius = capsule.Radius * capsuleScale.X;
+            capsulePrim.length = cylinderLength * capsuleScale.Y;
+            capsulePrim.transform = ToVAudio(capsuleTransform);
         }
         else if (primitive is vaudio.CylinderPrimitive cylinderPrim)
         {
             var cylinder = collisionShape.Shape as CylinderShape3D;
-            var scale = collisionShape.Scale;
+            var cylinderTransform = RemoveScale(globalTransform, out var cylinderScale);
 
-            cylinderPrim.radius = cylinder.Radius * scale.X;
-            cylinderPrim.length = cylinder.Height * scale.Y;
-            cylinderPrim.transform = ToVAudio(globalTransform);
+            cylinderPrim.radius = cylinder.Radius * cylinderScale.X;
+            cylinderPrim.length = cylinder.Height * cylinderScale.Y;
+            cylinderPrim.transform = ToVAudio(cylinderTransform);
         }
         else if (primitive is vaudio.PlanePrimitive planePrim)
         {

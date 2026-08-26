@@ -58,7 +58,7 @@ public partial class VARaytracedSource : ALSource3D
 
     float _MaxVolume = 1.0f;
     /// <summary>
-    /// The loudest linear volume (0–1) this emitter's dry source will ever be played at by the consuming application. Used to estimate how long the emitter's reverb tail stays audible in <see cref="EAXUtils.GetEffectiveTailSeconds"/> - a quieter source reaches an inaudible reverb tail sooner. Defaults to 1 (full volume)
+    /// The loudest linear volume (0–1) this emitter's dry source will ever be played at by the consuming application. Used to estimate how long the emitter's reverb tail stays audible - a quieter source reaches an inaudible reverb tail sooner. Defaults to 1 (full volume)
     /// </summary>
     /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity, less than 0 or greater than 1</exception>
     [Export(PropertyHint.Range, "0.0,1.0")]
@@ -91,7 +91,7 @@ public partial class VARaytracedSource : ALSource3D
         }
     }
 
-    int _EchogramGranularity = 200;
+    int _EchogramGranularity = 100;
     /// <summary>The length (in milliseconds) of each entry in the echogram</summary>
     [Export]
     public int EchogramGranularity
@@ -125,7 +125,7 @@ public partial class VARaytracedSource : ALSource3D
         }
     }
 
-    bool _UseListenerReverb = true;
+    bool _UseListenerReverb = false;
     /// <summary>If true, this source's reverb send uses the listener's reverb effect rather than its own</summary>
     [Export]
     public bool UseListenerReverb
@@ -145,7 +145,7 @@ public partial class VARaytracedSource : ALSource3D
 
     float _OcclusionEnergyCap = 0.15f;
     /// <summary>
-    /// The percentage of occlusion energy required for this emitter to be at full volume. Defaults to 15% of the other emitter's <see cref="OcclusionRayCount"/>.
+    /// The percentage of occlusion energy required for this emitter to be at full volume. Defaults to 15% of the other emitter's <see cref="Emitter.OcclusionRayCount"/>.
     /// </summary>
     /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity, or less than 0</exception>
     [Export(PropertyHint.Range, "0.0,1.0")]
@@ -163,7 +163,7 @@ public partial class VARaytracedSource : ALSource3D
 
     float _PermeationEnergyCap = 0.15f;
     /// <summary>
-    /// The percentage of permeation energy required for this emitter to be at full volume. Defaults to 15% of the other emitter's <see cref="PermeationRayCount"/> * <see cref="PermeationBounceCount"/>.
+    /// The percentage of permeation energy required for this emitter to be at full volume. Defaults to 15% of the other emitter's <see cref="Emitter.PermeationRayCount"/> * <see cref="Emitter.PermeationBounceCount"/>.
     /// </summary>
     /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity, or less than 0</exception>
     [Export(PropertyHint.Range, "0.0,1.0")]

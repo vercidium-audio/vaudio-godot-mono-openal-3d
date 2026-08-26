@@ -87,7 +87,7 @@ public partial class VAEmitter : Node3D
         }
     }
 
-    int _EchogramGranularity = 200;
+    int _EchogramGranularity = 100;
     /// <summary>The length (in milliseconds) of each entry in the echogram</summary>
     [Export]
     public int EchogramGranularity
@@ -146,7 +146,7 @@ public partial class VAEmitter : Node3D
         }
     }
 
-    bool _UseListenerReverb = true;
+    bool _UseListenerReverb = false;
     /// <summary>If true, this emitter's reverb send uses the listener's reverb effect rather than its own</summary>
     [Export]
     public bool UseListenerReverb

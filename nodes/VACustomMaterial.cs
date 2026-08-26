@@ -221,6 +221,38 @@ public partial class VACustomMaterial : Node
     /// </summary>
     public vaudio.Color GetDebugColor() => new(DebugColor.R, DebugColor.G, DebugColor.B, 1.0f);
 
+    // Relays property edits made on the editor's own copy of this node (see
+    // VAMaterialPropertiesInspectorPlugin.gd) onto the running game's separate copy - mirrors
+    // VADefaultMaterial.ApplyPropertiesFromEditor. Unlike VADefaultMaterial, this node's own
+    // materialType/vaudioMaterial were already assigned by its own (non-editor) _EnterTree, so
+    // there's no need to re-resolve or re-register anything here - just push the new values into
+    // the vaudio.MaterialProperties instance already registered with the world.
+    public void ApplyPropertiesFromEditor(float absorptionLf, float absorptionHf, float scattering,
+        float transmissionLf, float transmissionHf, float flatTransmissionLf, float flatTransmissionHf, Color debugColor)
+    {
+        _AbsorptionLF = absorptionLf;
+        _AbsorptionHF = absorptionHf;
+        _Scattering = scattering;
+        _TransmissionLF = transmissionLf;
+        _TransmissionHF = transmissionHf;
+        _FlatTransmissionLF = flatTransmissionLf;
+        _FlatTransmissionHF = flatTransmissionHf;
+        _DebugColor = debugColor;
+
+        if (vaudioMaterial == null)
+            return;
+
+        vaudioMaterial.AbsorptionLF = _AbsorptionLF;
+        vaudioMaterial.AbsorptionHF = _AbsorptionHF;
+        vaudioMaterial.Scattering = _Scattering;
+        vaudioMaterial.TransmissionLF = _TransmissionLF;
+        vaudioMaterial.TransmissionHF = _TransmissionHF;
+        vaudioMaterial.FlatTransmissionLF = _FlatTransmissionLF;
+        vaudioMaterial.FlatTransmissionHF = _FlatTransmissionHF;
+
+        vercidiumAudio?.world.SetMaterialColor((vaudio.MaterialType)materialType, GetDebugColor());
+    }
+
     public override string[] _GetConfigurationWarnings()
     {
         var warnings = new List<string>();

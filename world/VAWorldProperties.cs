@@ -33,7 +33,7 @@ public partial class VAWorld : Node3D
     Vector3 _Size = new(200, 100, 200);
     /// <summary>
     /// The size of the world. <br />
-    /// <see cref="Emitter"/>s outside the world will not be raytraced, and <see cref="Primitive"/>s that are fully outside these bounds will be ignored
+    /// <see cref="VASource"/>s outside the world will not be raytraced, and Nodes that are fully outside these bounds will be ignored
     /// </summary>
     /// <exception cref="ArgumentException">Thrown when worldSize is NaN, Infinity, or less than or equal to (0, 0, 0)</exception>
     [Export]
@@ -82,7 +82,7 @@ public partial class VAWorld : Node3D
         }
     }
 
-    bool _WorldIsIndoors = true;
+    bool _WorldIsIndoors = false;
     /// <summary>
     /// Whether the entire world is considered indoors or outdoors. When false, reverb rays stop checking for line-of-sight after hitting the world edge
     /// </summary>
@@ -313,7 +313,7 @@ public partial class VAWorld : Node3D
 
     bool _EmittersOutsideTheWorldAreMuffled = true;
     /// <summary>
-    /// Whether <see cref="Emitter"/>s outside the world have 0 occlusion/permeation energy (true) or maximum energy (false).
+    /// Whether <see cref="VASource"/>s outside the world have 0 occlusion/permeation energy (true) or maximum energy (false).
     /// </summary>
     [Export]
     public bool EmittersOutsideTheWorldAreMuffled

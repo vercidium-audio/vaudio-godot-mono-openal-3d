@@ -26,7 +26,7 @@ public partial class VARaytracedSource : ALSource3D
 
     public bool Raytraced => emitter != null && emitter.Raytraced;
 
-    private bool _RaytraceOnce = true;
+    private bool _RaytraceOnce = false;
 
     [Export]
     public bool RaytraceOnce

@@ -281,4 +281,37 @@ public partial class VADefaultMaterial : Node
     /// Gets the debug color as a vaudio.Color
     /// </summary>
     public vaudio.Color GetDebugColor() => new(DebugColor.R, DebugColor.G, DebugColor.B, 1.0f);
+
+    // Relays property edits made on the editor's own copy of this node (see
+    // VAMaterialPropertiesInspectorPlugin.gd) onto the running game's separate copy - mirrors
+    // VAWorldDebugger.OnDebuggerMessage's use of SyncPrimitive for the material-assignment
+    // dropdown. Called instead of going through the [Export] setters above, since those already
+    // ran (with no effect, as vercidiumAudio is null) on the editor's own copy.
+    public void ApplyPropertiesFromEditor(float absorptionLf, float absorptionHf, float scattering,
+        float transmissionLf, float transmissionHf, float flatTransmissionLf, float flatTransmissionHf, Color debugColor)
+    {
+        _AbsorptionLF = absorptionLf;
+        _AbsorptionHF = absorptionHf;
+        _Scattering = scattering;
+        _TransmissionLF = transmissionLf;
+        _TransmissionHF = transmissionHf;
+        _FlatTransmissionLF = flatTransmissionLf;
+        _FlatTransmissionHF = flatTransmissionHf;
+        _DebugColor = debugColor;
+
+        if (vercidiumAudio == null)
+            return;
+
+        var mat = vercidiumAudio.world.GetMaterial(MaterialType);
+
+        mat.AbsorptionLF = _AbsorptionLF;
+        mat.AbsorptionHF = _AbsorptionHF;
+        mat.Scattering = _Scattering;
+        mat.TransmissionLF = _TransmissionLF;
+        mat.TransmissionHF = _TransmissionHF;
+        mat.FlatTransmissionLF = _FlatTransmissionLF;
+        mat.FlatTransmissionHF = _FlatTransmissionHF;
+
+        vercidiumAudio.world.SetMaterialColor(MaterialType, GetDebugColor());
+    }
 }

@@ -29,9 +29,12 @@ public partial class VAWorld : Node3D
     }
 
     // EngineDebugger strips the "vaudio:" prefix before calling this, so message here is just
-    // "sync_primitive".
+    // "sync_primitive"/"sync_material_properties".
     bool OnDebuggerMessage(string message, Godot.Collections.Array data)
     {
+        if (message == "sync_material_properties")
+            return OnSyncMaterialProperties(data);
+
         if (message != "sync_primitive" || data.Count < 4)
             return false;
 
@@ -80,6 +83,57 @@ public partial class VAWorld : Node3D
             node.SetMeta(USE_FLAT_TRANSMISSION_META_KEY, useFlatTransmission);
 
         SyncPrimitive(node);
+
+        return true;
+    }
+
+    // Relays a VADefaultMaterial/VACustomMaterial property edit made in the Inspector while the
+    // game is running - see VAMaterialPropertiesInspectorPlugin.gd. Unlike sync_primitive above,
+    // this never touches node metadata or re-registers a primitive: the target node's own
+    // ApplyPropertiesFromEditor pushes the new values straight into the vaudio.World material
+    // already tracking it.
+    bool OnSyncMaterialProperties(Godot.Collections.Array data)
+    {
+        // sceneRootName, nodePath, 7 material floats, debugColor
+        if (data.Count < 10)
+            return false;
+
+        var treeRoot = GetTree()?.Root;
+        if (treeRoot == null)
+        {
+            LogWarning("Received a material property edit from the editor, but the game has no scene tree root");
+            return true;
+        }
+
+        var sceneRootName = data[0].As<string>();
+        var sceneRoot = FindChildNamedRecursive(treeRoot, sceneRootName);
+
+        if (sceneRoot == null)
+        {
+            LogWarning($"Received a material property edit from the editor, but no node named '{sceneRootName}' exists in the running scene");
+            return true;
+        }
+
+        var nodePath = data[1].As<NodePath>();
+        var node = sceneRoot.GetNodeOrNull(nodePath);
+
+        float absorptionLf = data[2].As<float>();
+        float absorptionHf = data[3].As<float>();
+        float scattering = data[4].As<float>();
+        float transmissionLf = data[5].As<float>();
+        float transmissionHf = data[6].As<float>();
+        float flatTransmissionLf = data[7].As<float>();
+        float flatTransmissionHf = data[8].As<float>();
+        var debugColor = data[9].As<Color>();
+
+        if (node is VADefaultMaterial defaultMaterial)
+            defaultMaterial.ApplyPropertiesFromEditor(absorptionLf, absorptionHf, scattering,
+                transmissionLf, transmissionHf, flatTransmissionLf, flatTransmissionHf, debugColor);
+        else if (node is VACustomMaterial customMaterial)
+            customMaterial.ApplyPropertiesFromEditor(absorptionLf, absorptionHf, scattering,
+                transmissionLf, transmissionHf, flatTransmissionLf, flatTransmissionHf, debugColor);
+        else
+            LogWarning($"Received a material property edit from the editor for '{nodePath}', but no matching VADefaultMaterial/VACustomMaterial node exists under '{sceneRootName}' ({sceneRoot.GetPath()})");
 
         return true;
     }
