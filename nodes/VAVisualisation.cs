@@ -114,8 +114,8 @@ public partial class VAVisualisation : Node3D
 
     public override string[] _GetConfigurationWarnings()
     {
-        if (GetParent() is not VAEmitter)
-            return ["This node must be a direct child of a VAEmitter (or VASource) to render its visualisation rays."];
+        if (GetParent() is not VAEmitter and not VARaytracedSource)
+            return ["This node must be a direct child of a VAEmitter (or a VARaytracedSource such as VASource/VAStreamSource) to render its visualisation rays."];
 
         return [];
     }

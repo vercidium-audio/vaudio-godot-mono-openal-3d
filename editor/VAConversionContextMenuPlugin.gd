@@ -154,13 +154,11 @@ func convert_node(old_node: Node, target_class: String) -> void:
 			copy_property(old_node, new_node, "ReferenceDistance", "ReferenceDistance")
 
 	# AudioStreamPlayer(3D) has no Looping property of its own - Godot instead loops based on the imported .wav's
-	# "Loop Mode" (Import tab). Default VASourceAmbient to loop when converting from one of those, since ambience is
-	# effectively always meant to loop and this is the closest equivalent signal available. Only applies when old_node
-	# didn't already have its own Looping property (i.e. wasn't itself one of this addon's sources) - that value
-	# already won above via copy_property(old_node, new_node, "Looping", "Looping").
-	if target_class == "VASourceAmbient" and not has_property(old_node, "Looping"):
-		if any_stream_wants_looping(new_node.Streams):
-			new_node.Looping = true
+	# "Loop Mode" (Import tab). Derive Looping from that when converting from one of those. Only applies when
+	# old_node didn't already have its own Looping property (i.e. wasn't itself one of this addon's sources) -
+	# that value already won above via copy_property(old_node, new_node, "Looping", "Looping").
+	if not has_property(old_node, "Looping"):
+		new_node.Looping = any_stream_wants_looping(new_node.Streams)
 
 	# If 3D, copy its transform
 	if old_node is Node3D and new_node is Node3D:
@@ -200,11 +198,15 @@ func copy_property(source: Object, target: Object, from: String, to: String) -> 
 	target.set(to, source.get(from))
 	return true
 
-# AudioStreamWAV's imported "Loop Mode" is the closest equivalent to a Looping flag for a plain AudioStreamPlayer(3D).
-# Ping pong / backwards aren't representable by this addon's simple looping flag, so any non-disabled loop mode counts.
+# AudioStreamWAV's imported "Loop Mode" and AudioStreamOggVorbis's "Loop" checkbox are the closest equivalent to a
+# Looping flag for a plain AudioStreamPlayer(3D). Ping pong / backwards aren't representable by this addon's simple
+# looping flag, so any non-disabled WAV loop mode, or an enabled Ogg loop flag, counts.
 func any_stream_wants_looping(streams: Array) -> bool:
 	for stream in streams:
 		if stream is AudioStreamWAV and stream.loop_mode != AudioStreamWAV.LOOP_DISABLED:
+			return true
+
+		if stream is AudioStreamOggVorbis and stream.loop:
 			return true
 
 	return false
