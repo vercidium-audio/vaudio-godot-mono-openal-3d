@@ -31,13 +31,18 @@ func sync_primitive(scene_root_name: String, node_path: NodePath, material: Stri
 # Relays a VADefaultMaterial/VACustomMaterial property edit made in the Inspector while the game
 # is running - see VAMaterialPropertiesInspectorPlugin.gd. Received by
 # VAWorld.OnSyncMaterialProperties (VAWorldDebugger.cs), which applies the values directly via
-# ApplyPropertiesFromEditor - unlike sync_primitive above, there's no metadata to carry across and
-# no primitive to re-add.
-func sync_material_properties(scene_root_name: String, node_path: NodePath, absorption_lf: float,
-		absorption_hf: float, scattering: float, transmission_lf: float, transmission_hf: float,
-		flat_transmission_lf: float, flat_transmission_hf: float, debug_color: Color) -> void:
+# ApplyPropertiesFromEditor - unlike sync_primitive above, there's no metadata to carry across.
+# node_name/is_custom_material/material_type/custom_material_name let the receiving end create the
+# node itself (mirroring the editor's local copy) if it doesn't exist in the running game yet - see
+# VAMaterialPropertiesInspectorPlugin._sync_running_game for why that can happen.
+func sync_material_properties(scene_root_name: String, node_path: NodePath, node_name: String,
+		is_custom_material: bool, material_type: int, custom_material_name: String,
+		absorption_lf: float, absorption_hf: float, scattering: float, transmission_lf: float,
+		transmission_hf: float, flat_transmission_lf: float, flat_transmission_hf: float,
+		debug_color: Color) -> void:
 	for session in get_sessions():
 		if session != null and session.is_active():
 			session.send_message("vaudio:sync_material_properties", [scene_root_name, node_path,
-				absorption_lf, absorption_hf, scattering, transmission_lf, transmission_hf,
-				flat_transmission_lf, flat_transmission_hf, debug_color])
+				node_name, is_custom_material, material_type, custom_material_name, absorption_lf,
+				absorption_hf, scattering, transmission_lf, transmission_hf, flat_transmission_lf,
+				flat_transmission_hf, debug_color])

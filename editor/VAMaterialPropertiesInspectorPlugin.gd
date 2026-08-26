@@ -54,6 +54,12 @@ func _on_property_edited(property_name: String) -> void:
 # Mirrors VAMaterialInspectorPlugin._sync_running_game - see its header comment for why the
 # debugger protocol is the only bridge between the editor's local copy of this node and the
 # running game's separate copy.
+#
+# node.name/is_custom_material/material_type/custom_material_name let the receiving end
+# (VAWorldDebugger.cs) create the node itself if it doesn't exist in the running game yet - e.g. a
+# VADefaultMaterial/VACustomMaterial added in the editor while the game is already running never
+# enters the running game's own scene tree (the debugger protocol only relays property edits, not
+# new nodes), so without this the sync would just fail with "no matching node exists".
 func _sync_running_game(node: Node) -> void:
 	if debugger_plugin == null:
 		return
@@ -62,7 +68,15 @@ func _sync_running_game(node: Node) -> void:
 	if scene_root == null:
 		return
 
+	var is_custom_material := node is VACustomMaterial
+
+	# VADefaultMaterial.MaterialType (a C# enum) marshals to GDScript as a plain int - VACustomMaterial
+	# has no such property, so 0 is sent here and the receiving end only reads it for VADefaultMaterial.
+	var material_type: int = 0 if is_custom_material else node.MaterialType
+	var custom_material_name: String = node.MaterialName if is_custom_material else ""
+
 	var node_path := scene_root.get_path_to(node)
-	debugger_plugin.sync_material_properties(scene_root.name, node_path, node.AbsorptionLF,
+	debugger_plugin.sync_material_properties(scene_root.name, node_path, node.name,
+		is_custom_material, material_type, custom_material_name, node.AbsorptionLF,
 		node.AbsorptionHF, node.Scattering, node.TransmissionLF, node.TransmissionHF,
 		node.FlatTransmissionLF, node.FlatTransmissionHF, node.DebugColor)

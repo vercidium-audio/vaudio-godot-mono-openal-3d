@@ -89,13 +89,17 @@ public partial class VAWorld : Node3D
 
     // Relays a VADefaultMaterial/VACustomMaterial property edit made in the Inspector while the
     // game is running - see VAMaterialPropertiesInspectorPlugin.gd. Unlike sync_primitive above,
-    // this never touches node metadata or re-registers a primitive: the target node's own
-    // ApplyPropertiesFromEditor pushes the new values straight into the vaudio.World material
-    // already tracking it.
+    // this never touches node metadata: the target node's own ApplyPropertiesFromEditor pushes the
+    // new values straight into the vaudio.World material already tracking it. If the node doesn't
+    // exist yet (e.g. it was just created in the editor while the game is already running - the
+    // debugger protocol only relays property edits, not new nodes, so the running game's own tree
+    // never heard about it), it's created here under its already-existing parent so its own
+    // _EnterTree can register it with the running vaudio.World the normal way.
     bool OnSyncMaterialProperties(Godot.Collections.Array data)
     {
-        // sceneRootName, nodePath, 7 material floats, debugColor
-        if (data.Count < 10)
+        // sceneRootName, nodePath, nodeName, isCustomMaterial, materialType, customMaterialName,
+        // 7 material floats, debugColor
+        if (data.Count < 14)
             return false;
 
         var treeRoot = GetTree()?.Root;
@@ -117,14 +121,22 @@ public partial class VAWorld : Node3D
         var nodePath = data[1].As<NodePath>();
         var node = sceneRoot.GetNodeOrNull(nodePath);
 
-        float absorptionLf = data[2].As<float>();
-        float absorptionHf = data[3].As<float>();
-        float scattering = data[4].As<float>();
-        float transmissionLf = data[5].As<float>();
-        float transmissionHf = data[6].As<float>();
-        float flatTransmissionLf = data[7].As<float>();
-        float flatTransmissionHf = data[8].As<float>();
-        var debugColor = data[9].As<Color>();
+        var nodeName = data[2].As<string>();
+        var isCustomMaterial = data[3].As<bool>();
+        var materialType = data[4].As<int>();
+        var customMaterialName = data[5].As<string>();
+
+        float absorptionLf = data[6].As<float>();
+        float absorptionHf = data[7].As<float>();
+        float scattering = data[8].As<float>();
+        float transmissionLf = data[9].As<float>();
+        float transmissionHf = data[10].As<float>();
+        float flatTransmissionLf = data[11].As<float>();
+        float flatTransmissionHf = data[12].As<float>();
+        var debugColor = data[13].As<Color>();
+
+        if (node == null)
+            node = CreateMissingMaterialNode(sceneRoot, nodePath, nodeName, isCustomMaterial, materialType, customMaterialName);
 
         if (node is VADefaultMaterial defaultMaterial)
             defaultMaterial.ApplyPropertiesFromEditor(absorptionLf, absorptionHf, scattering,
@@ -133,9 +145,46 @@ public partial class VAWorld : Node3D
             customMaterial.ApplyPropertiesFromEditor(absorptionLf, absorptionHf, scattering,
                 transmissionLf, transmissionHf, flatTransmissionLf, flatTransmissionHf, debugColor);
         else
-            LogWarning($"Received a material property edit from the editor for '{nodePath}', but no matching VADefaultMaterial/VACustomMaterial node exists under '{sceneRootName}' ({sceneRoot.GetPath()})");
+            LogWarning($"Received a material property edit from the editor for '{nodePath}', but no matching VADefaultMaterial/VACustomMaterial node exists under '{sceneRootName}' ({sceneRoot.GetPath()}), and its parent VAWorld node doesn't exist in the running scene either - restart the running game to pick it up");
 
         return true;
+    }
+
+    // VADefaultMaterial/VACustomMaterial nodes are always direct children of a VAWorld node (see
+    // both classes' doc comments), so the missing material node's parent is just the VAWorld one
+    // level up nodePath - which is expected to already exist in the running game's tree (either it
+    // was there when the scene loaded, or the game's own VAWorld itself). Returns null (with no
+    // node created) if that parent isn't found either.
+    static Node CreateMissingMaterialNode(Node sceneRoot, NodePath nodePath, string nodeName,
+        bool isCustomMaterial, int materialType, string customMaterialName)
+    {
+        int nameCount = nodePath.GetNameCount();
+        if (nameCount < 2)
+            return null;
+
+        var parentSegments = new string[nameCount - 1];
+
+        for (int i = 0; i < parentSegments.Length; i++)
+            parentSegments[i] = nodePath.GetName(i);
+
+        var parent = sceneRoot.GetNodeOrNull(new NodePath(string.Join('/', parentSegments)));
+        if (parent is not VAWorld)
+            return null;
+
+        Node node;
+
+        if (isCustomMaterial)
+        {
+            node = new VACustomMaterial { Name = nodeName, MaterialName = customMaterialName };
+        }
+        else
+        {
+            node = new VADefaultMaterial { Name = nodeName, MaterialType = (vaudio.MaterialType)materialType };
+        }
+
+        parent.AddChild(node);
+
+        return node;
     }
 
     // Depth-first search for a descendant named name - used instead of SceneTree.CurrentScene,
