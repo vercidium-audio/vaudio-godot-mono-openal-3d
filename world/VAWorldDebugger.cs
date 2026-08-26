@@ -90,11 +90,16 @@ public partial class VAWorld : Node3D
     // Relays a VADefaultMaterial/VACustomMaterial property edit made in the Inspector while the
     // game is running - see VAMaterialPropertiesInspectorPlugin.gd. Unlike sync_primitive above,
     // this never touches node metadata: the target node's own ApplyPropertiesFromEditor pushes the
-    // new values straight into the vaudio.World material already tracking it. If the node doesn't
-    // exist yet (e.g. it was just created in the editor while the game is already running - the
-    // debugger protocol only relays property edits, not new nodes, so the running game's own tree
-    // never heard about it), it's created here under its already-existing parent so its own
-    // _EnterTree can register it with the running vaudio.World the normal way.
+    // new values straight into the vaudio.World material already tracking it.
+    //
+    // If the node doesn't exist yet, or exists but is a plain Node rather than a
+    // VADefaultMaterial/VACustomMaterial, it's (re)created here so its own _EnterTree can register
+    // it with the running vaudio.World the normal way. The "exists but plain Node" case isn't a
+    // custom-protocol gap like sync_primitive's - Godot's own editor Live Edit already creates a
+    // matching node in the running game whenever one is added in the editor's local scene copy, but
+    // Live Edit only replicates the node's built-in Godot class, not any script attached to it
+    // (VADefaultMaterial/VACustomMaterial are Nodes with a C# script, not distinct Godot classes),
+    // so the node Live Edit creates is always a scriptless plain Node.
     bool OnSyncMaterialProperties(Godot.Collections.Array data)
     {
         // sceneRootName, nodePath, nodeName, isCustomMaterial, materialType, customMaterialName,
@@ -135,8 +140,8 @@ public partial class VAWorld : Node3D
         float flatTransmissionHf = data[12].As<float>();
         var debugColor = data[13].As<Color>();
 
-        if (node == null)
-            node = CreateMissingMaterialNode(sceneRoot, nodePath, nodeName, isCustomMaterial, materialType, customMaterialName);
+        if (node is not VADefaultMaterial and not VACustomMaterial)
+            node = ReplaceWithMaterialNode(sceneRoot, nodePath, node, nodeName, isCustomMaterial, materialType, customMaterialName);
 
         if (node is VADefaultMaterial defaultMaterial)
             defaultMaterial.ApplyPropertiesFromEditor(absorptionLf, absorptionHf, scattering,
@@ -151,23 +156,36 @@ public partial class VAWorld : Node3D
     }
 
     // VADefaultMaterial/VACustomMaterial nodes are always direct children of a VAWorld node (see
-    // both classes' doc comments), so the missing material node's parent is just the VAWorld one
-    // level up nodePath - which is expected to already exist in the running game's tree (either it
-    // was there when the scene loaded, or the game's own VAWorld itself). Returns null (with no
-    // node created) if that parent isn't found either.
-    static Node CreateMissingMaterialNode(Node sceneRoot, NodePath nodePath, string nodeName,
+    // both classes' doc comments). existingNode is either null (nothing at nodePath at all) or a
+    // plain Node Live Edit already created there (see OnSyncMaterialProperties) - either way it's
+    // replaced with a freshly constructed, correctly typed node under the same parent, so the new
+    // node's own _EnterTree runs and registers it with the running vaudio.World. Returns null (with
+    // no node created) if the parent isn't a VAWorld already present in the running scene.
+    static Node ReplaceWithMaterialNode(Node sceneRoot, NodePath nodePath, Node existingNode, string nodeName,
         bool isCustomMaterial, int materialType, string customMaterialName)
     {
-        int nameCount = nodePath.GetNameCount();
-        if (nameCount < 2)
-            return null;
+        Node parent;
 
-        var parentSegments = new string[nameCount - 1];
+        if (existingNode != null)
+        {
+            parent = existingNode.GetParent();
+            parent?.RemoveChild(existingNode);
+            existingNode.QueueFree();
+        }
+        else
+        {
+            int nameCount = nodePath.GetNameCount();
+            if (nameCount < 2)
+                return null;
 
-        for (int i = 0; i < parentSegments.Length; i++)
-            parentSegments[i] = nodePath.GetName(i);
+            var parentSegments = new string[nameCount - 1];
 
-        var parent = sceneRoot.GetNodeOrNull(new NodePath(string.Join('/', parentSegments)));
+            for (int i = 0; i < parentSegments.Length; i++)
+                parentSegments[i] = nodePath.GetName(i);
+
+            parent = sceneRoot.GetNodeOrNull(new NodePath(string.Join('/', parentSegments)));
+        }
+
         if (parent is not VAWorld)
             return null;
 
