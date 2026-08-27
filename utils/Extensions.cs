@@ -1,5 +1,5 @@
-global using static vaudio_godot_mono_openal_3d.Extensions;
-global using static vaudio_godot_mono_openal_3d.GlobalHelpers;
+global using static vaudio_godot_mono_openal.Extensions;
+global using static vaudio_godot_mono_openal.GlobalHelpers;
 
 namespace vaudio_godot_mono_openal;
 
