@@ -165,7 +165,12 @@ public partial class VAWorld : Node3D
     public override void _Process(double delta)
     {
         if (Engine.IsEditorHint())
+        {
+            if (SyncViewport)
+                SendViewportCameraToRunningGame();
+
             return;
+        }
 
         if (listener == null)
         {

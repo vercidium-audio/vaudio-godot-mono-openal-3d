@@ -403,4 +403,12 @@ public partial class VAWorld : Node3D
                 world.RenderingEnabled = value;
         }
     }
+
+    /// <summary>
+    /// While playing, mirrors the editor's 3D viewport camera into the debug window's camera - move
+    /// the camera in the editor viewport and the debug window follows, instead of flying the debug
+    /// window's own F1 free-fly camera separately.
+    /// </summary>
+    [Export]
+    public bool SyncViewport = true;
 }

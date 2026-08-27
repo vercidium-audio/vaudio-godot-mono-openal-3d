@@ -35,6 +35,11 @@ var debugger_plugin
 var device_refresh_inspector_plugin
 var inspector_tooltip_plugin
 
+# Name VAWorld.cs looks up via Engine.get_singleton to reach debugger_plugin for its SyncViewport
+# property - see the registration below for why a singleton is needed instead of the push-based
+# wiring the material inspector plugins below use.
+const DEBUGGER_PLUGIN_SINGLETON_NAME = "VADebuggerPlugin"
+
 # "audio/vaudio/*" Project Settings
 const DEFAULT_DEVICE_LABEL = "System Default"
 
@@ -67,6 +72,12 @@ func _enter_tree():
 
 	debugger_plugin = VADebuggerPlugin.new()
 	add_debugger_plugin(debugger_plugin)
+
+	# Also registered as an Engine singleton so VAWorld.cs's SyncViewport property can fetch this
+	# same instance via Engine.get_singleton and call sync_viewport_camera on it directly - VAWorld
+	# is instantiated by the user's own scene, not constructed by this plugin, so it has no other
+	# way to reach debugger_plugin the way the inspector plugins below do (set_debugger_plugin).
+	Engine.register_singleton(DEBUGGER_PLUGIN_SINGLETON_NAME, debugger_plugin)
 
 	material_inspector_plugin = VAMaterialInspectorPlugin.new()
 	material_inspector_plugin.set_debugger_plugin(debugger_plugin)
@@ -129,6 +140,9 @@ func _exit_tree():
 		inspector_tooltip_plugin = null
 
 	if debugger_plugin:
+		if Engine.has_singleton(DEBUGGER_PLUGIN_SINGLETON_NAME):
+			Engine.unregister_singleton(DEBUGGER_PLUGIN_SINGLETON_NAME)
+
 		remove_debugger_plugin(debugger_plugin)
 		debugger_plugin = null
 

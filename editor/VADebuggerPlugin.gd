@@ -46,3 +46,16 @@ func sync_material_properties(scene_root_name: String, node_path: NodePath, node
 				node_name, is_custom_material, material_type, custom_material_name, absorption_lf,
 				absorption_hf, scattering, transmission_lf, transmission_hf, flat_transmission_lf,
 				flat_transmission_hf, debug_color])
+
+# Relays the editor's 3D viewport camera transform and vertical FOV (degrees) to every active game
+# session, for VAWorld's SyncViewport property (see VAWorldProperties.cs/VAWorldDebugger.cs) to
+# mirror into the vaudio debug render window. Polled every editor frame by VAWorld.cs itself (via
+# Engine.get_singleton, since this instance is registered as a singleton in plugin_main.gd rather
+# than pushed into a consumer the way the inspector plugins above are - VAWorld is instantiated by
+# the user's own scene, not constructed by this plugin), rather than being driven by an
+# EditorInspectorPlugin/EditorNode3DGizmoPlugin edit like sync_primitive/sync_material_properties
+# are.
+func sync_viewport_camera(position: Vector3, rotation: Vector3, fov_degrees: float) -> void:
+	for session in get_sessions():
+		if session != null and session.is_active():
+			session.send_message("vaudio:sync_viewport_camera", [position, rotation, fov_degrees])

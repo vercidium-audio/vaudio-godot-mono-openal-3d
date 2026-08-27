@@ -28,12 +28,46 @@ public partial class VAWorld : Node3D
             EngineDebugger.UnregisterMessageCapture(DEBUGGER_CAPTURE_NAME);
     }
 
+    const string DEBUGGER_PLUGIN_SINGLETON_NAME = "VADebuggerPlugin";
+
+    // Editor-side only (called from _Process while Engine.IsEditorHint() - see VAWorldGodot.cs) -
+    // sends this editor's own 3D viewport camera transform to the running game over the debugger
+    // protocol, received by OnSyncViewportCamera below. Goes through
+    // editor/VADebuggerPlugin.gd/sync_viewport_camera rather than EngineDebugger directly, since
+    // EngineDebugger's message-sending side only exists in a running game, not the editor process -
+    // Engine.GetSingleton is how this reaches the plugin instance plugin_main.gd registered, since
+    // this VAWorld is instantiated by the user's own scene, not constructed by the plugin itself.
+    void SendViewportCameraToRunningGame()
+    {
+        if (!Engine.HasSingleton(DEBUGGER_PLUGIN_SINGLETON_NAME))
+            return;
+
+        var viewport = EditorInterface.Singleton.GetEditorViewport3D(0);
+        var camera = viewport?.GetCamera3D();
+
+        if (camera == null)
+            return;
+
+        var debuggerPlugin = Engine.GetSingleton(DEBUGGER_PLUGIN_SINGLETON_NAME);
+
+        // camera.Fov is vertical FOV in degrees, matching vaudio's own FieldOfView (vertical,
+        // radians - see World.FieldOfView/Client3D.CreateProjectionMatrix's "fovy" parameter), as
+        // long as the editor camera's KeepAspect is left at its default KeepHeight. If KeepAspect
+        // is KeepWidth instead, camera.Fov is horizontal and this will look off - switch the editor
+        // camera back to KeepHeight rather than converting here, since the debug window has its own
+        // independent aspect ratio the editor viewport knows nothing about.
+        debuggerPlugin.Call("sync_viewport_camera", camera.GlobalPosition, camera.GlobalRotation, camera.Fov);
+    }
+
     // EngineDebugger strips the "vaudio:" prefix before calling this, so message here is just
-    // "sync_primitive"/"sync_material_properties".
+    // "sync_primitive"/"sync_material_properties"/"sync_viewport_camera".
     bool OnDebuggerMessage(string message, Godot.Collections.Array data)
     {
         if (message == "sync_material_properties")
             return OnSyncMaterialProperties(data);
+
+        if (message == "sync_viewport_camera")
+            return OnSyncViewportCamera(data);
 
         if (message != "sync_primitive" || data.Count < 4)
             return false;
@@ -203,6 +237,36 @@ public partial class VAWorld : Node3D
         parent.AddChild(node);
 
         return node;
+    }
+
+    // Receiving end of VADebuggerPlugin.sync_viewport_camera - the editor process sends a
+    // "vaudio:sync_viewport_camera" debugger message every editor frame with its own 3D viewport
+    // camera's world-space position/rotation/vertical FOV (degrees), so long as SOME VAWorld's
+    // SyncViewport is on (each VAWorld polls this independently - see
+    // SendViewportCameraToRunningGame above, called from _Process in VAWorldGodot.cs). Unlike
+    // sync_primitive/sync_material_properties, this isn't addressed to a specific node - only the
+    // first VAWorld to register the shared "vaudio" capture (see
+    // RegisterDebuggerCapture/EngineDebugger.HasCapture) actually receives it, matching the
+    // existing single-registrant assumption for this capture.
+    bool OnSyncViewportCamera(Godot.Collections.Array data)
+    {
+        if (data.Count < 3)
+            return false;
+
+        if (!SyncViewport || world == null || !world.RenderingEnabled)
+            return true;
+
+        var position = data[0].As<Vector3>();
+        var rotation = data[1].As<Vector3>();
+        var fovDegrees = data[2].As<float>();
+
+        world.ManualCamera = false;
+        world.CameraPosition = ToVAudio(position);
+        world.CameraYaw = rotation.Y;
+        world.CameraPitch = rotation.X;
+        world.FieldOfView = float.DegreesToRadians(fovDegrees);
+
+        return true;
     }
 
     // Depth-first search for a descendant named name - used instead of SceneTree.CurrentScene,
