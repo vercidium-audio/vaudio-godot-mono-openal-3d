@@ -168,6 +168,12 @@ public partial class VAEmitter : Node3D
     public vaudio.LowPassFilter AmbientFilter => emitter.AmbientFilter;
     public int GroupedEAXIndex => emitter.GroupedEAXIndex;
 
+    // Matches native's is_ambient_filter_ready/get_ambient_filter_gain_lf/get_ambient_filter_gain_hf - only meaningful on the listener,
+    // and only once raytraced at least once (VASourceAmbient.cs's "vercidiumAudio?.ambientFilter == null" gate port).
+    public bool IsAmbientFilterReady => Raytraced && AmbientFilter != null;
+    public float GetAmbientFilterGainLF() => AmbientFilter?.GainLF ?? 1.0f;
+    public float GetAmbientFilterGainHF() => AmbientFilter?.GainHF ?? 1.0f;
+
     public Action OnRaytracingCompleteCallback;
     public Action<vaudio.Emitter> OnRaytracedByAnotherEmitterCallback;
     public Action OnEmitterRemovedCallback;

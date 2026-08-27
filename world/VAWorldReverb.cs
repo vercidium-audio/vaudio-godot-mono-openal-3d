@@ -50,7 +50,7 @@ public partial class VAWorld : Node3D
         if (listener.AmbientFilter != null)
         {
             var ambientGainLF = listener.AmbientFilter.GainLF;
-            var ambientGainHF = listener.AmbientFilter.GainLF;
+            var ambientGainHF = listener.AmbientFilter.GainHF;
 
             if (ALManager.Initialised)
             {
