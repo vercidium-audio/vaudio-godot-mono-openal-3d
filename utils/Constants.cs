@@ -1,4 +1,4 @@
-global using static vaudio_godot_mono_openal_3d.Logger;
+global using static vaudio_godot_mono_openal.Logger;
 
 global using System;
 global using System.Collections.Generic;
