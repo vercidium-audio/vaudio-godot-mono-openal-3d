@@ -1,17 +1,11 @@
 namespace vaudio_godot_mono_openal;
 
-// This is a Node3D purely so the editor can draw a gizmo showing the world's Position/Size AABB
-// (see VAWorldGizmoPlugin.gd) - the node's transform is otherwise unused by vaudio, which always
-// treats Position/Size as absolute world-space coordinates.
 [Tool]
 public partial class VAWorld : Node3D
 {
-    // Temp
     public List<vaudio.Emitter> emitters = [];
 
-    // Emitters that registered before the listener existed - drained into the listener's targets
-    // once one registers, instead of being permanently left untargeted. Matches the native
-    // plugin's pending_targets.
+    // Emitters that registered before the listener existed - added to the listener's targets once it registers
     List<vaudio.Emitter> pendingTargets = [];
 
     public vaudio.Emitter CreateEmitter(VAEmitter node, Action OnRaytracingComplete, Action<vaudio.Emitter> OnRaytracedByAnotherEmitter)

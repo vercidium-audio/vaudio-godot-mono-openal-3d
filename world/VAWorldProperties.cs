@@ -3,7 +3,7 @@ using OpenAL;
 
 namespace vaudio_godot_mono_openal;
 
-public partial class VAWorld : Node3D
+public partial class VAWorld
 {
     public Node3D SceneRoot;
 

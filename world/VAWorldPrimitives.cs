@@ -1,6 +1,6 @@
 namespace vaudio_godot_mono_openal;
 
-public partial class VAWorld : Node3D
+public partial class VAWorld
 {
     void AddPrimitive(Node node, vaudio.MaterialType material, bool recursive) =>
         AddPrimitive(node, material, false, recursive);

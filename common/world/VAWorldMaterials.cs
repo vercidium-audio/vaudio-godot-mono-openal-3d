@@ -1,6 +1,6 @@
 namespace vaudio_godot_mono_openal;
 
-public partial class VAWorld : Node3D
+public partial class VAWorld
 {
     const int FirstCustomMaterialId = 1000;
 
