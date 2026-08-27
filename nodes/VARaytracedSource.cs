@@ -1,5 +1,3 @@
-using System.Linq;
-
 namespace vaudio_godot_mono_openal_3d;
 
 // Shared raytracing surface for any spatialised source that casts its own reverb/ambience/
@@ -23,6 +21,12 @@ public partial class VARaytracedSource : ALSource3D
 {
     protected VAWorld vercidiumAudio;
     protected VAEmitter emitter;
+
+    // The internal child VAEmitter this source creates at runtime (see CreateEmitter). Null until
+    // then. Exposed so a VAVisualisation placed directly under this source can bind to it without
+    // being reparented onto it - keeping the VAVisualisation at its authored scene path so the
+    // editor's Sync Scene Changes can forward runtime property edits to it.
+    public VAEmitter RaytracedEmitter => emitter;
 
     public bool Raytraced => emitter != null && emitter.Raytraced;
 
@@ -129,14 +133,10 @@ public partial class VARaytracedSource : ALSource3D
 
         AddChild(emitter);
 
-        // VAVisualisation must be a direct child of a VAEmitter to render, but this node's own
-        // VAEmitter is only created here, at runtime - reparent any VAVisualisation nodes added
-        // under this node in the editor onto it now that it exists.
-        foreach (var visualisation in GetChildren().OfType<VAVisualisation>().ToArray())
-        {
-            RemoveChild(visualisation);
-            emitter.AddChild(visualisation);
-        }
+        // A VAVisualisation placed directly under this source stays where the user put it and binds
+        // to the emitter above via RaytracedEmitter - it is not reparented onto the internal
+        // VAEmitter, so its scene path is stable and the editor can push runtime property edits to
+        // it (Debug > Sync Scene Changes).
     }
 
     protected virtual void OnRaytracedByAnotherEmitter(vaudio.Emitter other)

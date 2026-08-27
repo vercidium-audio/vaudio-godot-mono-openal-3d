@@ -2,24 +2,26 @@ namespace vaudio_godot_mono_openal_3d;
 
 /// <summary>
 /// Renders an emitter's <see cref="vaudio.Emitter.VisualisationCallback"/> ray-bounce results as
-/// fading diamond sprites. Must be a direct child of a <see cref="VAEmitter"/> - this node finds
-/// that parent, registers itself as the visualisation callback target, and pushes the exported
-/// RayCount/BounceCount/UpdateFrequencyMs onto the parent's emitter. Adding this as a child of a
-/// <see cref="VASource"/> also works: VASource reparents it onto its own internally-created
-/// VAEmitter child once that exists (see VASource.CreateEmitter). Each callback invocation (every
-/// UpdateFrequencyMs) writes one MultiMesh instance per VisualisationData entry; per-frame fading
-/// is entirely GPU-side (a ShaderMaterial reads each instance's spawn time out of its custom data
-/// and the FadeInMs/FadeOutMs/DurationMs/Color uniforms below), so nothing here does per-instance
-/// work outside the callback itself.
+/// fading diamond sprites. Add it as a direct child of a <see cref="VAEmitter"/>, or of a
+/// <see cref="VARaytracedSource"/> such as <see cref="VASource"/>/<see cref="VAStreamSource"/> - in
+/// the source case it binds to that source's internal emitter (VARaytracedSource.RaytracedEmitter)
+/// without being moved in the tree. This node registers itself as the visualisation callback
+/// target and pushes the exported RayCount/BounceCount/UpdateFrequencyMs onto that emitter. Each
+/// callback invocation (every UpdateFrequencyMs) writes one MultiMesh instance per
+/// VisualisationData entry; per-frame fading is entirely GPU-side (a ShaderMaterial reads each
+/// instance's spawn time out of its custom data and the FadeInMs/FadeOutMs/DurationMs/Color
+/// uniforms below), so nothing here does per-instance work outside the callback itself.
 ///
-/// Adding this node while the game is already running (e.g. editing the scene locally with
-/// Debug > Sync Scene Changes enabled) only runs its script in the editor's own tool-script
-/// preview context (Engine.IsEditorHint() is true there) - Godot Mono does not actually
-/// instantiate the new C# node inside the live running game process the way GDScript nodes do
-/// (this is an upstream Godot C# hot-reload limitation, not something fixable here - see
-/// godotengine/godot-proposals#7746/#9001/#9519). The native (GDExtension) plugin doesn't have
-/// this limitation since it has no separate script hot-reload layer to fail through. Restart the
-/// game to see a newly-added VAVisualisation render.
+/// Because this node stays at the scene path the user authored it at (it is never reparented),
+/// the editor's Debug > Sync Scene Changes forwards runtime property edits to the running
+/// instance - so RayCount, Color, FadeInMs etc. can all be tweaked live while the game runs, the
+/// same way an emitter's own ray counts can.
+///
+/// Adding this node while the game is already running only runs its script in the editor's own
+/// tool-script preview context (Engine.IsEditorHint() is true there) - Godot Mono does not
+/// actually instantiate the new C# node inside the live running game process the way GDScript
+/// nodes do (upstream Godot C# hot-reload limitation - godotengine/godot-proposals#7746/#9001/
+/// #9519). Restart the game to see a newly-added VAVisualisation render.
 /// </summary>
 [Tool]
 [GlobalClass]
@@ -53,6 +55,8 @@ public partial class VAVisualisation : Node3D
         }
         """;
 
+    // The VAEmitter node whose vaudio.Emitter this node drives + renders. Either this node's direct
+    // VAEmitter parent, or the internal emitter of a VARaytracedSource parent (VASource etc.).
     VAEmitter emitter;
 
     MultiMesh multimesh;
@@ -77,8 +81,8 @@ public partial class VAVisualisation : Node3D
 
         if (emitter == null)
         {
-            // This node's scene may enter the tree before being parented under its intended
-            // VAEmitter/VASource.
+            // The parent VAEmitter/VARaytracedSource may not have created its vaudio.Emitter yet
+            // (VARaytracedSource creates it only once a VAWorld is found) - retry as nodes appear.
             waitingForParent = true;
             GetTree().NodeAdded += RetryFindEmitter;
         }
@@ -122,21 +126,25 @@ public partial class VAVisualisation : Node3D
 
     void FindEmitter()
     {
-        emitter = GetParent() as VAEmitter;
-
-        if (emitter == null)
+        // Accept either a VAEmitter parent directly, or a VARaytracedSource parent (VASource /
+        // VAStreamSource) and use the emitter it creates internally. Either way this node is not
+        // moved in the tree.
+        var candidate = GetParent() switch
         {
-            LogWarning($"[vaudio-godot-mono-openal-3d] {Name} must be a direct child of a VAEmitter (or VASource) to render its visualisation rays.");
-            return;
-        }
+            VAEmitter parentEmitter => parentEmitter,
+            VARaytracedSource parentSource => parentSource.RaytracedEmitter,
+            _ => null,
+        };
 
-        if (emitter.emitter == null)
+        if (candidate?.emitter == null)
         {
-            // Parent VAEmitter node exists but hasn't created its vaudio.Emitter yet - treat this
-            // the same as "no emitter yet" so we retry later via NodeAdded.
+            // Parent isn't a VAEmitter/VARaytracedSource, or it hasn't created its vaudio.Emitter
+            // yet - either way, retry later via NodeAdded.
             emitter = null;
             return;
         }
+
+        emitter = candidate;
 
         ApplyPropertiesToEmitter();
 
@@ -148,7 +156,12 @@ public partial class VAVisualisation : Node3D
         FindEmitter();
 
         if (emitter == null)
+        {
+            if (GetParent() is not VAEmitter and not VARaytracedSource)
+                LogWarning($"[vaudio-godot-mono-openal-3d] {Name} must be a direct child of a VAEmitter, VASource or VAStreamSource to render its visualisation rays.");
+
             return;
+        }
 
         GetTree().NodeAdded -= RetryFindEmitter;
         waitingForParent = false;
