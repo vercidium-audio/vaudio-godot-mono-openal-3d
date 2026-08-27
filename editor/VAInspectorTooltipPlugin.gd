@@ -25,6 +25,7 @@ const VASource = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourc
 const VASourceRelative = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceRelative.cs")
 const VASourceAmbient = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceAmbient.cs")
 const VASourceLeech = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceLeech.cs")
+const VAVisualisation = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAVisualisation.cs")
 const VADefaultMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VADefaultMaterial.cs")
 const VACustomMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VACustomMaterial.cs")
 
@@ -55,6 +56,7 @@ var _pending_tooltips := {}
 func _can_handle(object) -> bool:
 	return object is VAWorld or object is VAEmitter or object is VASource \
 		or object is VASourceRelative or object is VASourceAmbient or object is VASourceLeech \
+		or object is VAVisualisation \
 		or object is VADefaultMaterial or object is VACustomMaterial
 
 func _parse_begin(object) -> void:
