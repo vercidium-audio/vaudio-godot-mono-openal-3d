@@ -20,6 +20,7 @@ const VADefaultMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/node
 const VACustomMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VACustomMaterial.cs")
 
 const VAWorldGizmoPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VAWorldGizmoPlugin.gd")
+const VANodeGizmoPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VANodeGizmoPlugin.gd")
 const VAMaterialInspectorPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VAMaterialInspectorPlugin.gd")
 const VAMaterialPropertiesInspectorPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VAMaterialPropertiesInspectorPlugin.gd")
 const VAConversionContextMenuPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VAConversionContextMenuPlugin.gd")
@@ -28,6 +29,7 @@ const VADeviceRefreshInspectorPlugin = preload("res://addons/vaudio-godot-mono-o
 const VAInspectorTooltipPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VAInspectorTooltipPlugin.gd")
 
 var world_gizmo_plugin
+var node_gizmo_plugin
 var material_inspector_plugin
 var material_properties_inspector_plugin
 var conversion_context_menu_plugin
@@ -69,6 +71,9 @@ func _enter_tree():
 
 	world_gizmo_plugin = VAWorldGizmoPlugin.new()
 	add_node_3d_gizmo_plugin(world_gizmo_plugin)
+
+	node_gizmo_plugin = VANodeGizmoPlugin.new()
+	add_node_3d_gizmo_plugin(node_gizmo_plugin)
 
 	debugger_plugin = VADebuggerPlugin.new()
 	add_debugger_plugin(debugger_plugin)
@@ -122,6 +127,10 @@ func _exit_tree():
 	if world_gizmo_plugin:
 		remove_node_3d_gizmo_plugin(world_gizmo_plugin)
 		world_gizmo_plugin = null
+
+	if node_gizmo_plugin:
+		remove_node_3d_gizmo_plugin(node_gizmo_plugin)
+		node_gizmo_plugin = null
 
 	if material_inspector_plugin:
 		remove_inspector_plugin(material_inspector_plugin)
