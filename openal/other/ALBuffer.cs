@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 
 using OpenALSource = global::OpenAL.managed.ALSource;
 
-namespace vaudio_godot_mono_openal_3d;
+namespace vaudio_godot_mono_openal;
 
 public class ALBuffer
 {

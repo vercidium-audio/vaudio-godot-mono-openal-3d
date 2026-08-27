@@ -1,6 +1,6 @@
 using Godot.Collections;
 
-namespace vaudio_godot_mono_openal_3d;
+namespace vaudio_godot_mono_openal;
 
 // A purpose-named node for the world's single listener, rather than requiring users to add a
 // plain VAEmitter and tick an IsMainListener checkbox themselves. Place exactly one of these

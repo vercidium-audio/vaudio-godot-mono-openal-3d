@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 
 using Godot.Collections;
 
-namespace vaudio_godot_mono_openal_3d;
+namespace vaudio_godot_mono_openal;
 
 // A VAStreamSource fed automatically by a local input (microphone) capture device. Owns its own ALCaptureDevice, so multiple nodes can each capture from a different device/format at once. SeeVANetworkedStreamSource for the network equivalent.
 [Tool]

@@ -1,7 +1,7 @@
 using OpenALSource = global::OpenAL.managed.ALSource;
 using OpenALStreamSource = global::OpenAL.managed.ALStreamSource;
 
-namespace vaudio_godot_mono_openal_3d;
+namespace vaudio_godot_mono_openal;
 
 // Plays live, caller-pushed PCM data instead of a fixed Streams pool - see VAInputStreamSource
 // (microphone) and VANetworkedStreamSource (fed by a script's networking code).

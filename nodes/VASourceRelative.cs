@@ -1,4 +1,4 @@
-namespace vaudio_godot_mono_openal_3d;
+namespace vaudio_godot_mono_openal;
 
 [Tool]
 [GlobalClass]

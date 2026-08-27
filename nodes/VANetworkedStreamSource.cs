@@ -1,4 +1,4 @@
-namespace vaudio_godot_mono_openal_3d;
+namespace vaudio_godot_mono_openal;
 
 // A VAStreamSource intended to be fed by audio arriving over the network instead of a local input
 // device - see VAInputStreamSource for the microphone equivalent. Adds nothing beyond

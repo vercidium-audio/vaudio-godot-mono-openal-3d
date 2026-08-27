@@ -1,4 +1,4 @@
-namespace vaudio_godot_mono_openal_3d;
+namespace vaudio_godot_mono_openal;
 
 // Shared raytracing surface for any spatialised source that casts its own reverb/ambience/
 // visualisation rays, regardless of how it gets audio into OpenAL (a fixed decoded buffer for

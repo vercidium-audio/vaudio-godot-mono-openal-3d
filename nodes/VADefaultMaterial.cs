@@ -1,4 +1,4 @@
-namespace vaudio_godot_mono_openal_3d;
+namespace vaudio_godot_mono_openal;
 
 /// <summary>
 /// Overrides the properties of one of the SDK's built-in materials.
