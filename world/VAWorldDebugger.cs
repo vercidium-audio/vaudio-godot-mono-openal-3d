@@ -35,8 +35,10 @@ public partial class VAWorld : Node3D
     // protocol, received by OnSyncViewportCamera below. Goes through
     // editor/VADebuggerPlugin.gd/sync_viewport_camera rather than EngineDebugger directly, since
     // EngineDebugger's message-sending side only exists in a running game, not the editor process -
-    // Engine.GetSingleton is how this reaches the plugin instance plugin_main.gd registered, since
-    // this VAWorld is instantiated by the user's own scene, not constructed by the plugin itself.
+    // Engine.GetSingleton is how this reaches the plugin, since this VAWorld is instantiated by the
+    // user's own scene, not constructed by the plugin itself. The registered singleton is an Object
+    // relay (editor/VADebuggerSingleton.gd) that forwards sync_viewport_camera to the real
+    // EditorDebuggerPlugin - it can't be registered directly because it's RefCounted.
     void SendViewportCameraToRunningGame()
     {
         if (!Engine.HasSingleton(DEBUGGER_PLUGIN_SINGLETON_NAME))
@@ -48,7 +50,7 @@ public partial class VAWorld : Node3D
         if (camera == null)
             return;
 
-        var debuggerPlugin = Engine.GetSingleton(DEBUGGER_PLUGIN_SINGLETON_NAME);
+        var debuggerRelay = Engine.GetSingleton(DEBUGGER_PLUGIN_SINGLETON_NAME);
 
         // camera.Fov is vertical FOV in degrees, matching vaudio's own FieldOfView (vertical,
         // radians - see World.FieldOfView/Client3D.CreateProjectionMatrix's "fovy" parameter), as
@@ -56,7 +58,7 @@ public partial class VAWorld : Node3D
         // is KeepWidth instead, camera.Fov is horizontal and this will look off - switch the editor
         // camera back to KeepHeight rather than converting here, since the debug window has its own
         // independent aspect ratio the editor viewport knows nothing about.
-        debuggerPlugin.Call("sync_viewport_camera", camera.GlobalPosition, camera.GlobalRotation, camera.Fov);
+        debuggerRelay.Call("sync_viewport_camera", camera.GlobalPosition, camera.GlobalRotation, camera.Fov);
     }
 
     // EngineDebugger strips the "vaudio:" prefix before calling this, so message here is just

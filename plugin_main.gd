@@ -25,6 +25,7 @@ const VAMaterialInspectorPlugin = preload("res://addons/vaudio-godot-mono-openal
 const VAMaterialPropertiesInspectorPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VAMaterialPropertiesInspectorPlugin.gd")
 const VAConversionContextMenuPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VAConversionContextMenuPlugin.gd")
 const VADebuggerPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VADebuggerPlugin.gd")
+const VADebuggerSingleton = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VADebuggerSingleton.gd")
 const VADeviceRefreshInspectorPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VADeviceRefreshInspectorPlugin.gd")
 const VAInspectorTooltipPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VAInspectorTooltipPlugin.gd")
 
@@ -34,12 +35,16 @@ var material_inspector_plugin
 var material_properties_inspector_plugin
 var conversion_context_menu_plugin
 var debugger_plugin
+var debugger_singleton
 var device_refresh_inspector_plugin
 var inspector_tooltip_plugin
 
-# Name VAWorld.cs looks up via Engine.get_singleton to reach debugger_plugin for its SyncViewport
-# property - see the registration below for why a singleton is needed instead of the push-based
-# wiring the material inspector plugins below use.
+# Name VAWorld.cs looks up via Engine.get_singleton to reach the debugger plugin for its
+# SyncViewport property - see the registration below for why a singleton is needed instead of the
+# push-based wiring the material inspector plugins below use. The registered object is
+# VADebuggerSingleton (an Object relay), not debugger_plugin itself - debugger_plugin extends
+# EditorDebuggerPlugin (RefCounted), and Engine.register_singleton warns/soon-errors on a
+# RefCounted since it keeps only a raw pointer.
 const DEBUGGER_PLUGIN_SINGLETON_NAME = "VADebuggerPlugin"
 
 # "audio/vaudio/*" Project Settings
@@ -78,11 +83,15 @@ func _enter_tree():
 	debugger_plugin = VADebuggerPlugin.new()
 	add_debugger_plugin(debugger_plugin)
 
-	# Also registered as an Engine singleton so VAWorld.cs's SyncViewport property can fetch this
-	# same instance via Engine.get_singleton and call sync_viewport_camera on it directly - VAWorld
-	# is instantiated by the user's own scene, not constructed by this plugin, so it has no other
-	# way to reach debugger_plugin the way the inspector plugins below do (set_debugger_plugin).
-	Engine.register_singleton(DEBUGGER_PLUGIN_SINGLETON_NAME, debugger_plugin)
+	# An Object relay wrapping debugger_plugin is registered as an Engine singleton so VAWorld.cs's
+	# SyncViewport property can fetch it via Engine.get_singleton and call sync_viewport_camera on
+	# it directly - VAWorld is instantiated by the user's own scene, not constructed by this plugin,
+	# so it has no other way to reach debugger_plugin the way the inspector plugins below do
+	# (set_debugger_plugin). The relay is an Object rather than debugger_plugin itself because
+	# Engine.register_singleton warns (and will soon error) when handed a RefCounted like
+	# EditorDebuggerPlugin - it stores only a raw pointer.
+	debugger_singleton = VADebuggerSingleton.new(debugger_plugin)
+	Engine.register_singleton(DEBUGGER_PLUGIN_SINGLETON_NAME, debugger_singleton)
 
 	material_inspector_plugin = VAMaterialInspectorPlugin.new()
 	material_inspector_plugin.set_debugger_plugin(debugger_plugin)
@@ -148,10 +157,15 @@ func _exit_tree():
 		remove_inspector_plugin(inspector_tooltip_plugin)
 		inspector_tooltip_plugin = null
 
-	if debugger_plugin:
-		if Engine.has_singleton(DEBUGGER_PLUGIN_SINGLETON_NAME):
-			Engine.unregister_singleton(DEBUGGER_PLUGIN_SINGLETON_NAME)
+	if Engine.has_singleton(DEBUGGER_PLUGIN_SINGLETON_NAME):
+		Engine.unregister_singleton(DEBUGGER_PLUGIN_SINGLETON_NAME)
 
+	if debugger_singleton:
+		# Plain Object from .new() - not RefCounted, so it must be freed explicitly.
+		debugger_singleton.free()
+		debugger_singleton = null
+
+	if debugger_plugin:
 		remove_debugger_plugin(debugger_plugin)
 		debugger_plugin = null
 
