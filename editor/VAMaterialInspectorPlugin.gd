@@ -73,8 +73,10 @@ func _make_material_row(node: Node3D) -> HBoxContainer:
 	var option_button := OptionButton.new()
 	option_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-	# Index 0 means "no material" - not stored as metadata, removes it instead.
-	option_button.add_item("Air (no geometry)")
+	# Index 0 ("None") means "no material" - not stored as metadata, removes it instead.
+	# Index 1 ("Air") explicitly stores the "air" material metadata string.
+	option_button.add_item("None")
+	option_button.add_item("Air")
 
 	for material_name in BUILTIN_MATERIAL_NAMES:
 		option_button.add_item(material_name)
@@ -125,7 +127,7 @@ func _on_material_selected(index: int, node: Node3D, option_button: OptionButton
 	if index == 0:
 		node.remove_meta(MATERIAL_META_KEY)
 	else:
-		node.set_meta(MATERIAL_META_KEY, option_button.get_item_text(index))
+		node.set_meta(MATERIAL_META_KEY, option_button.get_item_text(index).to_lower())
 
 	EditorInterface.mark_scene_as_unsaved()
 	_sync_running_game(node)
