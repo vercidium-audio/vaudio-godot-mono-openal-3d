@@ -1,6 +1,6 @@
 namespace vaudio_godot_mono_openal;
 
-public partial class VAEmitter : Node3D
+public partial class VAEmitter
 {
     [ExportGroup("Reverb")]
 

@@ -1,8 +1,7 @@
 namespace vaudio_godot_mono_openal;
 
-[Tool]
-[GlobalClass]
-public partial class VAEmitter : Node3D
+// Base type (Node2D/Node3D) and [Tool]/[GlobalClass] are declared per-addon in VAEmitterBase.cs.
+public partial class VAEmitter
 {
     public bool IsMainListener => this is VAListener;
 
@@ -138,7 +137,7 @@ public partial class VAEmitter : Node3D
             cancelWaitForVAWorld();
             cancelWaitForVAWorld = null;
 
-            LogWarning($"[vaudio-godot-mono-openal-3d] '{Name}' left the tree without ever finding a VAWorld - no emitter was created for it. Make sure this node's scene was added under a VAWorld while it was in the tree.");
+            LogWarning($"'{Name}' left the tree without ever finding a VAWorld - no emitter was created for it. Make sure this node's scene was added under a VAWorld while it was in the tree.");
         }
 
         if (emitter != null)
