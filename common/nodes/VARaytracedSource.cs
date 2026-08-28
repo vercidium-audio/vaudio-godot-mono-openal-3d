@@ -16,8 +16,8 @@ namespace vaudio_godot_mono_openal;
 // Not [GlobalClass] - matches native's register_abstract_class<VARaytracedSource>(), which keeps
 // it out of the editor's Create Node dialog since it's only meant to be used via a subclass (e.g.
 // VASource, VAStreamSource).
-[Tool]
-public partial class VARaytracedSource : ALSource3D
+// Base type (ALSource2D/ALSource3D) and [Tool] are declared per-addon in VARaytracedSourceBase.cs.
+public partial class VARaytracedSource
 {
     protected VAWorld vercidiumAudio;
     protected VAEmitter emitter;
@@ -183,7 +183,7 @@ public partial class VARaytracedSource : ALSource3D
             cancelWaitForVAWorld();
             cancelWaitForVAWorld = null;
 
-            LogWarning($"[vaudio-godot-mono-openal-3d] '{Name}' left the tree without ever finding a VAWorld - no emitter was created for it. Make sure this node's scene was added under a VAWorld while it was in the tree.");
+            LogWarning($"'{Name}' left the tree without ever finding a VAWorld - no emitter was created for it. Make sure this node's scene was added under a VAWorld while it was in the tree.");
         }
 
         base._ExitTree();

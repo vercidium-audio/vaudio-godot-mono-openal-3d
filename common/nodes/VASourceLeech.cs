@@ -5,9 +5,7 @@ namespace vaudio_godot_mono_openal;
 // location (e.g. footsteps, gunshots) without each needing its own raytraced emitter.
 // Must be a direct child of a VAEmitter (or VASource, whose child emitter is named
 // "{Name}-Emitter") node.
-[Tool]
-[GlobalClass]
-public partial class VASourceLeech : ALSource3D
+public partial class VASourceLeech
 {
     private VAWorld vercidiumAudio;
     private VAEmitter emitter;
@@ -44,7 +42,7 @@ public partial class VASourceLeech : ALSource3D
 
         if (emitter == null)
         {
-            LogWarning($"[vaudio-godot-mono-openal-3d] '{Name}' is a VASourceLeech but its parent is not a VAEmitter - it will never play. VASourceLeech must be a direct child of a VAEmitter (or VASource) node whose own raytracing results it leeches off.");
+            LogWarning($"'{Name}' is a VASourceLeech but its parent is not a VAEmitter - it will never play. VASourceLeech must be a direct child of a VAEmitter (or VASource) node whose own raytracing results it leeches off.");
             return;
         }
 

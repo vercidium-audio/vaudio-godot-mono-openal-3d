@@ -1,8 +1,6 @@
 namespace vaudio_godot_mono_openal;
 
-[Tool]
-[GlobalClass]
-public partial class VASource : VARaytracedSource
+public partial class VASource
 {
     private bool _PlayWhenRaytracingCompletes = true;
     private bool _wasPlayingBeforeDeviceDestroyed = false;

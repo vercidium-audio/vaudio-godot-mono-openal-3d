@@ -1,6 +1,6 @@
 namespace vaudio_godot_mono_openal;
 
-public partial class VASource : VARaytracedSource
+public partial class VASource
 {
     [ExportGroup("Debug Rendering")]
 
@@ -20,9 +20,7 @@ public partial class VASource : VARaytracedSource
     }
 
     Godot.Color _TrailColor = new(1, 1, 1, 0.1f);
-    /// <summary>
-    /// The color of ray trails in the debug window (dev build only)
-    /// </summary>
+    /// <summary>The color of ray trails in the debug window (dev build only)</summary>
     [Export]
     public Godot.Color TrailColor
     {
@@ -37,9 +35,7 @@ public partial class VASource : VARaytracedSource
     }
 
     Godot.Color _ReverbColor = new(0.11f, 0.97f, 1.0f, 0.2f);
-    /// <summary>
-    /// The color of reverb rays in the debug window (dev build only)
-    /// </summary>
+    /// <summary>The color of reverb rays in the debug window (dev build only)</summary>
     [Export]
     public Godot.Color ReverbColor
     {
@@ -54,9 +50,7 @@ public partial class VASource : VARaytracedSource
     }
 
     Godot.Color _OcclusionColor = new(0.44f, 1.0f, 0.64f, 0.2f);
-    /// <summary>
-    /// The color of occlusion rays in the debug window (dev build only)
-    /// </summary>
+    /// <summary>The color of occlusion rays in the debug window (dev build only)</summary>
     [Export]
     public Godot.Color OcclusionColor
     {
@@ -71,9 +65,7 @@ public partial class VASource : VARaytracedSource
     }
 
     Godot.Color _PermeationColor = new(1.0f, 0.5f, 0.17f, 0.2f);
-    /// <summary>
-    /// The color of permeation rays in the debug window (dev build only)
-    /// </summary>
+    /// <summary>The color of permeation rays in the debug window (dev build only)</summary>
     [Export]
     public Godot.Color PermeationColor
     {
@@ -88,9 +80,7 @@ public partial class VASource : VARaytracedSource
     }
 
     Godot.Color _AmbientPermeationColor = new(1.0f, 0.8f, 0.0f, 0.2f);
-    /// <summary>
-    /// The color of ambientPermeation rays in the debug window (dev build only)
-    /// </summary>
+    /// <summary>The color of ambientPermeation rays in the debug window (dev build only)</summary>
     [Export]
     public Godot.Color AmbientPermeationColor
     {

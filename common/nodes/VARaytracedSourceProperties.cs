@@ -1,6 +1,6 @@
 namespace vaudio_godot_mono_openal;
 
-public partial class VARaytracedSource : ALSource3D
+public partial class VARaytracedSource
 {
     [ExportGroup("Reverb")]
 
