@@ -2,7 +2,7 @@ using OpenALSource = global::OpenAL.managed.ALSource;
 
 namespace vaudio_godot_mono_openal;
 
-public partial class ALSource : Node3D
+public partial class ALSource
 {
     float _volume = 1;
     float _pitch = 1;

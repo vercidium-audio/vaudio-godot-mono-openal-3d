@@ -44,39 +44,11 @@ public static unsafe partial class ALManager
     static ALDistanceModel _distanceModel = ALDistanceModel.InverseDistance;
     static float _metersPerUnit = 1;
     static float _speedOfSound = 343;
-    static Vector3 _listenerPosition;
-    static Vector3 _listenerVelocity;
-    static float _listenerPitch;
-    static float _listenerYaw;
     static bool _reverbOnly;
 
-    // MasterVolume/DistanceModel/MetersPerUnit/SpeedOfSound/ReverbOnly/ListenerPosition/
-    // ListenerVelocity/ListenerPitch/ListenerYaw are runtime-API-only (no inspector UI),
-    // matching native's shape - call the Set* methods below directly from code.
-
-    public static Vector3 ListenerPosition
-    {
-        get => _listenerPosition;
-        set => UpdateProperty(ref _listenerPosition, value, SetListenerPosition);
-    }
-
-    public static Vector3 ListenerVelocity
-    {
-        get => _listenerVelocity;
-        set => UpdateProperty(ref _listenerVelocity, value, SetListenerVelocity);
-    }
-
-    public static float ListenerPitch
-    {
-        get => _listenerPitch;
-        set => UpdateProperty(ref _listenerPitch, value, SetListenerPitch);
-    }
-
-    public static float ListenerYaw
-    {
-        get => _listenerYaw;
-        set => UpdateProperty(ref _listenerYaw, value, SetListenerYaw);
-    }
+    // MasterVolume/DistanceModel/MetersPerUnit/SpeedOfSound/ReverbOnly and the listener
+    // position/velocity/rotation props (per-addon, ALManagerListener.cs) are runtime-API-only
+    // (no inspector UI), matching native's shape - call the Set* methods directly from code.
 
     public static float MasterVolume
     {

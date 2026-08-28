@@ -2,8 +2,8 @@ using OpenALSource = global::OpenAL.managed.ALSource;
 
 namespace vaudio_godot_mono_openal;
 
-[Tool]
-public partial class ALSource : Node3D
+// Base type (Node2D/Node3D) and [Tool] are declared per-addon in ALSourceBase.cs.
+public partial class ALSource
 {
     protected List<OpenALSource> sources = [];
     public ALFilter filter;

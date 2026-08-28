@@ -11,12 +11,6 @@ public static unsafe partial class ALManager
     // Device cache
     static List<string> OutputDeviceList = [];
 
-    // Intermediate listener data
-    public static Vector3 listenerPosition;
-    public static Vector3 listenerVelocity;
-    public static Vector3 listenerOrientation;
-    public static Vector3 listenerUp;
-
     // Keep track of all currently playing sources, so we can destroy them when they've finished playing
     static List<OpenALSource> ActiveSources = [];
 

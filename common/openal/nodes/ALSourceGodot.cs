@@ -1,6 +1,6 @@
 namespace vaudio_godot_mono_openal;
 
-public partial class ALSource : Node3D
+public partial class ALSource
 {
     // Signals
     [Signal]
