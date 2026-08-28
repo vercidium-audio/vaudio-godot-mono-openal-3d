@@ -102,27 +102,16 @@ public partial class VAWorld
         effect.roomRolloffFactor = eax.RoomRolloffFactor;
         effect.decayHFLimit = eax.DecayHFLimit;
 
-        if (isGroupedEAX && eax.RelativeDirections != null && eax.RelativeDirections.TryGetValue(listener.emitter, out var pan))
-        {
-            // Convert to a listener-relative vector for OpenAL
-            Vector3 listenerRotation = listener.GlobalRotation;
-            pan = world.CalculateListenerRelativePan(pan, listenerRotation.X, listenerRotation.Y);
-
-            effect.effectSlotGain = eax.RelativeGains[listener.emitter];
-            effect.effectSlotGain = Math.Max(0, effect.effectSlotGain);
-            effect.effectSlotGain = Math.Min(1, effect.effectSlotGain);
-
-            // TODO - separate pan for late reverb and reflections
-            effect.lateReverbPan[0] = pan.X;
-            effect.lateReverbPan[1] = pan.Y;
-            effect.lateReverbPan[2] = pan.Z;
-
-            effect.reflectionsPan[0] = pan.X;
-            effect.reflectionsPan[1] = pan.Y;
-            effect.reflectionsPan[2] = pan.Z;
-        }
+        if (isGroupedEAX)
+            ApplyGroupedEAXPan(eax, effect);
 
         effect.dirty = true;
         effect.Update();
     }
+
+    // Grouped-EAX reverb zones get a listener-relative pan (and effect-slot gain) applied to their
+    // reflections/late-reverb. The pan math is dimension-specific - OpenAL's pan vector is always
+    // 3-component, but 2D derives it from a single listener rotation while 3D uses pitch + yaw - so
+    // each addon supplies its own implementation.
+    partial void ApplyGroupedEAXPan(vaudio.EAXReverb eax, ALReverbEffect effect);
 }
