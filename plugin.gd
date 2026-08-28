@@ -122,7 +122,7 @@ func _setup_project():
 	# doesn't prove the C# assembly has been rebuilt SINCE then. If it hasn't, the .cs node scripts
 	# below are still unresolvable and plugin_main.gd's `is SomeVaudioType` checks will parse-error
 	# (see the header comment). Confirm a C# script actually resolves to a real class first.
-	var probe_script = load("res://addons/vaudio-godot-mono-openal-3d/nodes/VAEmitter.cs")
+	var probe_script = load("res://addons/vaudio-godot-mono-openal-3d/common/nodes/VAEmitter.cs")
 	if probe_script == null or probe_script.get_instance_base_type() == "":
 		if not _needs_rebuild_error_shown:
 			_needs_rebuild_error_shown = true

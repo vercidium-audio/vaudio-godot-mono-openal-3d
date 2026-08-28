@@ -1,23 +1,26 @@
 @tool
 extends EditorPlugin
 
-const VAEmitter = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAEmitter.cs")
-const VAListener = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAListener.cs")
-const ALSource = preload("res://addons/vaudio-godot-mono-openal-3d/openal/nodes/ALSource.cs")
+# A class split across a per-addon *Base.cs type-pin stub and a common/ body resolves its base type
+# (Node3D etc.) only through the file holding the body - Godot's C# script binding ignores the bare
+# stub - so preload the common/ file for those. Classes defined whole in one file preload that file.
+const VAEmitter = preload("res://addons/vaudio-godot-mono-openal-3d/common/nodes/VAEmitter.cs")
+const VAListener = preload("res://addons/vaudio-godot-mono-openal-3d/common/nodes/VAListener.cs")
+const ALSource = preload("res://addons/vaudio-godot-mono-openal-3d/common/openal/nodes/ALSource.cs")
 const ALSource3D = preload("res://addons/vaudio-godot-mono-openal-3d/openal/nodes/ALSource3D.cs")
-const VAStreamSource = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAStreamSource.cs")
-const VAInputStreamSource = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAInputStreamSource.cs")
-const VANetworkedStreamSource = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VANetworkedStreamSource.cs")
-const VASource = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASource.cs")
-const VASourceLeech = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceLeech.cs")
+const VAStreamSource = preload("res://addons/vaudio-godot-mono-openal-3d/common/nodes/VAStreamSource.cs")
+const VAInputStreamSource = preload("res://addons/vaudio-godot-mono-openal-3d/common/nodes/VAInputStreamSource.cs")
+const VANetworkedStreamSource = preload("res://addons/vaudio-godot-mono-openal-3d/common/nodes/VANetworkedStreamSource.cs")
+const VASource = preload("res://addons/vaudio-godot-mono-openal-3d/common/nodes/VASource.cs")
+const VASourceLeech = preload("res://addons/vaudio-godot-mono-openal-3d/common/nodes/VASourceLeech.cs")
 
 const ALSourceRelative = preload("res://addons/vaudio-godot-mono-openal-3d/openal/nodes/ALSourceRelative.cs")
 const VASourceRelative = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceRelative.cs")
 const VASourceAmbient = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceAmbient.cs")
 const VAVisualisation = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAVisualisation.cs")
 const VAWorld = preload("res://addons/vaudio-godot-mono-openal-3d/world/VAWorld.cs")
-const VADefaultMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VADefaultMaterial.cs")
-const VACustomMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VACustomMaterial.cs")
+const VADefaultMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/common/nodes/VADefaultMaterial.cs")
+const VACustomMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/common/nodes/VACustomMaterial.cs")
 
 const VAWorldGizmoPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VAWorldGizmoPlugin.gd")
 const VANodeGizmoPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VANodeGizmoPlugin.gd")
