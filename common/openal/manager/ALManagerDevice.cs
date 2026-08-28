@@ -66,7 +66,7 @@ public static unsafe partial class ALManager
         // for (_maximumAuxiliarySends)? ALC_MAX_AUXILIARY_SENDS is a request, not a guarantee -
         // OpenAL Soft can silently grant fewer (or 0) if EFX isn't available on this device.
         var grantedAuxSends = ALDevice.GetIntegerALC(AL.ALC_MAX_AUXILIARY_SENDS);
-        GD.Print($"[vaudio-godot-mono-openal-3d] Requested {_maximumAuxiliarySends} auxiliary sends, driver granted {grantedAuxSends}");
+        Log($"Requested {_maximumAuxiliarySends} auxiliary sends, driver granted {grantedAuxSends}");
 
 
         // Set initial properties
