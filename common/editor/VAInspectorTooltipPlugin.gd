@@ -19,15 +19,17 @@ extends EditorInspectorPlugin
 # only control the doc comments on our own types - see VAMaterialInspectorPlugin.gd/
 # VADeviceRefreshInspectorPlugin.gd for the same _can_handle pattern.
 
-const VAWorld = preload("res://addons/vaudio-godot-mono-openal-3d/world/VAWorld.cs")
-const VAEmitter = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAEmitter.cs")
-const VASource = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASource.cs")
-const VASourceRelative = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceRelative.cs")
-const VASourceAmbient = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceAmbient.cs")
-const VASourceLeech = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceLeech.cs")
-const VAVisualisation = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAVisualisation.cs")
-const VADefaultMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VADefaultMaterial.cs")
-const VACustomMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VACustomMaterial.cs")
+# Shared between the 2D and 3D addons via each addon's `common` symlink. Every referenced vaudio
+# type is [GlobalClass] except VAWorld (registered via add_custom_type), load()ed relative to this
+# script's own location - see _init/_addon_root.
+var VAWorld: Script
+
+func _init() -> void:
+	VAWorld = load("%s/world/VAWorld.cs" % _addon_root())
+
+# "res://addons/vaudio-godot-mono-openal-2d/common/editor/<this>.gd" -> ".../-2d"
+func _addon_root() -> String:
+	return get_script().resource_path.get_base_dir().get_base_dir().get_base_dir()
 
 # CSharpScript.get_base_script() always returns null (a known Godot engine limitation - C# scripts
 # don't expose their inheritance chain to the editor the way GDScript does, see
@@ -37,13 +39,17 @@ const VACustomMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes
 # declares [Export] properties this type doesn't redeclare itself - e.g. VASourceRelative inherits
 # Volume/Pitch/etc. from ALSource, two hops up via ALSourceRelative. List the full chain in order
 # from nearest to furthest ancestor - _get_class_name_chain appends all of it, not just one level.
-const BASE_CLASS_NAMES := {
-	"VAListener": ["VAEmitter"],
-	"VASource": ["VARaytracedSource", "ALSource3D", "ALSource"],
-	"VASourceLeech": ["ALSource3D", "ALSource"],
-	"VASourceRelative": ["ALSourceRelative", "ALSource"],
-	"VASourceAmbient": ["ALSourceRelative", "ALSource"],
-}
+# ALSource3D here is ALSource2D in the 2D addon - _base_class_names() swaps the token to match, so
+# the dimension-specific spatial ALSource class name still keys into the parsed XML doc.
+func _base_class_names() -> Dictionary:
+	var spatial_al_source := "ALSource3D" if _addon_root().ends_with("-3d") else "ALSource2D"
+	return {
+		"VAListener": ["VAEmitter"],
+		"VASource": ["VARaytracedSource", spatial_al_source, "ALSource"],
+		"VASourceLeech": [spatial_al_source, "ALSource"],
+		"VASourceRelative": ["ALSourceRelative", "ALSource"],
+		"VASourceAmbient": ["ALSourceRelative", "ALSource"],
+	}
 
 # class_name -> (property_name -> tooltip text). Keyed by the C# class name as it appears in the
 # XML doc's member id (e.g. "VAEmitter"), not by script file path.
@@ -54,7 +60,9 @@ var _xml_mtime := -1
 var _pending_tooltips := {}
 
 func _can_handle(object) -> bool:
-	return object is VAWorld or object is VAEmitter or object is VASource \
+	# is_instance_of for VAWorld because it's a runtime-loaded Script var, not a parse-time type
+	# (see _init) - `object is VAWorld` is a parse error for that form.
+	return is_instance_of(object, VAWorld) or object is VAEmitter or object is VASource \
 		or object is VASourceRelative or object is VASourceAmbient or object is VASourceLeech \
 		or object is VAVisualisation \
 		or object is VADefaultMaterial or object is VACustomMaterial
@@ -134,7 +142,7 @@ func _get_class_name_chain(object: Object) -> Array:
 			var own_name := script_path.get_file().get_basename()
 			names.append(own_name)
 
-			var base_names = BASE_CLASS_NAMES.get(own_name)
+			var base_names = _base_class_names().get(own_name)
 			if base_names != null:
 				names.append_array(base_names)
 

@@ -1,20 +1,23 @@
 @tool
 extends EditorInspectorPlugin
 
-# Adds a "Vercidium Audio" section to the Inspector for any Node3D, exposing the Material and
-# Use Flat Transmission settings as an OptionButton/CheckBox rather than requiring the user to edit
-# the vercidium_audio_material / vercidium_audio_use_flat_transmission metadata fields by hand.
-# Both settings are inherited down the scene tree at runtime (see VAWorldPrimitives.AddPrimitive),
-# so setting either on a plain Node3D configures its whole subtree at once.
+# Adds a "Vercidium Audio" section to the Inspector for any spatial node (Node2D/Node3D), exposing
+# the Material and Use Flat Transmission settings as an OptionButton/CheckBox rather than requiring
+# the user to edit the vercidium_audio_material / vercidium_audio_use_flat_transmission metadata
+# fields by hand. Both settings are inherited down the scene tree at runtime (see
+# VAWorldPrimitives.AddPrimitive), so setting either on a plain node configures its whole subtree.
+#
+# Shared between the 2D and 3D addons via each addon's `common` symlink. Every referenced vaudio
+# type is [GlobalClass] except VAWorld (registered via add_custom_type), which is load()ed relative
+# to this script's own location - see _init/_addon_root.
+var VAWorld: Script
 
-const VAWorld = preload("res://addons/vaudio-godot-mono-openal-3d/world/VAWorld.cs")
-const VAEmitter = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAEmitter.cs")
-const VADefaultMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VADefaultMaterial.cs")
-const VACustomMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VACustomMaterial.cs")
-const VASource = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASource.cs")
-const VASourceRelative = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceRelative.cs")
-const VASourceAmbient = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceAmbient.cs")
-const VASourceLeech = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceLeech.cs")
+func _init() -> void:
+	VAWorld = load("%s/world/VAWorld.cs" % _addon_root())
+
+# "res://addons/vaudio-godot-mono-openal-2d/common/editor/<this>.gd" -> ".../-2d"
+func _addon_root() -> String:
+	return get_script().resource_path.get_base_dir().get_base_dir().get_base_dir()
 
 const MATERIAL_META_KEY = "vercidium_audio_material"
 const USE_FLAT_TRANSMISSION_META_KEY = "vercidium_audio_use_flat_transmission"
@@ -32,17 +35,19 @@ const BUILTIN_MATERIAL_NAMES = [
 func _can_handle(object):
 	# Audio control/geometry-source nodes, not raytraced geometry - excluded the same way the
 	# native VAMaterialInspectorPlugin excludes them. VADefaultMaterial/VACustomMaterial are plain
-	# Nodes (not Node3D), so this check has to happen before the Node3D check below.
-	if (object is VAWorld or object is VAEmitter or object is VADefaultMaterial
+	# Nodes (not spatial), so this check has to happen before the Node2D/Node3D check below.
+	# is_instance_of for VAWorld because it's a runtime-loaded Script var, not a parse-time type
+	# (see _init) - `object is VAWorld` is a parse error for that form.
+	if (is_instance_of(object, VAWorld) or object is VAEmitter or object is VADefaultMaterial
 		or object is VACustomMaterial or object is VASource or object is VASourceRelative
 		or object is VASourceAmbient or object is VASourceLeech):
 		return false
 
-	return object is Node3D
+	return object is Node2D or object is Node3D
 
 func _parse_end(object):
-	var node := object as Node3D
-	if node == null:
+	var node := object as Node
+	if not (node is Node2D or node is Node3D):
 		return
 
 	var section := VBoxContainer.new()
@@ -62,7 +67,7 @@ func _make_heading() -> Label:
 	label.add_theme_font_size_override("font_size", roundi(14 * EditorInterface.get_editor_scale()))
 	return label
 
-func _make_material_row(node: Node3D) -> HBoxContainer:
+func _make_material_row(node: Node) -> HBoxContainer:
 	var row := HBoxContainer.new()
 
 	var label := Label.new()
@@ -103,7 +108,7 @@ func _make_material_row(node: Node3D) -> HBoxContainer:
 
 	return row
 
-func _make_use_flat_transmission_row(node: Node3D) -> HBoxContainer:
+func _make_use_flat_transmission_row(node: Node) -> HBoxContainer:
 	var row := HBoxContainer.new()
 
 	var label := Label.new()
@@ -123,7 +128,7 @@ func _make_use_flat_transmission_row(node: Node3D) -> HBoxContainer:
 
 	return row
 
-func _on_material_selected(index: int, node: Node3D, option_button: OptionButton):
+func _on_material_selected(index: int, node: Node, option_button: OptionButton):
 	if index == 0:
 		node.remove_meta(MATERIAL_META_KEY)
 	else:
@@ -132,7 +137,7 @@ func _on_material_selected(index: int, node: Node3D, option_button: OptionButton
 	EditorInterface.mark_scene_as_unsaved()
 	_sync_running_game(node)
 
-func _on_use_flat_transmission_toggled(toggled_on: bool, node: Node3D):
+func _on_use_flat_transmission_toggled(toggled_on: bool, node: Node):
 	if toggled_on:
 		node.set_meta(USE_FLAT_TRANSMISSION_META_KEY, true)
 	else:
@@ -151,7 +156,7 @@ func set_debugger_plugin(plugin) -> void:
 # node was never touched by the set_meta/remove_meta call that just ran above on the editor's local
 # copy, so the current metadata values have to be sent too, for the receiving end to apply to its
 # own copy before re-adding the primitive.
-func _sync_running_game(node: Node3D) -> void:
+func _sync_running_game(node: Node) -> void:
 	if debugger_plugin == null:
 		return
 
@@ -173,7 +178,7 @@ func _sync_running_game(node: Node3D) -> void:
 # VACustomMaterial nodes only register themselves in customMaterials at runtime
 # (VACustomMaterial._EnterTree bails out early when Engine.IsEditorHint() is true), so the edited
 # scene tree has to be walked directly to find their names while in the editor.
-func _find_custom_materials(node: Node3D) -> Array:
+func _find_custom_materials(node: Node) -> Array:
 	var scene_root := EditorInterface.get_edited_scene_root()
 	if scene_root == null:
 		return []

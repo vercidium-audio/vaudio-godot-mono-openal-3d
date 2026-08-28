@@ -47,15 +47,19 @@ func sync_material_properties(scene_root_name: String, node_path: NodePath, node
 				absorption_hf, scattering, transmission_lf, transmission_hf, flat_transmission_lf,
 				flat_transmission_hf, debug_color])
 
-# Relays the editor's 3D viewport camera transform and vertical FOV (degrees) to every active game
-# session, for VAWorld's SyncViewport property (see VAWorldProperties.cs/VAWorldDebugger.cs) to
-# mirror into the vaudio debug render window. Polled every editor frame by VAWorld.cs itself (via
-# Engine.get_singleton, since this instance is registered as a singleton in plugin_main.gd rather
-# than pushed into a consumer the way the inspector plugins above are - VAWorld is instantiated by
-# the user's own scene, not constructed by this plugin), rather than being driven by an
-# EditorInspectorPlugin/EditorNode3DGizmoPlugin edit like sync_primitive/sync_material_properties
-# are.
-func sync_viewport_camera(position: Vector3, rotation: Vector3, fov_degrees: float) -> void:
+# Relays the editor's viewport camera to every active game session, for VAWorld's SyncViewport
+# property (see VAWorldProperties.cs/VAWorldDebugger.cs) to mirror into the vaudio debug render
+# window. Polled every editor frame by VAWorld.cs itself (via Engine.get_singleton, since this
+# instance is registered as a singleton in plugin_main.gd rather than pushed into a consumer the
+# way the inspector plugins above are - VAWorld is instantiated by the user's own scene, not
+# constructed by this plugin), rather than being driven by an inspector/gizmo edit like
+# sync_primitive/sync_material_properties are.
+#
+# Args are dimension-specific and passed straight through untouched: 3D sends
+# (position: Vector3, rotation: Vector3, fov_degrees: float); 2D sends
+# (centre: Vector2, rotation: float, zoom: float). The matching VAWorld.OnSyncViewportCamera
+# unpacks whichever shape its own dimension sent.
+func sync_viewport_camera(a, b, c) -> void:
 	for session in get_sessions():
 		if session != null and session.is_active():
-			session.send_message("vaudio:sync_viewport_camera", [position, rotation, fov_degrees])
+			session.send_message("vaudio:sync_viewport_camera", [a, b, c])

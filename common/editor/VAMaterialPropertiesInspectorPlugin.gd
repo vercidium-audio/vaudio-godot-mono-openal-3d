@@ -11,10 +11,9 @@ extends EditorInspectorPlugin
 # dropdown, these are plain Godot-drawn float/color editors rather than a custom control, so there
 # is no per-control "selected" signal to hook - instead this connects once to the shared
 # EditorInspector's property_edited signal and filters by the currently edited object's type.
-
-const VAWorld = preload("res://addons/vaudio-godot-mono-openal-3d/world/VAWorld.cs")
-const VADefaultMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VADefaultMaterial.cs")
-const VACustomMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VACustomMaterial.cs")
+#
+# Shared verbatim between the 2D and 3D addons via each addon's `common` symlink -
+# VADefaultMaterial/VACustomMaterial are [GlobalClass] so they resolve by name without a preload().
 
 # Relays edits to a running game's VAWorld - see VADebuggerPlugin. Null until plugin_main.gd
 # finishes wiring it up via set_debugger_plugin.

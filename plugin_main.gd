@@ -21,13 +21,13 @@ const VACustomMaterial = preload("res://addons/vaudio-godot-mono-openal-3d/nodes
 
 const VAWorldGizmoPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VAWorldGizmoPlugin.gd")
 const VANodeGizmoPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VANodeGizmoPlugin.gd")
-const VAMaterialInspectorPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VAMaterialInspectorPlugin.gd")
-const VAMaterialPropertiesInspectorPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VAMaterialPropertiesInspectorPlugin.gd")
-const VAConversionContextMenuPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VAConversionContextMenuPlugin.gd")
-const VADebuggerPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VADebuggerPlugin.gd")
-const VADebuggerSingleton = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VADebuggerSingleton.gd")
-const VADeviceRefreshInspectorPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VADeviceRefreshInspectorPlugin.gd")
-const VAInspectorTooltipPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/editor/VAInspectorTooltipPlugin.gd")
+const VAMaterialInspectorPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/common/editor/VAMaterialInspectorPlugin.gd")
+const VAMaterialPropertiesInspectorPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/common/editor/VAMaterialPropertiesInspectorPlugin.gd")
+const VAConversionContextMenuPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/common/editor/VAConversionContextMenuPlugin.gd")
+const VADebuggerPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/common/editor/VADebuggerPlugin.gd")
+const VADebuggerSingleton = preload("res://addons/vaudio-godot-mono-openal-3d/common/editor/VADebuggerSingleton.gd")
+const VADeviceRefreshInspectorPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/common/editor/VADeviceRefreshInspectorPlugin.gd")
+const VAInspectorTooltipPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/common/editor/VAInspectorTooltipPlugin.gd")
 
 var world_gizmo_plugin
 var node_gizmo_plugin

@@ -4,12 +4,9 @@ extends EditorContextMenuPlugin
 # Right-click to convert AudioStreamPlayer3D to VASource / VASourceRelative / VASourceLeech / VASourceAmbient,
 # or AudioStreamPlayer to VASourceRelative / VASourceAmbient. Mirrors the conversion offered by the native
 # (C++ GDExtension) plugin's ConversionContextMenuPlugin, adapted to this addon's node/property names.
-
-const VASource = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASource.cs")
-const VASourceRelative = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceRelative.cs")
-const VASourceAmbient = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceAmbient.cs")
-const VASourceLeech = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASourceLeech.cs")
-const VAEmitter = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAEmitter.cs")
+#
+# Shared verbatim between the 2D and 3D addons via each addon's `common` symlink - every vaudio type
+# referenced here is [GlobalClass] so it resolves by name without an addon-specific preload().
 
 func _popup_menu(paths: PackedStringArray) -> void:
 	if paths.is_empty():
@@ -30,7 +27,9 @@ func _popup_menu(paths: PackedStringArray) -> void:
 		if not node:
 			return
 
-		var is_audio_player_3d = node.get_class() == "AudioStreamPlayer3D"
+		# The spatialised built-in player - AudioStreamPlayer3D in a 3D project, AudioStreamPlayer2D
+		# in a 2D one. This file is shared by both addons; a project only ever contains one of them.
+		var is_audio_player_3d = node.get_class() == "AudioStreamPlayer3D" or node.get_class() == "AudioStreamPlayer2D"
 		var is_audio_player = node.get_class() == "AudioStreamPlayer"
 		var is_va_source = node is VASource
 		var is_va_source_relative = node is VASourceRelative
@@ -89,7 +88,7 @@ func convert_node(old_node: Node, target_class: String) -> void:
 
 	var parent = old_node.get_parent()
 	if not parent:
-		push_warning("[vaudio-godot-mono-openal-3d] Cannot convert the scene root node.")
+		push_warning("[vaudio] Cannot convert the scene root node.")
 		return
 
 	var new_node
@@ -160,8 +159,10 @@ func convert_node(old_node: Node, target_class: String) -> void:
 	if not has_property(old_node, "Looping"):
 		new_node.Looping = any_stream_wants_looping(new_node.Streams)
 
-	# If 3D, copy its transform
+	# Carry the spatial transform across (Node2D or Node3D - the 2D and 3D addons share this file).
 	if old_node is Node3D and new_node is Node3D:
+		new_node.transform = old_node.transform
+	elif old_node is Node2D and new_node is Node2D:
 		new_node.transform = old_node.transform
 
 	# Move children across before the old node is freed

@@ -16,6 +16,7 @@ var _debugger_plugin: EditorDebuggerPlugin
 func _init(debugger_plugin: EditorDebuggerPlugin) -> void:
 	_debugger_plugin = debugger_plugin
 
-func sync_viewport_camera(position: Vector3, rotation: Vector3, fov_degrees: float) -> void:
+# Args are dimension-specific and forwarded untouched - see VADebuggerPlugin.sync_viewport_camera.
+func sync_viewport_camera(a, b, c) -> void:
 	if _debugger_plugin != null:
-		_debugger_plugin.sync_viewport_camera(position, rotation, fov_degrees)
+		_debugger_plugin.sync_viewport_camera(a, b, c)

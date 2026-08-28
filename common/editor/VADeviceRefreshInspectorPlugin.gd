@@ -11,8 +11,9 @@ extends EditorInspectorPlugin
 # bottom of the Inspector, after every other section - see below for why this matches on the NEXT
 # property after the device dropdown rather than the dropdown property itself. Mirrors the native
 # plugin's VADeviceRefreshInspectorPlugin (va_conversion_plugin.cpp).
-
-const VAInputStreamSource = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAInputStreamSource.cs")
+#
+# Shared verbatim between the 2D and 3D addons via each addon's `common` symlink - VAInputStreamSource
+# is [GlobalClass] so it resolves by name here without an addon-specific preload().
 
 func _can_handle(object) -> bool:
 	return object is VAInputStreamSource
