@@ -4,14 +4,12 @@ using Godot.Collections;
 
 namespace vaudio_godot_mono_openal;
 
-// A VAStreamSource fed automatically by a local input (microphone) capture device. Owns its own ALCaptureDevice, so multiple nodes can each capture from a different device/format at once. SeeVANetworkedStreamSource for the network equivalent.
+// A VAStreamSource fed automatically by a local input (microphone) capture device. Owns its own ALCaptureDevice, so multiple nodes can each capture from a different device/format at once. See VANetworkedStreamSource for the network equivalent.
 [Tool]
 [GlobalClass]
 public partial class VAInputStreamSource : VAStreamSource
 {
-    // Matches the native plugin's DEFAULT_DEVICE_LABEL (va_device_name.h) - shown in the
-    // DeviceName dropdown in place of "" (the driver's default capture device), since a strict
-    // PROPERTY_HINT_ENUM's current value must be one of its own entries.
+    // Shown in the DeviceName dropdown in place of "" (the driver's default), since a strict enum's current value must be one of its own entries. Matches the native plugin's DEFAULT_DEVICE_LABEL.
     public const string DefaultDeviceLabel = "System Default";
 
     [Signal]
@@ -41,11 +39,7 @@ public partial class VAInputStreamSource : VAStreamSource
         set => _sampleRate = value;
     }
 
-    // _deviceName itself stores "" for "use the driver's default capture device" (what
-    // OpenCapture expects), but the property exposed to the inspector translates that to/from
-    // DefaultDeviceLabel, since the Inspector's enum dropdown (_ValidateProperty) shows the
-    // property's current value as one of its own entries and an unlabelled "" would otherwise
-    // show as a blank entry. Matches the native plugin's get_device_name/set_device_name.
+    // _deviceName stores "" for the driver's default (what OpenCapture expects); the inspector property maps that to/from DefaultDeviceLabel so the enum dropdown doesn't show a blank entry.
     /// <summary>Empty for the driver's default input device, or a name from GetAvailableCaptureDevices.</summary>
     [Export]
     public string DeviceName
@@ -195,12 +189,7 @@ public partial class VAInputStreamSource : VAStreamSource
         base._ExitTree();
     }
 
-    // Turns DeviceName into a strict enum dropdown of the driver's currently available capture
-    // devices - Godot's editor unconditionally injects a blank entry into a string
-    // PropertyHint.EnumSuggestion dropdown, with no way to suppress it, so this uses
-    // PropertyHint.Enum instead. Safe despite DeviceName being runtime-dependent: an unrecognized
-    // saved value is shown as-is, just not pre-selected until RefreshDevices() re-queries the
-    // driver. Matches the native plugin's VAInputStreamSource::_validate_property.
+    // Rebuilds DeviceName as a strict PropertyHint.Enum dropdown of the driver's current capture devices - EnumSuggestion would inject an unsuppressable blank entry. An unrecognized saved value shows as-is until RefreshDevices() re-queries.
     public override void _ValidateProperty(Dictionary property)
     {
         base._ValidateProperty(property);
@@ -219,10 +208,7 @@ public partial class VAInputStreamSource : VAStreamSource
         property["hint_string"] = hintString;
     }
 
-    // Re-queries the driver's capture device list and re-validates DeviceName's dropdown so a
-    // device plugged in after this node was selected shows up without reselecting the node - see
-    // VADeviceRefreshInspectorPlugin.gd for the Inspector button that calls this. Matches the
-    // native plugin's VAInputStreamSource::refresh_devices.
+    // Re-queries the driver's capture device list so a newly plugged-in device shows up without reselecting the node - VADeviceRefreshInspectorPlugin.gd calls this.
     public void RefreshDevices()
     {
         NotifyPropertyListChanged();
