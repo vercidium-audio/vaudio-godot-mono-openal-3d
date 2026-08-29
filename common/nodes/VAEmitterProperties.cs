@@ -38,8 +38,8 @@ public partial class VAEmitter
     /// <summary>
     /// The percentage of returning energy required for reverb to be at maximum volume. Defaults to 15% of this emitter's <see cref="ReverbRayCount"/> * <see cref="ReverbBounceCount"/>.
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity, less than 0 or greater than 1</exception>
-    [Export(PropertyHint.Range, "0.0,1.0")]
+    /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity, less than or equal to 0, or greater than 1</exception>
+    [Export(PropertyHint.Range, "0.001,1.0")]
     public float ReverbEnergyCap
     {
         get => _ReverbEnergyCap;
