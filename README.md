@@ -14,7 +14,7 @@ For Standard Godot (not C#), please use [this plugin](https://github.com/vercidi
 
 ## Requirements
 
-This repository requires Vercidium Audio v1.7.1 and OpenAL Soft to run:
+This repository requires Vercidium Audio v1.8.0 and OpenAL Soft to run:
 - Download the Vercidium Audio SDK from [vercidium.com](https://vercidium.com)
 - Download the OpenAL Soft DLL from [github.com/kcat/openal-soft](https://github.com/kcat/openal-soft/releases/tag/1.25.2)
 
