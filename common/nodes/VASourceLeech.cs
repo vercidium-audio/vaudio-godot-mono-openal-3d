@@ -12,15 +12,6 @@ public partial class VASourceLeech
 
     public bool Raytraced => emitter != null && emitter.Raytraced;
 
-    private bool _PlayWhenRaytracingCompletes = true;
-
-    [Export]
-    public bool PlayWhenRaytracingCompletes
-    {
-        get => _PlayWhenRaytracingCompletes;
-        set => _PlayWhenRaytracingCompletes = value;
-    }
-
     bool played = false;
 
     Action cancelWaitForVAWorld;
@@ -63,10 +54,7 @@ public partial class VASourceLeech
     public override bool Play()
     {
         if (!Raytraced)
-        {
-            PlayWhenRaytracingCompletes = true;
             return false;
-        }
 
         return played = base.Play();
     }
@@ -81,7 +69,7 @@ public partial class VASourceLeech
         if (!Raytraced)
             return;
 
-        if (!played && PlayWhenRaytracingCompletes)
+        if (!played && Autoplay)
             Play();
 
         if (vercidiumAudio?.listener == null)
