@@ -1,9 +1,6 @@
 @tool
 extends EditorPlugin
 
-# A class split across a per-addon *Base.cs type-pin stub and a common/ body resolves its base type
-# (Node3D etc.) only through the file holding the body - Godot's C# script binding ignores the bare
-# stub - so preload the common/ file for those. Classes defined whole in one file preload that file.
 const VAEmitter = preload("res://addons/vaudio-godot-mono-openal-3d/common/nodes/VAEmitter.cs")
 const VAListener = preload("res://addons/vaudio-godot-mono-openal-3d/common/nodes/VAListener.cs")
 const ALSource = preload("res://addons/vaudio-godot-mono-openal-3d/common/openal/nodes/ALSource.cs")
@@ -42,12 +39,6 @@ var debugger_singleton
 var device_refresh_inspector_plugin
 var inspector_tooltip_plugin
 
-# Name VAWorld.cs looks up via Engine.get_singleton to reach the debugger plugin for its
-# SyncViewport property - see the registration below for why a singleton is needed instead of the
-# push-based wiring the material inspector plugins below use. The registered object is
-# VADebuggerSingleton (an Object relay), not debugger_plugin itself - debugger_plugin extends
-# EditorDebuggerPlugin (RefCounted), and Engine.register_singleton warns/soon-errors on a
-# RefCounted since it keeps only a raw pointer.
 const DEBUGGER_PLUGIN_SINGLETON_NAME = "VADebuggerPlugin"
 
 # "audio/vaudio/*" Project Settings
@@ -86,13 +77,6 @@ func _enter_tree():
 	debugger_plugin = VADebuggerPlugin.new()
 	add_debugger_plugin(debugger_plugin)
 
-	# An Object relay wrapping debugger_plugin is registered as an Engine singleton so VAWorld.cs's
-	# SyncViewport property can fetch it via Engine.get_singleton and call sync_viewport_camera on
-	# it directly - VAWorld is instantiated by the user's own scene, not constructed by this plugin,
-	# so it has no other way to reach debugger_plugin the way the inspector plugins below do
-	# (set_debugger_plugin). The relay is an Object rather than debugger_plugin itself because
-	# Engine.register_singleton warns (and will soon error) when handed a RefCounted like
-	# EditorDebuggerPlugin - it stores only a raw pointer.
 	debugger_singleton = VADebuggerSingleton.new(debugger_plugin)
 	Engine.register_singleton(DEBUGGER_PLUGIN_SINGLETON_NAME, debugger_singleton)
 
@@ -179,12 +163,6 @@ func _exit_tree():
 	print("Vercidium Audio (vaudio-godot-mono-openal-3d) plugin disabled")
 
 func _register_project_settings():
-	# output_device: stored as DEFAULT_DEVICE_LABEL, not "", so the strict PROPERTY_HINT_ENUM
-	# dropdown below always has a current value among its own entries.
-	# ALManager.cs translates DEFAULT_DEVICE_LABEL back to "" ("driver default") when it reads
-	# this setting, and rebuilds the hint_string below (via ProjectSettings.AddPropertyInfo)
-	# once the real device list is known from OpenAL - registered with just the default label
-	# here since GDScript has no OpenAL binding of its own to enumerate devices this early.
 	if not ProjectSettings.has_setting("audio/vaudio/output_device"):
 		ProjectSettings.set_setting("audio/vaudio/output_device", DEFAULT_DEVICE_LABEL)
 
@@ -229,9 +207,8 @@ func _register_project_settings():
 
 	ProjectSettings.set_initial_value("audio/vaudio/hrtf_enabled", true)
 
-	# max_mono_sources/max_stereo_sources: project-level settings set by the developer, matching
-	# the native Godot plugin's register_types.cpp - read once at device-open time, can't be
-	# changed at runtime.
+	# max_mono_sources/max_stereo_sources: project-level settings set by the developer, matching the native Godot plugin's register_types.cpp
+	# read once at device-open time, can't be changed at runtime.
 	if not ProjectSettings.has_setting("audio/vaudio/max_mono_sources"):
 		ProjectSettings.set_setting("audio/vaudio/max_mono_sources", 16)
 

@@ -22,9 +22,7 @@ public partial class VACustomMaterial : Node
 
         vercidiumAudio = this.GetVAWorldParent();
 
-        // Custom materials only register themselves in the running VAWorld at runtime - unlike
-        // VADefaultMaterial, they're expected to be defined alongside (and after) the level's
-        // VAWorld, since they need it to be able to claim a free material ID.
+        // Custom materials register themselves at runtime
         if (vercidiumAudio == null)
             return;
 
@@ -221,14 +219,9 @@ public partial class VACustomMaterial : Node
     /// </summary>
     public vaudio.Color GetDebugColor() => new(DebugColor.R, DebugColor.G, DebugColor.B, 1.0f);
 
-    // Relays property edits made on the editor's own copy of this node (see
-    // VAMaterialPropertiesInspectorPlugin.gd) onto the running game's separate copy - mirrors
-    // VADefaultMaterial.ApplyPropertiesFromEditor. Unlike VADefaultMaterial, this node's own
-    // materialType/vaudioMaterial were already assigned by its own (non-editor) _EnterTree, so
-    // there's no need to re-resolve or re-register anything here - just push the new values into
-    // the vaudio.MaterialProperties instance already registered with the world.
     public void ApplyPropertiesFromEditor(float absorptionLf, float absorptionHf, float scattering,
-        float transmissionLf, float transmissionHf, float flatTransmissionLf, float flatTransmissionHf, Color debugColor)
+                                          float transmissionLf, float transmissionHf,
+                                          float flatTransmissionLf, float flatTransmissionHf, Color debugColor)
     {
         _AbsorptionLF = absorptionLf;
         _AbsorptionHF = absorptionHf;

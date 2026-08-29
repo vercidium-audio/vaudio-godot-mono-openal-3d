@@ -1,27 +1,8 @@
 namespace vaudio_godot_mono_openal;
 
 /// <summary>
-/// Renders an emitter's <see cref="vaudio.Emitter.VisualisationCallback"/> ray-bounce results as
-/// fading diamond sprites. Add it as a direct child of a <see cref="VAEmitter"/>, or of a
-/// <see cref="VARaytracedSource"/> such as <see cref="VASource"/>/<see cref="VAStreamSource"/> - in
-/// the source case it binds to that source's internal emitter (VARaytracedSource.RaytracedEmitter)
-/// without being moved in the tree. This node registers itself as the visualisation callback
-/// target and pushes the exported RayCount/BounceCount/UpdateFrequencyMs onto that emitter. Each
-/// callback invocation (every UpdateFrequencyMs) writes one MultiMesh instance per
-/// VisualisationData entry; per-frame fading is entirely GPU-side (a ShaderMaterial reads each
-/// instance's spawn time out of its custom data and the FadeInMs/FadeOutMs/DurationMs/Color
-/// uniforms below), so nothing here does per-instance work outside the callback itself.
-///
-/// Because this node stays at the scene path the user authored it at (it is never reparented),
-/// the editor's Debug > Sync Scene Changes forwards runtime property edits to the running
-/// instance - so RayCount, Color, FadeInMs etc. can all be tweaked live while the game runs, the
-/// same way an emitter's own ray counts can.
-///
-/// Adding this node while the game is already running only runs its script in the editor's own
-/// tool-script preview context (Engine.IsEditorHint() is true there) - Godot Mono does not
-/// actually instantiate the new C# node inside the live running game process the way GDScript
-/// nodes do (upstream Godot C# hot-reload limitation - godotengine/godot-proposals#7746/#9001/
-/// #9519). Restart the game to see a newly-added VAVisualisation render.
+/// Renders an emitter's <see cref="vaudio.Emitter.VisualisationCallback"/> ray-bounce results as fading diamond sprites.
+/// Add it as a direct child of a <see cref="VAEmitter"/>, or <see cref="VARaytracedSource"/> such as <see cref="VASource"/>/<see cref="VAStreamSource"/>
 /// </summary>
 [Tool]
 [GlobalClass]
@@ -55,19 +36,12 @@ public partial class VAVisualisation : Node3D
         }
         """;
 
-    // The VAEmitter node whose vaudio.Emitter this node drives + renders. Either this node's direct
-    // VAEmitter parent, or the internal emitter of a VARaytracedSource parent (VASource etc.).
     VAEmitter emitter;
 
     MultiMesh multimesh;
     MultiMeshInstance3D multimeshInstance;
     ShaderMaterial shaderMaterial;
 
-    // Ring-buffer write cursor into multimesh's instances - each callback invocation appends
-    // RayCount * BounceCount new instances here, wrapping once the buffer is full. The buffer is
-    // sized (see RequiredInstanceCount) to hold every batch still fading at once, so by the time
-    // the cursor wraps back around to overwrite an instance, that instance has already faded out -
-    // no bookkeeping needed to free instances early.
     int nextInstance = 0;
 
     bool waitingForParent = false;
@@ -81,8 +55,6 @@ public partial class VAVisualisation : Node3D
 
         if (emitter == null)
         {
-            // The parent VAEmitter/VARaytracedSource may not have created its vaudio.Emitter yet
-            // (VARaytracedSource creates it only once a VAWorld is found) - retry as nodes appear.
             waitingForParent = true;
             GetTree().NodeAdded += RetryFindEmitter;
         }
@@ -126,9 +98,6 @@ public partial class VAVisualisation : Node3D
 
     void FindEmitter()
     {
-        // Accept either a VAEmitter parent directly, or a VARaytracedSource parent (VASource /
-        // VAStreamSource) and use the emitter it creates internally. Either way this node is not
-        // moved in the tree.
         var candidate = GetParent() switch
         {
             VAEmitter parentEmitter => parentEmitter,
@@ -138,8 +107,6 @@ public partial class VAVisualisation : Node3D
 
         if (candidate?.emitter == null)
         {
-            // Parent isn't a VAEmitter/VARaytracedSource, or it hasn't created its vaudio.Emitter
-            // yet - either way, retry later via NodeAdded.
             emitter = null;
             return;
         }
@@ -174,10 +141,6 @@ public partial class VAVisualisation : Node3D
         emitter.emitter.VisualisationUpdateFrequency = _UpdateFrequencyMs;
     }
 
-    // Diamonds must stay alive (fading) for DurationMs while new callbacks arrive every
-    // UpdateFrequencyMs, so the ring buffer needs room for every batch still fading at once - not
-    // just the latest one - or a new callback's writes stomp on still-visible instances from a
-    // few callbacks ago.
     int RequiredInstanceCount()
     {
         int batchSize = Math.Max(1, _RayCount * _BounceCount);
@@ -188,8 +151,6 @@ public partial class VAVisualisation : Node3D
 
     static ArrayMesh BuildDiamondMesh()
     {
-        // Unit diamond in the local XY plane, facing +Z - orientated per-instance to the ray hit
-        // normal via each MultiMesh instance's transform (see OnVisualisationData).
         Vector3 top = new(0, 1, 0);
         Vector3 right = new(1, 0, 0);
         Vector3 bottom = new(0, -1, 0);
@@ -229,23 +190,11 @@ public partial class VAVisualisation : Node3D
         {
             Multimesh = multimesh,
             MaterialOverride = shaderMaterial,
-
-            // VisualisationData positions/normals are already in world space - TopLevel makes this
-            // node's own transform (left at identity) the effective global transform, so the
-            // world-space positions written in OnVisualisationData can be used directly instead of
-            // being re-relativised to a moving parent every time the emitter moves.
             TopLevel = true,
             Transform = Transform3D.Identity,
-
-            // Instance transforms are written from the visualisation callback on a regular
-            // _Process frame, not the physics step - physics interpolation has nothing valid to
-            // interpolate between and just warns on every write.
             PhysicsInterpolationMode = PhysicsInterpolationModeEnum.Off,
-
-            // Rays can land anywhere within the VAWorld, far outside this node's own transform - a
-            // per-instance frustum test against this node's local AABB would cull them incorrectly.
             IgnoreOcclusionCulling = true,
-            ExtraCullMargin = 1024.0f,
+            ExtraCullMargin = 1024.0f, // TODO - what's this? Seems excessive
         };
 
         AddChild(multimeshInstance);
@@ -262,10 +211,6 @@ public partial class VAVisualisation : Node3D
         shaderMaterial.SetShaderParameter("base_color", _Color);
     }
 
-    // Called from vaudio's main-thread update - writes one MultiMesh instance per ray bounce,
-    // wrapping the ring-buffer cursor rather than doing any per-instance cleanup - a stale
-    // instance from several callbacks ago simply keeps rendering until this cursor wraps back
-    // around to overwrite it, by which point the shader has long since faded it to zero alpha.
     void OnVisualisationData(vaudio.VisualisationData[] data)
     {
         if (multimesh == null || data.Length == 0)
@@ -290,22 +235,18 @@ public partial class VAVisualisation : Node3D
         {
             Vector3 position = FromVAudio(data[i].position);
 
-            // Skip bounces too far from the emitter to be worth drawing, rather than writing them
-            // and hiding them in the shader - keeps the ring buffer's slots for bounces actually
-            // worth rendering.
+            // Skip bounces too far from the emitter to be worth drawing
             if (_MaxDistance > 0.0f && position.DistanceSquaredTo(emitterPosition) > maxDistanceSquared)
                 continue;
 
             Vector3 normal = FromVAudio(data[i].normal);
             normal = normal.LengthSquared() > 0.00001f ? normal.Normalized() : new Vector3(0, 1, 0);
 
-            // Avoid a degenerate basis when the normal is parallel to the up hint.
             Vector3 basisUp = Math.Abs(normal.Dot(upHint)) > 0.999f ? Vector3.Right : upHint;
 
             Basis basis = Basis.LookingAt(normal, basisUp).Scaled(new Vector3(_Size, _Size, _Size));
 
-            // Nudge each diamond off the surface it landed on, along the hit normal, to avoid
-            // z-fighting with the world geometry it's rendered flush against.
+            // Nudge each diamond to avoid z-fighting
             Transform3D transform = new(basis, position + normal * _NormalOffset);
 
             multimesh.SetInstanceTransform(nextInstance, transform);

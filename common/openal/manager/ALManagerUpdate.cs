@@ -8,10 +8,6 @@ public static unsafe partial class ALManager
     public static void SetSpeedOfSound(float speedOfSound) => AL.SpeedOfSound(speedOfSound);
     public static void SetReverbOnly(bool value) => _reverbOnly = value;
 
-    // Runtime device switching, reusing whichever max_reverb_sends/sample_rate/hrtf_enabled were
-    // read from Project Settings at initialize() time - matches native's bound
-    // ALManager::set_output_device(), the only one of the four audio/vaudio/* settings it exposes
-    // for runtime changes.
     public static void SetOutputDevice(string deviceName)
     {
         _outputDeviceName = deviceName;

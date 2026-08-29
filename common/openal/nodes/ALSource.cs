@@ -38,10 +38,6 @@ public partial class ALSource
     int lastPlayedStreamIndex = -1;
     static Random random = new();
 
-    // Set when Play() is called but the stream's ALBuffer hasn't finished its background decode
-    // yet (TryCreateSource fails). Polled every _Process() so playback still starts as soon as
-    // the buffer becomes ready, instead of the one-shot attempt being silently lost - this matters
-    // most for Autoplay, which only ever calls Play() once, from _Ready().
     bool playRequested = false;
 
     int PickStreamIndex()
@@ -60,9 +56,6 @@ public partial class ALSource
         return index;
     }
 
-    // Hook for subclasses (e.g. ALSource3D, ALSourceRelative) to apply their
-    // own spatialisation-related properties onto a freshly-created source,
-    // before it starts playing
     protected virtual void ConfigureSource(OpenALSource source)
     {
     }
@@ -95,8 +88,7 @@ public partial class ALSource
 
         if (!ALManager.TryCreateSource(_streams[streamIndex], true, out var source))
         {
-            // Buffer is still decoding in the background - remember to retry from _Process()
-            // once it's ready, rather than losing this Play() call entirely.
+            // Buffer is still decoding in the background
             playRequested = true;
             return false;
         }
@@ -104,9 +96,7 @@ public partial class ALSource
         playRequested = false;
         lastPlayedStreamIndex = streamIndex;
 
-        // Matches AudioStreamRandomizer's random_pitch/random_volume_offset_db:
-        // PitchRandomness of 1.0 (no variation) and VolumeRandomnessDb of 0.0
-        // (no variation) both collapse the random range to the single input value.
+        // Matches AudioStreamRandomizer's random_pitch/random_volume_offset_db
         var pitchLow = 1 / PitchRandomness;
         var randomizedPitch = Pitch * (float)(pitchLow + random.NextDouble() * (PitchRandomness - pitchLow));
         var randomizedGain = Volume * Mathf.DbToLinear((float)(-VolumeRandomnessDb + random.NextDouble() * (2 * VolumeRandomnessDb)));
@@ -148,11 +138,7 @@ public partial class ALSource
         return true;
     }
 
-    // Script-only snake_case aliases matching AudioStreamPlayer3D's play()/stop()/is_playing(), so a
-    // script written against AudioStreamPlayer3D keeps working unmodified after converting to this
-    // node. Godot only auto-converts PascalCase<->snake_case for its own built-in engine classes, not
-    // for a script's own members, so these need to exist as literal snake_case methods. Play() is
-    // forwarded rather than renamed since it's virtual/overridden by several subclasses.
+    // GDScript aliases so existing AudioStreamPlayer scripts don't break
     public bool play() => Play();
     public void stop() => Stop();
     public bool is_playing() => IsPlaying();
@@ -164,7 +150,7 @@ public partial class ALSource
 
         sources.Clear();
 
-        // Must delete the filter after the sources
+        // Must delete the filter after deleting the sources
         filter?.Delete();
         filter = null;
     }

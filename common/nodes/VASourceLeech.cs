@@ -1,10 +1,5 @@
 namespace vaudio_godot_mono_openal;
 
-// A sound source that leeches raytracing results off a parent VAEmitter instead of
-// owning/casting its own rays - useful for sounds that fire frequently from the same
-// location (e.g. footsteps, gunshots) without each needing its own raytraced emitter.
-// Must be a direct child of a VAEmitter (or VASource, whose child emitter is named
-// "{Name}-Emitter") node.
 public partial class VASourceLeech
 {
     private VAWorld vercidiumAudio;
@@ -78,8 +73,6 @@ public partial class VASourceLeech
         ApplyRaytracingResults(vercidiumAudio.listener.emitter);
     }
 
-    // Same as VASource.ApplyRaytracingResults, but reads results off the parent
-    // VAEmitter this node leeches instead of an owned child emitter.
     void ApplyRaytracingResults(vaudio.Emitter other)
     {
         effect = vercidiumAudio.GetReverbEffect(emitter);

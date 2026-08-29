@@ -4,12 +4,11 @@ using Godot.Collections;
 
 namespace vaudio_godot_mono_openal;
 
-// A VAStreamSource fed automatically by a local input (microphone) capture device. Owns its own ALCaptureDevice, so multiple nodes can each capture from a different device/format at once. See VANetworkedStreamSource for the network equivalent.
+// A VAStreamSource that plays back a local capture device
 [Tool]
 [GlobalClass]
 public partial class VAInputStreamSource : VAStreamSource
 {
-    // Shown in the DeviceName dropdown in place of "" (the driver's default), since a strict enum's current value must be one of its own entries. Matches the native plugin's DEFAULT_DEVICE_LABEL.
     public const string DefaultDeviceLabel = "System Default";
 
     [Signal]
@@ -81,8 +80,6 @@ public partial class VAInputStreamSource : VAStreamSource
         StartCapture();
     }
 
-    // 8-bit samples are unsigned (silence = 128) and scaled up by 256 so MicrophoneThreshold means
-    // the same thing regardless of Format; 16-bit samples are signed (silence = 0).
     static unsafe int PeakAmplitude(byte* data, int numBytes, int format)
     {
         int peak = 0;
@@ -189,7 +186,8 @@ public partial class VAInputStreamSource : VAStreamSource
         base._ExitTree();
     }
 
-    // Rebuilds DeviceName as a strict PropertyHint.Enum dropdown of the driver's current capture devices - EnumSuggestion would inject an unsuppressable blank entry. An unrecognized saved value shows as-is until RefreshDevices() re-queries.
+    // Rebuilds DeviceName as a strict PropertyHint.Enum dropdown of the driver's current capture devices - EnumSuggestion would inject an unsuppressable blank entry.
+    // An unrecognized saved value shows as-is until RefreshDevices() re-queries.
     public override void _ValidateProperty(Dictionary property)
     {
         base._ValidateProperty(property);

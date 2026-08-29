@@ -2,9 +2,6 @@ using OpenALSource = global::OpenAL.managed.ALSource;
 
 namespace vaudio_godot_mono_openal;
 
-// Spatialised AL source - see ALSource for the shared base (playback,
-// volume/pitch/streams) and ALSourceRelative for a non-spatialised source
-// pinned to the listener
 [Tool]
 public partial class ALSource3D : ALSource
 {

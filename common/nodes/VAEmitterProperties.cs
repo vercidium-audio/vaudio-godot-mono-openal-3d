@@ -2,6 +2,18 @@ namespace vaudio_godot_mono_openal;
 
 public partial class VAEmitter
 {
+    // Top-level properties
+    bool _RaytraceOnce;
+    [Export]
+    public bool RaytraceOnce
+    {
+        get => _RaytraceOnce;
+        set
+        {
+            _RaytraceOnce = value;
+        }
+    }
+
     [ExportGroup("Reverb")]
 
     int _ReverbRayCount = 0;

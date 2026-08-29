@@ -1,13 +1,9 @@
 @tool
 extends EditorContextMenuPlugin
 
-# Right-click to convert AudioStreamPlayer3D to VASource / VASourceRelative / VASourceLeech / VASourceAmbient,
-# or AudioStreamPlayer to VASourceRelative / VASourceAmbient. Mirrors the conversion offered by the native
-# (C++ GDExtension) plugin's ConversionContextMenuPlugin, adapted to this addon's node/property names.
-#
-# Shared verbatim between the 2D and 3D addons via each addon's `common` symlink - every vaudio type
-# referenced here is [GlobalClass] so it resolves by name without an addon-specific preload().
-
+# Right-click to convert:
+# - AudioStreamPlayer3D to VASource / VASourceRelative / VASourceLeech / VASourceAmbient
+# - AudioStreamPlayer to VASourceRelative / VASourceAmbient
 func _popup_menu(paths: PackedStringArray) -> void:
 	if paths.is_empty():
 		return
@@ -27,8 +23,6 @@ func _popup_menu(paths: PackedStringArray) -> void:
 		if not node:
 			return
 
-		# The spatialised built-in player - AudioStreamPlayer3D in a 3D project, AudioStreamPlayer2D
-		# in a 2D one. This file is shared by both addons; a project only ever contains one of them.
 		var is_audio_player_3d = node.get_class() == "AudioStreamPlayer3D" or node.get_class() == "AudioStreamPlayer2D"
 		var is_audio_player = node.get_class() == "AudioStreamPlayer"
 		var is_va_source = node is VASource
@@ -114,11 +108,6 @@ func convert_node(old_node: Node, target_class: String) -> void:
 
 	copy_property(old_node, new_node, "pitch_scale", "Pitch")
 
-	# AudioStreamPlayer3D has a single `stream` resource - this addon's nodes instead take a pool
-	# of streams to pick randomly from via the `Streams` array, so wrap it as a one-entry array.
-	# AudioStreamRandomizer picks a random sub-stream at playback time - expand its sub-streams
-	# into `Streams` directly so an existing scene using it keeps the same pool of sounds (minus
-	# its own pitch/volume randomisation, which this addon's nodes don't have an equivalent for).
 	if has_property(old_node, "stream") and old_node.stream != null:
 		var old_stream = old_node.stream
 
@@ -152,10 +141,6 @@ func convert_node(old_node: Node, target_class: String) -> void:
 			copy_property(old_node, new_node, "MaxDistance", "MaxDistance")
 			copy_property(old_node, new_node, "ReferenceDistance", "ReferenceDistance")
 
-	# AudioStreamPlayer(3D) has no Looping property of its own - Godot instead loops based on the imported .wav's
-	# "Loop Mode" (Import tab). Derive Looping from that when converting from one of those. Only applies when
-	# old_node didn't already have its own Looping property (i.e. wasn't itself one of this addon's sources) -
-	# that value already won above via copy_property(old_node, new_node, "Looping", "Looping").
 	if not has_property(old_node, "Looping"):
 		new_node.Looping = any_stream_wants_looping(new_node.Streams)
 
@@ -199,9 +184,6 @@ func copy_property(source: Object, target: Object, from: String, to: String) -> 
 	target.set(to, source.get(from))
 	return true
 
-# AudioStreamWAV's imported "Loop Mode" and AudioStreamOggVorbis's "Loop" checkbox are the closest equivalent to a
-# Looping flag for a plain AudioStreamPlayer(3D). Ping pong / backwards aren't representable by this addon's simple
-# looping flag, so any non-disabled WAV loop mode, or an enabled Ogg loop flag, counts.
 func any_stream_wants_looping(streams: Array) -> bool:
 	for stream in streams:
 		if stream is AudioStreamWAV and stream.loop_mode != AudioStreamWAV.LOOP_DISABLED:

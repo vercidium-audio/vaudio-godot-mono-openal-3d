@@ -1,15 +1,7 @@
 @tool
 extends EditorInspectorPlugin
 
-# Adds a "Vercidium Audio" section to the Inspector for any spatial node (Node2D/Node3D), exposing
-# the Material and Use Flat Transmission settings as an OptionButton/CheckBox rather than requiring
-# the user to edit the vercidium_audio_material / vercidium_audio_use_flat_transmission metadata
-# fields by hand. Both settings are inherited down the scene tree at runtime (see
-# VAWorldPrimitives.AddPrimitive), so setting either on a plain node configures its whole subtree.
-#
-# Shared between the 2D and 3D addons via each addon's `common` symlink. Every referenced vaudio
-# type is [GlobalClass] except VAWorld (registered via add_custom_type), which is load()ed relative
-# to this script's own location - see _init/_addon_root.
+# Adds a "Vercidium Audio" section to the Inspector for any spatial node (Node2D/Node3D), exposing the Material and Use Flat Transmission settings
 var VAWorld: Script
 
 func _init() -> void:
@@ -22,8 +14,6 @@ func _addon_root() -> String:
 const MATERIAL_META_KEY = "vercidium_audio_material"
 const USE_FLAT_TRANSMISSION_META_KEY = "vercidium_audio_use_flat_transmission"
 
-# Relays edits to a running game's VAWorld - see VADebuggerPlugin. Null until plugin.gd finishes
-# wiring it up via set_debugger_plugin.
 var debugger_plugin
 
 const BUILTIN_MATERIAL_NAMES = [
@@ -33,11 +23,6 @@ const BUILTIN_MATERIAL_NAMES = [
 ]
 
 func _can_handle(object):
-	# Audio control/geometry-source nodes, not raytraced geometry - excluded the same way the
-	# native VAMaterialInspectorPlugin excludes them. VADefaultMaterial/VACustomMaterial are plain
-	# Nodes (not spatial), so this check has to happen before the Node2D/Node3D check below.
-	# is_instance_of for VAWorld because it's a runtime-loaded Script var, not a parse-time type
-	# (see _init) - `object is VAWorld` is a parse error for that form.
 	if (is_instance_of(object, VAWorld) or object is VAEmitter or object is VADefaultMaterial
 		or object is VACustomMaterial or object is VASource or object is VASourceRelative
 		or object is VASourceAmbient or object is VASourceLeech):
@@ -62,8 +47,6 @@ func _make_heading() -> Label:
 	var label := Label.new()
 	label.text = "Vercidium Audio"
 
-	# Raw pixel font-size overrides aren't multiplied by the editor's UI scale (unlike the
-	# built-in theme), so on high OS/editor scale factors this rendered tiny - scale it manually.
 	label.add_theme_font_size_override("font_size", roundi(14 * EditorInterface.get_editor_scale()))
 	return label
 
@@ -149,13 +132,6 @@ func _on_use_flat_transmission_toggled(toggled_on: bool, node: Node):
 func set_debugger_plugin(plugin) -> void:
 	debugger_plugin = plugin
 
-# Custom EditorInspectorPlugin controls only ever run against the editor's local copy of the
-# scene - there's no way to reach a Node in the running game's separate process directly, so this
-# instead sends the node's path (relative to the edited scene root, which the running game's scene
-# root mirrors) over the debugger protocol - see VADebuggerPlugin. The running game's copy of this
-# node was never touched by the set_meta/remove_meta call that just ran above on the editor's local
-# copy, so the current metadata values have to be sent too, for the receiving end to apply to its
-# own copy before re-adding the primitive.
 func _sync_running_game(node: Node) -> void:
 	if debugger_plugin == null:
 		return
@@ -175,9 +151,6 @@ func _sync_running_game(node: Node) -> void:
 	var node_path := scene_root.get_path_to(node)
 	debugger_plugin.sync_primitive(scene_root.name, node_path, material, use_flat_transmission)
 
-# VACustomMaterial nodes only register themselves in customMaterials at runtime
-# (VACustomMaterial._EnterTree bails out early when Engine.IsEditorHint() is true), so the edited
-# scene tree has to be walked directly to find their names while in the editor.
 func _find_custom_materials(node: Node) -> Array:
 	var scene_root := EditorInterface.get_edited_scene_root()
 	if scene_root == null:

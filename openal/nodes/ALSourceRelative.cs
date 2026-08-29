@@ -2,11 +2,9 @@ using OpenALSource = global::OpenAL.managed.ALSource;
 
 namespace vaudio_godot_mono_openal;
 
-// A sound source relative to the listener with zero offset, e.g. footsteps,
-// ambience, music. Always AL_SOURCE_RELATIVE with a pinned origin position -
-// used to be a toggleable `Relative` bool on ALSource3D, which caused
-// mispositioned/panned audio since it left the node's GlobalPosition being
-// synced onto a relative source every frame
+/// <summary>
+/// A sound source relative to the listener, never muffled, reuses listener reverb.
+/// </summary>
 [Tool]
 public partial class ALSourceRelative : ALSource
 {

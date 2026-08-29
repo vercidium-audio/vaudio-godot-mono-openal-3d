@@ -22,8 +22,6 @@ public static unsafe partial class ALManager
             return;
         }
 
-        // Delete sources before effects - no Node.GetTree() to reach the scene tree from a static
-        // class, so go via the main loop directly (same pattern Ensure() uses).
         DestroyAllAudioSources(((SceneTree)Engine.GetMainLoop()).Root);
 
         // Invoke device destroyed callbacks (e.g. for cleaning up reverb effects)
@@ -52,9 +50,6 @@ public static unsafe partial class ALManager
         DecodedStreams.Clear();
         ALBuffer.CancelLoadingSounds = false;
 
-        // Delete everything - unfortunately we can't copy data from buffers in one OpenAL context to another. We need to re-decode every AudioStream :(
-        // RecreateDevice() (ALManagerDevice.cs) only falls back to this when ALDevice.Reopen
-        // (ALC_SOFT_reopen_device) isn't available on the current device.
         DestroyAll();
     }
 }

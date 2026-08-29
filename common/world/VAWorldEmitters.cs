@@ -73,8 +73,7 @@ public partial class VAWorld
             {
                 listener = node;
 
-                // Wire up any emitters that registered before this listener existed, instead of
-                // leaving them permanently untargeted.
+                // Wire up any emitters that registered before this listener existed
                 foreach (var pendingTarget in pendingTargets)
                     listener.AddTarget(pendingTarget);
 
@@ -89,8 +88,7 @@ public partial class VAWorld
         {
             if (listener == null)
             {
-                // The scene added this emitter before the main listener node - hold onto it and
-                // add it as a target once the listener registers, instead of dropping it.
+                // List of emitters to initialise later when the VAListener node is created
                 pendingTargets.Add(emitter);
             }
             else
@@ -128,12 +126,8 @@ public partial class VAWorld
         world.RemoveEmitter(emitter);
     }
 
-    // No-op unless this emitter was still waiting in pendingTargets for a listener to appear.
     public void UnregisterPendingTarget(vaudio.Emitter emitter) => pendingTargets.Remove(emitter);
 
-    // No-op unless this is the current listener - avoids a dangling reference if it's removed
-    // before this VAWorld. Resets NoListenerWarningLogged so a future missing-listener state
-    // (e.g. after a scene reload) warns again.
     public void UnregisterListener(VAEmitter node)
     {
         if (listener != node)

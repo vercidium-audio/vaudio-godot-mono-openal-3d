@@ -6,12 +6,7 @@ namespace vaudio_godot_mono_openal;
 
 public class ALBuffer
 {
-    // Set to true while a device switch is tearing everything down, so in-flight background
-    // decode tasks bail out early instead of racing the teardown/rebuild.
     public static bool CancelLoadingSounds;
-
-    // Pull frames from playback in fixed-size chunks rather than one huge MixAudio() call -
-    // keeps a single temporary allocation bounded regardless of how long the source stream is.
     const int MixChunkFrames = 8192;
 
     AudioStream stream;
@@ -38,8 +33,7 @@ public class ALBuffer
         if (CancelLoadingSounds)
             return;
 
-        // Decodes via Godot's own AudioStream/import pipeline (AudioStreamOggVorbis/WAV/MP3/...)
-        // instead of a bundled decoder, so any format Godot can import is supported for free.
+        // Decodes via Godot's own AudioStream/import pipeline
         var playback = stream.InstantiatePlayback();
 
         if (playback == null)
@@ -51,9 +45,8 @@ public class ALBuffer
         var mixRate = AudioServer.GetMixRate();
         var lengthSeconds = stream.GetLength();
 
-        // Some streams (e.g. procedurally-generated or malformed ones) report a zero/negative
-        // length. Fall back to pulling until MixAudio stops returning frames, bounded by a
-        // generous frame count so a broken stream can't loop forever.
+        // Some streams (e.g. procedurally-generated or malformed ones) report a zero/negative length.
+        // Fall back to pulling until MixAudio stops returning frames
         long expectedFrames = lengthSeconds > 0.0
             ? (long)(lengthSeconds * mixRate) + MixChunkFrames
             : (long)mixRate * 60 * 10; // 10 minute safety cap

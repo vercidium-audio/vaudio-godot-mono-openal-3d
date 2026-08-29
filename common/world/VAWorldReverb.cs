@@ -109,9 +109,5 @@ public partial class VAWorld
         effect.Update();
     }
 
-    // Grouped-EAX reverb zones get a listener-relative pan (and effect-slot gain) applied to their
-    // reflections/late-reverb. The pan math is dimension-specific - OpenAL's pan vector is always
-    // 3-component, but 2D derives it from a single listener rotation while 3D uses pitch + yaw - so
-    // each addon supplies its own implementation.
     partial void ApplyGroupedEAXPan(vaudio.EAXReverb eax, ALReverbEffect effect);
 }

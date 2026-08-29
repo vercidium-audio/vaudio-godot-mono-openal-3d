@@ -93,21 +93,7 @@ public partial class ALSource
         set => _volumeRandomnessDb = value;
     }
 
-    // These three are deliberately named in snake_case, not PascalCase: unlike Godot's built-in
-    // engine classes, a C# script's own members are exposed to GDScript under their exact literal
-    // name (no auto PascalCase <-> snake_case conversion), so matching AudioStreamPlayer3D's
-    // "stream"/"pitch_scale"/"volume_db" for script compatibility requires the C# names themselves
-    // to be snake_case.
-    //
-    // They're [Export] purely so Godot registers them as script-exposed properties (required for
-    // GDScript get/set access) - they're not meant to be inspector-editable, since they just
-    // mirror Streams/Pitch/Volume above. They have no backing field, so Godot's C# exporter can't
-    // diff them against a default to decide whether to serialize them: it always writes them into
-    // the .tscn, and (having no sensible value to write for a delegating property) writes `null`.
-    // On scene load that null is coerced to default(float)/null, and the setter then pushes that
-    // straight through to Pitch/Volume/Streams, silently stomping whatever the user set on the
-    // "real" property. _ValidateProperty below hides them from the inspector and (crucially) drops
-    // PropertyUsageFlags.Storage so they're never serialized in the first place.
+    // snake_case GDScript aliases
 
     /// <summary>Script-only alias for <see cref="Streams"/>, matching AudioStreamPlayer3D's single "stream" property. Lets a script written against AudioStreamPlayer3D keep working unmodified after converting to this node. Reads back the first entry of <see cref="Streams"/>; writes replace <see cref="Streams"/> with a one-entry array.</summary>
     [Export]

@@ -76,7 +76,7 @@ public partial class VADefaultMaterial : Node
     vaudio.MaterialType _materialType = vaudio.MaterialType.Metal;
 
     /// <summary>
-    /// Which of the SDK's built-in materials this node overrides
+    /// The default materials to override
     /// </summary>
     [Export]
     public vaudio.MaterialType MaterialType
@@ -282,13 +282,9 @@ public partial class VADefaultMaterial : Node
     /// </summary>
     public vaudio.Color GetDebugColor() => new(DebugColor.R, DebugColor.G, DebugColor.B, 1.0f);
 
-    // Relays property edits made on the editor's own copy of this node (see
-    // VAMaterialPropertiesInspectorPlugin.gd) onto the running game's separate copy - mirrors
-    // VAWorldDebugger.OnDebuggerMessage's use of SyncPrimitive for the material-assignment
-    // dropdown. Called instead of going through the [Export] setters above, since those already
-    // ran (with no effect, as vercidiumAudio is null) on the editor's own copy.
     public void ApplyPropertiesFromEditor(float absorptionLf, float absorptionHf, float scattering,
-        float transmissionLf, float transmissionHf, float flatTransmissionLf, float flatTransmissionHf, Color debugColor)
+                                          float transmissionLf, float transmissionHf,
+                                          float flatTransmissionLf, float flatTransmissionHf, Color debugColor)
     {
         _AbsorptionLF = absorptionLf;
         _AbsorptionHF = absorptionHf;

@@ -1,7 +1,5 @@
 namespace vaudio_godot_mono_openal;
 
-// 3D listener state for ALManager - position/velocity vectors plus pitch/yaw. Runtime-API-only,
-// driven from VAWorldGodot each frame. Shared body is in common/openal/manager/.
 public static unsafe partial class ALManager
 {
     static Vector3 _listenerPosition;

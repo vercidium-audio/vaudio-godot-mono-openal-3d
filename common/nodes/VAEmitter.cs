@@ -15,8 +15,7 @@ public partial class VAEmitter
     public float GainHF => filter?.gainHF ?? 0;
     public bool Raytraced => emitter != null && !emitter.Initialising;
 
-    // Set while waiting for a VAWorld to appear - lets _ExitTree cancel the pending retry if this
-    // node leaves the tree before one is found.
+    // Set while waiting for a VAWorld to appear. _ExitTree cancels the pending retry if this node leaves the tree
     Action cancelWaitForVAWorld;
 
     public override void _EnterTree()
@@ -43,9 +42,7 @@ public partial class VAEmitter
         if (sceneRoot == null)
             return [];
 
-        // A VAWorld can be found anywhere in the tree, or added later from another scene - see
-        // NodeExtensions.GetVAWorldParent/WaitForVAWorld - so this is just a hint, not a hard
-        // requirement, and doesn't check tree order.
+        // A VAWorld can be found anywhere or added later, so this is just a hint, not a hard requirement
         if (sceneRoot.GetVAWorldParent() == null)
             return ["No VAWorld node found in the scene tree."];
 
@@ -167,8 +164,6 @@ public partial class VAEmitter
     public vaudio.LowPassFilter AmbientFilter => emitter.AmbientFilter;
     public int GroupedEAXIndex => emitter.GroupedEAXIndex;
 
-    // Matches native's is_ambient_filter_ready/get_ambient_filter_gain_lf/get_ambient_filter_gain_hf - only meaningful on the listener,
-    // and only once raytraced at least once (VASourceAmbient.cs's "vercidiumAudio?.ambientFilter == null" gate port).
     public bool IsAmbientFilterReady => Raytraced && AmbientFilter != null;
     public float GetAmbientFilterGainLF() => AmbientFilter?.GainLF ?? 1.0f;
     public float GetAmbientFilterGainHF() => AmbientFilter?.GainHF ?? 1.0f;
@@ -176,17 +171,4 @@ public partial class VAEmitter
     public Action OnRaytracingCompleteCallback;
     public Action<vaudio.Emitter> OnRaytracedByAnotherEmitterCallback;
     public Action OnEmitterRemovedCallback;
-
-    // Top-level properties
-    bool _RaytraceOnce;
-    [Export]
-    public bool RaytraceOnce
-    {
-        get => _RaytraceOnce;
-        set
-        {
-            _RaytraceOnce = value;
-        }
-    }
-
 }

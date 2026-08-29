@@ -6,18 +6,12 @@ public partial class VAWorld
 
     public override void _EnterTree()
     {
-        // Node3D.Position/Transform can't be overridden or shadowed in a way the engine/editor
-        // will actually call (Inspector edits and gizmo drags go straight through the engine's
-        // native set_position, bypassing any C# property) - NOTIFICATION_TRANSFORM_CHANGED is
-        // the only hook that fires uniformly for all three, so opt into it here.
         SetNotifyTransform(true);
 
         if (Engine.IsEditorHint())
             return;
 
-        // Ensure the OpenAL device/context exists before creating reverb effects below - GenEffect
-        // silently fails with AL_INVALID_OPERATION (and returns effectID = 0) if called before a
-        // context is current.
+        // Ensure the OpenAL device/context exists before creating reverb effects below
         ALManager.Ensure();
 
         // Cache the scene root since we access it often
@@ -79,14 +73,10 @@ public partial class VAWorld
         if (what != NotificationTransformChanged)
             return;
 
-        // The bounds AABB is always axis-aligned (see VAWorldProperties._ValidateProperty, which
-        // hides rotation/scale in the Inspector) - but the viewport's Rotate tool bypasses the
-        // Inspector and can still rotate the node directly, so snap it back out here too.
         if (Quaternion != Quaternion.Identity)
             Quaternion = Quaternion.Identity;
 
-        // Rebuild the bounds gizmo whenever the node moves, whether from the viewport gizmo,
-        // the Inspector's Position field, or code.
+        // Rebuild the bounds gizmo whenever the node moves
         UpdateGizmos();
 
         if (world != null)
@@ -144,8 +134,6 @@ public partial class VAWorld
 
         UnregisterDebuggerCapture();
 
-        // Remove vercidium_audio_* metadata fields from all nodes in the scene.
-        // SceneRoot can be null if the tree has no scene loaded (e.g. exiting during shutdown).
         if (SceneRoot != null)
             RemovePrimitive(SceneRoot, true);
 
@@ -190,10 +178,7 @@ public partial class VAWorld
             ALManager.ListenerYaw = listenerRotation.Y;
         }
 
-        // ALManager is a static class with no Node._Process of its own - VAWorld drives its tick
-        // the same way it already drives world.Update() for the raytracer.
         ALManager.Update();
-
         world.Update();
     }
 
