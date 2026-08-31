@@ -1,9 +1,9 @@
 @tool
 extends EditorNode3DGizmoPlugin
 
-const VAEmitter = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAEmitter.cs")
-const VASource = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VASource.cs")
-const VAStreamSource = preload("res://addons/vaudio-godot-mono-openal-3d/nodes/VAStreamSource.cs")
+const VAEmitter = preload("res://addons/vaudio-godot-mono-openal-3d/common/nodes/VAEmitter.cs")
+const VASource = preload("res://addons/vaudio-godot-mono-openal-3d/common/nodes/VASource.cs")
+const VAStreamSource = preload("res://addons/vaudio-godot-mono-openal-3d/common/nodes/VAStreamSource.cs")
 
 const GIZMO_COLOR = Color("85ffa4")
 const SPHERE_RADIUS = 0.5
