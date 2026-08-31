@@ -1,26 +1,33 @@
-using godot_mono_openal;
+namespace vaudio_godot_mono_openal;
 
-namespace vaudio_godot_mono_openal_3d;
-
+[Tool]
 [GlobalClass]
-public partial class VASourceRelative : ALSource3D
+public partial class VASourceRelative : ALSourceRelative
 {
     private VAWorld vercidiumAudio;
 
+    Action cancelWaitForVAWorld;
+
     public override void _EnterTree()
     {
+        base._EnterTree();
+
         if (Engine.IsEditorHint())
             return;
 
-        vercidiumAudio = this.GetVAWorldParent();
+        cancelWaitForVAWorld = this.WaitForVAWorld(world =>
+        {
+            cancelWaitForVAWorld = null;
+            vercidiumAudio = world;
+        });
     }
 
-    public override void _Ready()
+    public override void _ExitTree()
     {
-        if (Engine.IsEditorHint())
-            return;
+        cancelWaitForVAWorld?.Invoke();
+        cancelWaitForVAWorld = null;
 
-        Relative = true;
+        base._ExitTree();
     }
 
     public override bool Play()
