@@ -2,7 +2,15 @@ namespace vaudio_godot_mono_openal;
 
 public partial class VASource
 {
+    private bool _PlayWhenRaytracingCompletes = true;
     private bool _wasPlayingBeforeDeviceDestroyed = false;
+
+    [Export]
+    public bool PlayWhenRaytracingCompletes
+    {
+        get => _PlayWhenRaytracingCompletes;
+        set => _PlayWhenRaytracingCompletes = value;
+    }
 
     public override void _EnterTree()
     {
@@ -42,7 +50,7 @@ public partial class VASource
     {
         base.OnRaytracedByAnotherEmitter(other);
 
-        if (Autoplay)
+        if (PlayWhenRaytracingCompletes)
             Play();
     }
 
@@ -51,7 +59,10 @@ public partial class VASource
     public override bool Play()
     {
         if (!Raytraced)
+        {
+            PlayWhenRaytracingCompletes = true;
             return false;
+        }
 
         return played = base.Play();
     }
@@ -60,7 +71,7 @@ public partial class VASource
     {
         base._Process(delta);
 
-        if (Raytraced && !played && Autoplay)
+        if (Raytraced && !played && PlayWhenRaytracingCompletes)
             Play();
     }
 
