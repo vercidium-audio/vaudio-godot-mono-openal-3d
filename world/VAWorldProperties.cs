@@ -13,9 +13,6 @@ public partial class VAWorld
         "rotation_edit_mode", "rotation_order",
     ];
 
-    // The bounds AABB is always axis-aligned starting at Position (see _Notification's
-    // NotificationTransformChanged handler and VAWorldGizmoPlugin.gd), so rotation/scale would
-    // be misleading in the Inspector - hide them, matching the native plugin's VAWorld.
     public override void _ValidateProperty(Dictionary property)
     {
         string name = property["name"].AsStringName();

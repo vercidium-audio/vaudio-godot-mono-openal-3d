@@ -58,11 +58,6 @@ public partial class VARaytracedSource
         return baseWarnings;
     }
 
-    // Matches VASource.cs's CreateEmitter: a private child VAEmitter, never the listener, that
-    // never casts its own occlusion/permeation rays (only reverb rays) - this node is heard via
-    // the listener's rays targeting it, not by casting its own muffling rays.
-    // Virtual so subclasses (e.g. VASource) can apply their own extra properties (e.g. Debug
-    // Rendering colors) onto the emitter once it exists.
     public virtual void CreateEmitter()
     {
         emitter = new VAEmitter()
@@ -108,11 +103,6 @@ public partial class VARaytracedSource
         };
 
         AddChild(emitter);
-
-        // A VAVisualisation placed directly under this source stays where the user put it and binds
-        // to the emitter above via RaytracedEmitter - it is not reparented onto the internal
-        // VAEmitter, so its scene path is stable and the editor can push runtime property edits to
-        // it (Debug > Sync Scene Changes).
     }
 
     protected virtual void OnRaytracedByAnotherEmitter(vaudio.Emitter other)
@@ -136,11 +126,6 @@ public partial class VARaytracedSource
             ApplyRaytracingResults(vercidiumAudio.listener.emitter);
     }
 
-    // Resolves this node's reverb slot via its own child emitter's AffectsGroupedEAX/
-    // GroupedEAXIndex (VAWorld.GetReverbEffect - the listener slot if this node doesn't cast
-    // reverb rays into a grouped zone), then - if the listener has raytraced this node's emitter
-    // as a target - pushes the resulting muffling gain with fullReverb=true (reverb send always
-    // gets the clean/unfiltered signal; only the direct path is muffled).
     protected void ApplyRaytracingResults(vaudio.Emitter other)
     {
         effect = vercidiumAudio.GetReverbEffect(emitter);

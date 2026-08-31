@@ -31,9 +31,6 @@ public partial class VAWorld
             return groupedReverbEffects[emitter.GroupedEAXIndex];
         }
 
-        // Doesn't cast reverb rays or affect a grouped EAX zone - falls back to the listener's
-        // reverb effect only if this emitter opted into that via UseListenerReverb, otherwise
-        // it gets no reverb send at all.
         if (!emitter.UseListenerReverb)
             return null;
 

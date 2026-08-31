@@ -39,32 +39,12 @@ public partial class VAWorld
                 AddPrimitive(child, material, useFlatTransmission, true);
     }
 
-    // Re-registers a single node's raytracing primitive after its "Vercidium Audio" material or
-    // use-flat-transmission metadata changed in the Inspector while the game is running - removes
-    // the old primitive if one exists, then re-adds it using the node's current metadata. Only
-    // ever called on the running game's own VAWorld instance, via the debugger message capture
-    // registered in VAWorldDebugger.cs - a custom EditorInspectorPlugin control has no way to
-    // reach this VAWorld directly, since it only ever runs against the editor's own local copy of
-    // the scene, whose world is always null.
     public void SyncPrimitive(Node node)
     {
-        // Guards against being called before InitializeScene has run this frame - should always be
-        // non-null in practice, since this is only invoked via the debugger message capture, which
-        // is only registered once the running game exists.
         if (world == null)
             return;
 
-        // Recursive, matching InitializeScene's own top-level AddPrimitive calls - the edited node
-        // itself often has no geometry of its own (e.g. a plain Node3D grouping node), with the
-        // material/use-flat-transmission override only taking effect on its descendants. Unlike
-        // OnNodeAdded/OnNodeRemoved (non-recursive - the NodeAdded/NodeRemoved signals they handle
-        // already fire once per node), this is a single one-shot call for the whole edited subtree,
-        // so it has to walk it itself.
         RemovePrimitive(node, true);
-
-        // AddPrimitive re-reads each node's current vercidium_audio_material/
-        // vercidium_audio_use_flat_transmission metadata itself - MaterialType.Air/true here are
-        // just the fallback for a node with no metadata at all.
         AddPrimitive(node, vaudio.MaterialType.Air, true, true);
     }
 
@@ -152,9 +132,6 @@ public partial class VAWorld
 
         if (csgCylinder.Cone)
         {
-            // Godot's CsgCylinder3D cone is centered at origin (base at -Height/2, apex at +Height/2)
-            // VAudio's ConePrimitive has base at Y=0 and apex at Y=height
-            // We need to offset the transform down by Height/2 so the base aligns
             var globalTransform = csgCylinder.GlobalTransform;
             var offsetTransform = globalTransform.TranslatedLocal(new Vector3(0, -csgCylinder.Height / 2, 0));
 
@@ -349,9 +326,6 @@ public partial class VAWorld
         }
         else if (shape is CapsuleShape3D capsule)
         {
-            // Godot CapsuleShape3D: height is total height including hemispherical caps, radius is the radius
-            // vaudio.CapsulePrimitive: length is the cylinder portion (not including caps), radius is the radius
-            // The cylinder length = total height - 2 * radius
             var capsuleTransform = RemoveScale(globalTransform, out var capsuleScale);
 
             float cylinderLength = capsule.Height - 2 * capsule.Radius;
