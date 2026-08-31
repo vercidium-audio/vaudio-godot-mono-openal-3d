@@ -4,8 +4,10 @@ public partial class VAWorld
 {
     public List<vaudio.Emitter> emitters = [];
 
-    // Emitters that registered before the listener existed - added to the listener's targets once it registers
-    List<vaudio.Emitter> pendingTargets = [];
+    // Every non-listener emitter currently registered with this world, in registration order. Re-walked to wire listener targets whenever the listener appears (or re-appears after a scene reload), so VASource/VAListener/VAWorld can enter the tree in any order.
+    List<vaudio.Emitter> registeredEmitters = [];
+
+    bool wirePendingTargetsQueued = false;
 
     public vaudio.Emitter CreateEmitter(VAEmitter node, Action OnRaytracingComplete, Action<vaudio.Emitter> OnRaytracedByAnotherEmitter)
     {
@@ -73,11 +75,8 @@ public partial class VAWorld
             {
                 listener = node;
 
-                // Wire up any emitters that registered before this listener existed
-                foreach (var pendingTarget in pendingTargets)
-                    listener.AddTarget(pendingTarget);
-
-                pendingTargets.Clear();
+                // Wire up every source registered so far, in either order - some may have registered before this listener existed
+                WirePendingTargets();
             }
             else
             {
@@ -86,19 +85,39 @@ public partial class VAWorld
         }
         else
         {
-            if (listener == null)
-            {
-                // List of emitters to initialise later when the VAListener node is created
-                pendingTargets.Add(emitter);
-            }
-            else
+            // Recorded before the listener check so a listener whose CreateEmitter runs later this same frame still sees this source when it walks registeredEmitters.
+            registeredEmitters.Add(emitter);
+
+            if (listener != null)
             {
                 listener.AddTarget(emitter);
+            }
+            else if (!wirePendingTargetsQueued)
+            {
+                // No listener registered yet. If a VAListener node is in the tree but its own CreateEmitter simply hasn't run this frame (child-emitter registration order vs sibling _EnterTree), the walk it does on registering already covers us. This deferred re-walk is the belt-and-braces path for any other ordering where neither immediate wiring nor the listener's walk reached this source.
+                wirePendingTargetsQueued = true;
+                Callable.From(WirePendingTargets).CallDeferred();
             }
         }
 
         emitters.Add(emitter);
         return emitter;
+    }
+
+    // (Re-)adds every registeredEmitters entry as a target of the current listener. Safe to call repeatedly - vaudio.Emitter.AddTarget treats an existing target as a no-op.
+    void WirePendingTargets()
+    {
+        wirePendingTargetsQueued = false;
+
+        if (listener == null)
+            return;
+
+        foreach (var emitter in registeredEmitters)
+        {
+            // Skip a source whose SDK handle has already been torn down (RaytraceOnce removal, pending destroy) but whose node is still briefly in registeredEmitters.
+            if (!emitter.PendingRemoval)
+                listener.AddTarget(emitter);
+        }
     }
 
     public void RemoveEmitter(vaudio.Emitter emitter)
@@ -126,7 +145,7 @@ public partial class VAWorld
         world.RemoveEmitter(emitter);
     }
 
-    public void UnregisterPendingTarget(vaudio.Emitter emitter) => pendingTargets.Remove(emitter);
+    public void UnregisterPendingTarget(vaudio.Emitter emitter) => registeredEmitters.Remove(emitter);
 
     public void UnregisterListener(VAEmitter node)
     {
