@@ -24,7 +24,10 @@ public partial class VACustomMaterial : Node
 
         // Custom materials register themselves at runtime
         if (vercidiumAudio == null)
+        {
+            Logger.LogWarning($"VACustomMaterial '{Name}' must be a direct child of a VAWorld node");
             return;
+        }
 
         materialType = vercidiumAudio.RegisterCustomMaterial(this);
 

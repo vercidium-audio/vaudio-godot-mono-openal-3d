@@ -60,6 +60,12 @@ public partial class VADefaultMaterial : Node
 
         vercidiumAudio = this.GetVAWorldParent();
 
+        if (vercidiumAudio == null)
+        {
+            Logger.LogWarning($"VADefaultMaterial '{Name}' must be a direct child of a VAWorld node");
+            return;
+        }
+
         var mat = vercidiumAudio.world.GetMaterial(MaterialType);
 
         mat.AbsorptionLF = AbsorptionLF;
