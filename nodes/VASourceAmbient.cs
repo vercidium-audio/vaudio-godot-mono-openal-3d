@@ -29,7 +29,7 @@ public partial class VASourceAmbient : AudioSourceRelative
         cancelWaitForVAWorld = null;
 
         if (!Engine.IsEditorHint())
-            ALManager.UnregisterDeviceRecreatedCallback(OnDeviceRecreated);
+            AudioManager.UnregisterDeviceRecreatedCallback(OnDeviceRecreated);
 
         base._ExitTree();
     }

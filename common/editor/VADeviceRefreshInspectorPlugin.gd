@@ -10,7 +10,7 @@ func _parse_property(object: Object, type: Variant.Type, name: String, hint_type
 		return false
 
 	var refresh_button := Button.new()
-	refresh_button.text = "Refresh OpenAL Devices"
+	refresh_button.text = "Refresh Audio Devices"
 	refresh_button.pressed.connect(object.RefreshDevices)
 	add_custom_control(refresh_button)
 

@@ -11,8 +11,8 @@ public partial class VAWorld
         if (Engine.IsEditorHint())
             return;
 
-        // Ensure the OpenAL device/context exists before creating reverb effects below
-        ALManager.Ensure();
+        // Ensure the audio backend's device/context exists before creating reverb effects below
+        AudioManager.Ensure();
 
         // Cache the scene root since we access it often
         SceneRoot = GetTree().CurrentScene as Node3D;
@@ -53,7 +53,7 @@ public partial class VAWorld
         // Create reverb effects
         OnDeviceRecreated();
 
-        if (!ALManager.Initialised)
+        if (!AudioManager.Initialised)
         {
             LogError("The godot-mono-openal addon is not enabled. Ensure godot-mono-openal is enabled in Project Settings > Plugins (try toggling it off and on if it's already enabled)");
         }
@@ -127,8 +127,8 @@ public partial class VAWorld
         if (Engine.IsEditorHint())
             return;
 
-        ALManager.UnregisterDeviceDestroyedCallback(OnDeviceDestroyed);
-        ALManager.UnregisterDeviceRecreatedCallback(OnDeviceRecreated);
+        AudioManager.UnregisterDeviceDestroyedCallback(OnDeviceDestroyed);
+        AudioManager.UnregisterDeviceRecreatedCallback(OnDeviceRecreated);
 
         GetTree().NodeAdded -= OnNodeAdded;
         GetTree().NodeRemoved -= OnNodeRemoved;
@@ -169,17 +169,22 @@ public partial class VAWorld
                 NoListenerWarningLogged = true;
             }
         }
-        else if (ALManager.Initialised)
+        else if (AudioManager.Initialised)
         {
-            // Sync the AL listener to our main listener
+            // Sync the backend's listener to our main listener. VAWorld owns the pitch/yaw -> forward/up
+            // conversion so the backend interface stays dimension-agnostic.
             Vector3 listenerRotation = listener.GlobalRotation;
+            float pitch = listenerRotation.X;
+            float yaw = listenerRotation.Y;
 
-            ALManager.ListenerPosition = listener.GlobalPosition;
-            ALManager.ListenerPitch = listenerRotation.X;
-            ALManager.ListenerYaw = listenerRotation.Y;
+            var forward = Helper.PitchYawToVector3(pitch, yaw);
+            var up = Helper.PitchYawToVector3(pitch + MathF.PI / 2, yaw);
+
+            AudioManager.Backend.SetListenerPosition(listener.GlobalPosition);
+            AudioManager.Backend.SetListenerOrientation(forward, up);
         }
 
-        ALManager.Update();
+        AudioManager.Update();
         world.Update();
     }
 

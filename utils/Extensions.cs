@@ -24,6 +24,6 @@ internal static class Extensions
         );
     }
 
-    public static void RegisterDeviceRecreatedCallback(Action callback) => ALManager.RegisterDeviceRecreatedCallback(callback);
-    public static void RegisterDeviceDestroyedCallback(Action callback) => ALManager.RegisterDeviceDestroyedCallback(callback);
+    public static void RegisterDeviceRecreatedCallback(Action callback) => AudioManager.RegisterDeviceRecreatedCallback(callback);
+    public static void RegisterDeviceDestroyedCallback(Action callback) => AudioManager.RegisterDeviceDestroyedCallback(callback);
 }

@@ -1,5 +1,4 @@
 using Godot.Collections;
-using OpenAL;
 
 namespace vaudio_godot_mono_openal;
 
@@ -97,7 +96,7 @@ public partial class VAWorld
     }
 
 
-    [ExportGroup("OpenAL")]
+    [ExportGroup("Audio")]
 
     float _MasterVolume = 1;
     /// <summary>
@@ -112,26 +111,26 @@ public partial class VAWorld
         {
             _MasterVolume = MathF.Max(0, value);
 
-            if (ALManager.Initialised)
-                ALManager.MasterVolume = _MasterVolume;
+            if (AudioManager.Initialised)
+                AudioManager.Backend.SetMasterVolume(_MasterVolume);
         }
     }
 
-    ALDistanceModel _DistanceModel = ALDistanceModel.InverseDistance;
+    AudioDistanceModel _DistanceModel = AudioDistanceModel.InverseDistance;
     /// <summary>
-    /// OpenAL distance attenuation model. 
+    /// Distance attenuation model.
     /// If multiple VAWorlds exist, the last one to set this wins.
     /// </summary>
     [Export]
-    public ALDistanceModel DistanceModel
+    public AudioDistanceModel DistanceModel
     {
         get => _DistanceModel;
         set
         {
             _DistanceModel = value;
 
-            if (ALManager.Initialised)
-                ALManager.DistanceModel = _DistanceModel;
+            if (AudioManager.Initialised)
+                AudioManager.Backend.SetDistanceModel(_DistanceModel);
         }
     }
 
@@ -148,8 +147,8 @@ public partial class VAWorld
         {
             _ReverbOnly = value;
 
-            if (ALManager.Initialised)
-                ALManager.ReverbOnly = _ReverbOnly;
+            if (AudioManager.Initialised)
+                AudioManager.Backend.SetReverbOnly(_ReverbOnly);
         }
     }
 
@@ -181,7 +180,7 @@ public partial class VAWorld
     float _MetersPerUnit = 1;
     /// <summary>
     /// Gets meters per world unit. Affects air absorption and reverb calculation.
-    /// Also affects OpenAL's own air-absorption and reverb decay math.
+    /// Also affects the audio backend's own air-absorption and reverb decay math.
     /// If multiple VAWorlds exist, the last one to set this wins.
     /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity or less than or equal to 0</exception>
     /// </summary>
@@ -196,8 +195,8 @@ public partial class VAWorld
             if (world != null)
                 world.MetersPerUnit = _MetersPerUnit;
 
-            if (ALManager.Initialised)
-                ALManager.MetersPerUnit = _MetersPerUnit;
+            if (AudioManager.Initialised)
+                AudioManager.Backend.SetMetersPerUnit(_MetersPerUnit);
         }
     }
 
@@ -205,7 +204,7 @@ public partial class VAWorld
 
     /// <summary>
     /// Speed of sound in seconds per meter. Defaults to 343.0f. Affects reverb calculation.
-    /// Also affects OpenAL's own Doppler calculation.    
+    /// Also affects the audio backend's own Doppler calculation.
     /// If multiple VAWorlds exist, the last one to set this wins.
     /// </summary>
     /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity or less than or equal to 0</exception>
@@ -220,8 +219,8 @@ public partial class VAWorld
             if (world != null)
                 world.InverseSpeedOfSound = 1.0f / _SpeedOfSound;
 
-            if (ALManager.Initialised)
-                ALManager.SpeedOfSound = _SpeedOfSound;
+            if (AudioManager.Initialised)
+                AudioManager.Backend.SetSpeedOfSound(_SpeedOfSound);
         }
     }
 
