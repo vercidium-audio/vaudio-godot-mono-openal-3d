@@ -4,7 +4,7 @@ namespace vaudio_godot_mono_openal;
 /// A sound source relative to the listener, never muffled, reuses listener reverb.
 /// </summary>
 [Tool]
-public partial class ALSourceRelative : ALSource
+public partial class AudioSourceRelative : AudioSource
 {
     protected override void ConfigureSource(IAudioSourceHandle source)
     {

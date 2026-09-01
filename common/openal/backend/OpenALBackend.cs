@@ -51,8 +51,7 @@ public class OpenALBackend : IAudioBackend
 
     // --- Buffers / voices / reverb / filters ---
 
-    public IAudioBuffer GetOrCreateBuffer(AudioStream stream) =>
-        new OpenALBufferHandle(ALManager.GetOrCreateBuffer(stream));
+    public IAudioBuffer GetOrCreateBuffer(AudioStream stream) => ALManager.GetOrCreateBuffer(stream);
 
     public IAudioReverbSlot CreateReverbSlot() => new OpenALReverbSlot();
 

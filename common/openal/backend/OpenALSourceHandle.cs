@@ -5,7 +5,7 @@ namespace vaudio_godot_mono_openal;
 /// <summary>
 /// Wraps an <see cref="OpenAL.managed.ALSource"/> as an <see cref="IAudioSourceHandle"/>.
 ///
-/// Owns two lowpass filters - one for the direct (dry) path and one for the reverb send - built lazily from the <see cref="AudioFilter"/> DTOs passed to <see cref="ApplyReverb"/>. This mirrors what ALSource.cs does today with its per-node <c>filter</c> plus the static silence/full filters, but keeps the filter lifetime tied to the voice.
+/// Owns two lowpass filters - one for the direct (dry) path and one for the reverb send - built lazily from the <see cref="AudioFilter"/> DTOs passed to <see cref="ApplyReverb"/>. This mirrors what AudioSource.cs does today with its per-node <c>filter</c> plus the static silence/full filters, but keeps the filter lifetime tied to the voice.
 /// </summary>
 public class OpenALSourceHandle : IAudioSourceHandle
 {

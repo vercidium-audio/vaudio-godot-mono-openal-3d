@@ -5,7 +5,7 @@ namespace vaudio_godot_mono_openal;
 // NOTE: VAStreamSource is still OpenAL-only. Its PCM enqueue/dequeue is heavily OpenAL-shaped
 // (ALStreamSource.EnqueueData / TryGetUsedData), so it creates an OpenAL stream voice directly.
 // It is still wrapped in an OpenALSourceHandle and added to the base `sources` list, so it rides
-// all the base ALSource per-frame updates (position, distance, filter/reverb) exactly as before.
+// all the base AudioSource per-frame updates (position, distance, filter/reverb) exactly as before.
 // The FMOD backend will need an FMOD_OPENUSER equivalent before this node can drop the direct
 // OpenAL dependency (plan 3.6).
 [Tool]

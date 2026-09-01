@@ -1,7 +1,7 @@
 namespace vaudio_godot_mono_openal;
 
-// Base type (Node2D/Node3D) and [Tool] are declared per-addon in ALSourceBase.cs.
-public partial class ALSource
+// Base type (Node2D/Node3D) and [Tool] are declared per-addon in AudioSourceBase.cs.
+public partial class AudioSource
 {
     protected List<IAudioSourceHandle> sources = [];
     public IAudioFilterHandle filter;
@@ -66,7 +66,7 @@ public partial class ALSource
         {
             if (!streamsErrorLogged)
             {
-                LogWarning($"Unable to play the ALSource {Name} because its Streams property is not set");
+                LogWarning($"Unable to play the AudioSource {Name} because its Streams property is not set");
                 streamsErrorLogged = true;
             }
 
@@ -77,7 +77,7 @@ public partial class ALSource
         {
             if (!alWarningLogged)
             {
-                LogWarning($"Unable to play the ALSource {Name} because the audio backend has not been initialised yet. Ensure the autoload is set up correctly.");
+                LogWarning($"Unable to play the AudioSource {Name} because the audio backend has not been initialised yet. Ensure the autoload is set up correctly.");
                 alWarningLogged = true;
             }
 

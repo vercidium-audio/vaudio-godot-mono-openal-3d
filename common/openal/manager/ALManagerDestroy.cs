@@ -6,7 +6,7 @@ public static unsafe partial class ALManager
     {
         foreach (var child in root.GetChildren())
         {
-            if (child is ALSource source)
+            if (child is AudioSource source)
                 source.OnDeviceDestroyed();
 
             DestroyAllAudioSources(child);
@@ -41,14 +41,14 @@ public static unsafe partial class ALManager
     public static void CancelLoadingAndDestroy()
     {
         // Tell the background sound-loading threads to stop loading
-        ALBuffer.CancelLoadingSounds = true;
+        AudioBuffer.CancelLoadingSounds = true;
 
-        // Wait for all threads to finish
-        foreach (var buffer in DecodedStreams.Values)
-            buffer.WaitForTask();
+        // Wait for all decode + upload tasks to finish
+        foreach (var handle in DecodedStreams.Values)
+            handle.WaitForLoad();
 
         DecodedStreams.Clear();
-        ALBuffer.CancelLoadingSounds = false;
+        AudioBuffer.CancelLoadingSounds = false;
 
         DestroyAll();
     }

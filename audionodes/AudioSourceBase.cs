@@ -1,7 +1,7 @@
 namespace vaudio_godot_mono_openal;
 
-// Carries the Godot base type for ALSource - the rest of the class is in common/openal/nodes/.
+// Carries the Godot base type for AudioSource - the rest of the class is in common/audionodes/.
 [Tool]
-public partial class ALSource : Node3D
+public partial class AudioSource : Node3D
 {
 }

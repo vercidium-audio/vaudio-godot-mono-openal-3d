@@ -1,12 +1,12 @@
 namespace vaudio_godot_mono_openal;
 
 [Tool]
-public partial class ALSource3D : ALSource
+public partial class AudioSource3D : AudioSource
 {
     float _maxDistance = 100;
     float _referenceDistance = 8;
 
-    /// <summary>The max distance that the sound can be heard at. Also affected by the falloff model in <see cref="ALManager"/></summary>
+    /// <summary>The max distance that the sound can be heard at. Also affected by the falloff model set on the audio backend</summary>
     [Export]
     public float MaxDistance
     {

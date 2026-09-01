@@ -1,6 +1,6 @@
 namespace vaudio_godot_mono_openal;
 
-public partial class ALSource
+public partial class AudioSource
 {
     float _volume = 1;
     float _pitch = 1;
@@ -47,7 +47,7 @@ public partial class ALSource
         set => UpdateProperty(ref _looping, value, (v, source) => source.SetLooping(v));
     }
 
-    /// <summary>The pool of sounds to pick from each time this source plays. Decoded on demand via Godot's own AudioStream/import pipeline and cached per-resource by ALManager.</summary>
+    /// <summary>The pool of sounds to pick from each time this source plays. Decoded on demand via Godot's own AudioStream/import pipeline and cached per-resource by the audio backend.</summary>
     [Export]
     public AudioStream[] Streams
     {

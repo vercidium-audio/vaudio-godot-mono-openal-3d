@@ -2,15 +2,15 @@ namespace vaudio_godot_mono_openal;
 
 public static unsafe partial class ALManager
 {
-    static Dictionary<AudioStream, ALBuffer> DecodedStreams = [];
+    static Dictionary<AudioStream, OpenALBufferHandle> DecodedStreams = [];
 
-    public static ALBuffer GetOrCreateBuffer(AudioStream stream)
+    public static OpenALBufferHandle GetOrCreateBuffer(AudioStream stream)
     {
-        if (DecodedStreams.TryGetValue(stream, out var buffer))
-            return buffer;
+        if (DecodedStreams.TryGetValue(stream, out var handle))
+            return handle;
 
-        buffer = new ALBuffer(ALContext, stream);
-        DecodedStreams[stream] = buffer;
-        return buffer;
+        handle = new OpenALBufferHandle(new AudioBuffer(stream), ALContext);
+        DecodedStreams[stream] = handle;
+        return handle;
     }
 }

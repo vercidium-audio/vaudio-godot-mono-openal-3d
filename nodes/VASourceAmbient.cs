@@ -2,7 +2,7 @@ namespace vaudio_godot_mono_openal;
 
 [Tool]
 [GlobalClass]
-public partial class VASourceAmbient : ALSourceRelative
+public partial class VASourceAmbient : AudioSourceRelative
 {
     private VAWorld vercidiumAudio;
     private bool played = false;

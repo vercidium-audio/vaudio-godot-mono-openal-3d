@@ -1,6 +1,6 @@
 namespace vaudio_godot_mono_openal;
 
-public partial class ALSource
+public partial class AudioSource
 {
     // Signals
     [Signal]
