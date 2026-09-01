@@ -8,11 +8,11 @@ public partial class VAEmitter
     VAWorld vercidiumAudio;
     public vaudio.Emitter emitter;
 
-    public ALReverbEffect effect;
-    public ALFilter filter;
+    public IAudioReverbSlot effect;
+    public IAudioFilterHandle filter;
 
-    public float GainLF => filter?.gain ?? 0;
-    public float GainHF => filter?.gainHF ?? 0;
+    public float GainLF => filter?.Gain ?? 0;
+    public float GainHF => filter?.GainHF ?? 0;
     public bool Raytraced => emitter != null && !emitter.Initialising;
 
     // Set while waiting for a VAWorld to appear. _ExitTree cancels the pending retry if this node leaves the tree
@@ -23,7 +23,7 @@ public partial class VAEmitter
         if (Engine.IsEditorHint())
             return;
 
-        ALManager.Ensure();
+        AudioManager.Ensure();
 
         cancelWaitForVAWorld = this.WaitForVAWorld(OnVAWorldFound);
     }
@@ -80,10 +80,10 @@ public partial class VAEmitter
 
     void OnRaytracedByAnotherEmitter(vaudio.Emitter emitter)
     {        
-        if (ALManager.Initialised)
+        if (AudioManager.Initialised)
         {
             Debug.Assert(filter == null);
-            filter = new(1, 1);
+            filter = AudioManager.Backend.CreateFilter(1, 1);
         }
 
         ApplyRaytracingResults();

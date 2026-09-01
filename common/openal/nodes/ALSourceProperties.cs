@@ -1,5 +1,3 @@
-using OpenALSource = global::OpenAL.managed.ALSource;
-
 namespace vaudio_godot_mono_openal;
 
 public partial class ALSource
@@ -13,7 +11,7 @@ public partial class ALSource
     float _pitchRandomness = 1;
     float _volumeRandomnessDb = 0;
 
-    protected void UpdateProperty<T>(ref T field, T value, Action<T, OpenALSource> updateAction) where T : struct
+    protected void UpdateProperty<T>(ref T field, T value, Action<T, IAudioSourceHandle> updateAction) where T : struct
     {
         if (!field.Equals(value))
         {

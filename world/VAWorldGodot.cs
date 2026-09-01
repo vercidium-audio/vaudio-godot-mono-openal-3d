@@ -85,22 +85,23 @@ public partial class VAWorld
 
     void OnDeviceRecreated()
     {
-        // Recreate the reverb effects after the device is recreated
-        listenerReverbEffect = new();
+        // Recreate the reverb slots after the device is recreated
+        listenerReverbSlot = AudioManager.Backend.CreateReverbSlot();
     }
 
     void OnDeviceDestroyed()
     {
-        // Delete all reverb effects - they contain OpenAL resources that are now invalid
+        // Delete all reverb slots / filters - they contain backend resources that are now invalid
         ambientFilter?.Delete();
         ambientFilter = null;
 
-        listenerReverbEffect?.Dispose();
-        listenerReverbEffect = null;
+        listenerReverbSlot?.Dispose();
+        listenerReverbSlot = null;
 
-        foreach (var effect in groupedReverbEffects)
-            effect.Dispose();
+        foreach (var slot in groupedReverbSlots)
+            slot.Dispose();
 
+        groupedReverbSlots.Clear();
         groupedReverbEffects.Clear();
     }
 

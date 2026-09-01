@@ -1,13 +1,19 @@
-using OpenALSource = global::OpenAL.managed.ALSource;
 using OpenALStreamSource = global::OpenAL.managed.ALStreamSource;
 
 namespace vaudio_godot_mono_openal;
 
+// NOTE: VAStreamSource is still OpenAL-only. Its PCM enqueue/dequeue is heavily OpenAL-shaped
+// (ALStreamSource.EnqueueData / TryGetUsedData), so it creates an OpenAL stream voice directly.
+// It is still wrapped in an OpenALSourceHandle and added to the base `sources` list, so it rides
+// all the base ALSource per-frame updates (position, distance, filter/reverb) exactly as before.
+// The FMOD backend will need an FMOD_OPENUSER equivalent before this node can drop the direct
+// OpenAL dependency (plan 3.6).
 [Tool]
 [GlobalClass]
 public partial class VAStreamSource : VARaytracedSource
 {
     OpenALStreamSource streamSource;
+    IAudioSourceHandle streamHandle;
 
     public bool IsStreamOpen => streamSource != null;
 
@@ -15,9 +21,9 @@ public partial class VAStreamSource : VARaytracedSource
     {
         CloseStream();
 
-        if (!ALManager.Initialised)
+        if (!AudioManager.Initialised)
         {
-            LogWarning($"Unable to open a stream on {Name} because the ALManager has not been initialised yet. Ensure the autoload is set up correctly.");
+            LogWarning($"Unable to open a stream on {Name} because the audio backend has not been initialised yet. Ensure the autoload is set up correctly.");
             return false;
         }
 
@@ -29,16 +35,19 @@ public partial class VAStreamSource : VARaytracedSource
             return false;
         }
 
-        var source = new OpenALStreamSource(sourceID, format, frequency);
-        source.SetGain(Volume);
-        source.SetPitch(Pitch);
-        ConfigureSource(source);
+        streamSource = new OpenALStreamSource(sourceID, format, frequency);
+        streamSource.SetGain(Volume);
+        streamSource.SetPitch(Pitch);
 
-        var directFilter = ALManager.ReverbOnly ? silenceFilter : filter;
-        source.SetFilter(effect, directFilter, fullFilter);
+        streamHandle = new OpenALSourceHandle(streamSource);
+        ConfigureSource(streamHandle);
 
-        sources.Add(source);
-        streamSource = source;
+        var directFilter = AudioManager.ReverbOnly ? silenceFilter :
+            (filter != null ? new AudioFilter(filter.Gain, filter.GainHF) : fullFilter);
+
+        streamHandle.ApplyReverb(effect, directFilter, fullFilter);
+
+        sources.Add(streamHandle);
         return true;
     }
 
@@ -61,8 +70,13 @@ public partial class VAStreamSource : VARaytracedSource
         if (streamSource == null)
             return;
 
-        sources.Remove(streamSource);
-        streamSource.Dispose();
+        if (streamHandle != null)
+        {
+            sources.Remove(streamHandle);
+            streamHandle.Dispose();
+            streamHandle = null;
+        }
+
         streamSource = null;
     }
 
@@ -82,9 +96,10 @@ public partial class VAStreamSource : VARaytracedSource
 
     public override void OnDeviceDestroyed()
     {
-        // base already disposes streamSource via `sources`
+        // base disposes streamHandle via `sources`
         base.OnDeviceDestroyed();
         streamSource = null;
+        streamHandle = null;
     }
 
     static readonly StringName[] hiddenProperties =

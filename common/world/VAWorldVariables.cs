@@ -9,9 +9,14 @@ public partial class VAWorld
     public vaudio.World world;
     public VAEmitter listener;
 
-    public ALFilter ambientFilter;
-    public ALReverbEffect listenerReverbEffect;
-    public List<ALReverbEffect> groupedReverbEffects = [];
+    public IAudioFilterHandle ambientFilter;
+
+    // Reverb slots are backend-owned; the parallel DTOs are what CopyReverb / ApplyGroupedEAXPan write into before Push-ing to the slot.
+    public IAudioReverbSlot listenerReverbSlot;
+    public AudioReverbEffect listenerReverbEffect = new();
+
+    public List<IAudioReverbSlot> groupedReverbSlots = [];
+    public List<AudioReverbEffect> groupedReverbEffects = [];
 
     Dictionary<string, vaudio.MaterialType> DefaultMaterialDict = new()
     {

@@ -1,36 +1,34 @@
-using OpenALSource = global::OpenAL.managed.ALSource;
-
 namespace vaudio_godot_mono_openal;
 
 // Base type (Node2D/Node3D) and [Tool] are declared per-addon in ALSourceBase.cs.
 public partial class ALSource
 {
-    protected List<OpenALSource> sources = [];
-    public ALFilter filter;
-    public ALReverbEffect effect;
+    protected List<IAudioSourceHandle> sources = [];
+    public IAudioFilterHandle filter;
+    public IAudioReverbSlot effect;
 
-    public static ALFilter silenceFilter = new(0, 0);
-    public static ALFilter fullFilter = new(1, 1);
+    public static AudioFilter silenceFilter = AudioFilter.Silent;
+    public static AudioFilter fullFilter = AudioFilter.Full;
 
     public void UpdateFilter(float gain, float gainHF, bool fullReverb = false)
     {
-        if (!ALManager.Initialised)
+        if (!AudioManager.Initialised)
             return;
 
         if (filter == null)
-            filter = new(gain, gainHF);
+            filter = AudioManager.Backend.CreateFilter(gain, gainHF);
         else
             filter.SetGain(gain, gainHF);
 
 
         // For reverb in other rooms, we send the sound's clear audio to the reverb effect,
         //  then reduce the reverb effect's gain to make it muffled
-        var reverbFilter = fullReverb ? fullFilter : filter;
+        var reverbFilter = fullReverb ? fullFilter : new AudioFilter(filter.Gain, filter.GainHF);
 
-        var directFilter = ALManager.ReverbOnly ? silenceFilter : filter;
+        var directFilter = AudioManager.ReverbOnly ? silenceFilter : new AudioFilter(filter.Gain, filter.GainHF);
 
         foreach (var s in sources)
-            s.SetFilter(effect, directFilter, reverbFilter);
+            s.ApplyReverb(effect, directFilter, reverbFilter);
     }
 
     bool streamsErrorLogged = false;
@@ -56,7 +54,7 @@ public partial class ALSource
         return index;
     }
 
-    protected virtual void ConfigureSource(OpenALSource source)
+    protected virtual void ConfigureSource(IAudioSourceHandle source)
     {
     }
 
@@ -75,18 +73,19 @@ public partial class ALSource
             return false;
         }
 
-        if (!ALManager.Initialised)
+        if (!AudioManager.Initialised)
         {
             if (!alWarningLogged)
             {
-                LogWarning($"Unable to play the ALSource {Name} because the ALManager has not been initialised yet. Ensure the autoload is set up correctly.");
+                LogWarning($"Unable to play the ALSource {Name} because the audio backend has not been initialised yet. Ensure the autoload is set up correctly.");
                 alWarningLogged = true;
             }
 
             return false;
         }
 
-        if (!ALManager.TryCreateSource(_streams[streamIndex], true, out var source))
+        if (_streams[streamIndex] == null ||
+            !AudioManager.Backend.GetOrCreateBuffer(_streams[streamIndex]).TryCreateSource(true, out var source))
         {
             // Buffer is still decoding in the background
             playRequested = true;
@@ -107,14 +106,16 @@ public partial class ALSource
         source.SetLooping(Looping);
         ConfigureSource(source);
 
-        var directFilter = ALManager.ReverbOnly ? silenceFilter : filter;
+        // A null node filter means "no direct-path filtering" - map that to a pass-through (gain 1, gainHF 1).
+        var nodeFilter = filter != null ? new AudioFilter(filter.Gain, filter.GainHF) : fullFilter;
+
+        var directFilter = AudioManager.ReverbOnly ? silenceFilter : nodeFilter;
 
         // For reverb in other rooms, we send the sound's clear audio to the reverb effect,
-        //  then reduce the reverb effect's gain to make it muffled
-        var fullReverb = true;
-        var reverbFilter = fullReverb ? fullFilter : filter;
+        //  then reduce the reverb effect's gain to make it muffled. On the initial Play() the send is always full.
+        var reverbFilter = fullFilter;
 
-        source.SetFilter(effect, directFilter, reverbFilter);
+        source.ApplyReverb(effect, directFilter, reverbFilter);
 
         source.Play();
         sources.Add(source);

@@ -2,39 +2,39 @@ namespace vaudio_godot_mono_openal;
 
 public partial class VAWorld
 {
-    public ALReverbEffect GetReverbEffect(vaudio.Emitter emitter)
+    public IAudioReverbSlot GetReverbEffect(vaudio.Emitter emitter)
     {
         if (emitter.AffectsGroupedEAX && emitter.GroupedEAXIndex >= 0)
         {
-            if (emitter.GroupedEAXIndex >= groupedReverbEffects.Count)
+            if (emitter.GroupedEAXIndex >= groupedReverbSlots.Count)
             {
-                LogWarning($"Emitter {emitter.Name} has a grouped EAX index of {emitter.GroupedEAXIndex} but only {groupedReverbEffects.Count} EAX presets are available.");
-                return listenerReverbEffect;
+                LogWarning($"Emitter {emitter.Name} has a grouped EAX index of {emitter.GroupedEAXIndex} but only {groupedReverbSlots.Count} EAX presets are available.");
+                return listenerReverbSlot;
             }
 
-            return groupedReverbEffects[emitter.GroupedEAXIndex];
+            return groupedReverbSlots[emitter.GroupedEAXIndex];
         }
 
-        return listenerReverbEffect;
+        return listenerReverbSlot;
     }
 
-    public ALReverbEffect GetReverbEffect(VAEmitter emitter)
+    public IAudioReverbSlot GetReverbEffect(VAEmitter emitter)
     {
         if (emitter.AffectsGroupedEAX && emitter.GroupedEAXIndex >= 0)
         {
-            if (emitter.GroupedEAXIndex >= groupedReverbEffects.Count)
+            if (emitter.GroupedEAXIndex >= groupedReverbSlots.Count)
             {
-                LogWarning($"Emitter {emitter.Name} has a grouped EAX index of {emitter.GroupedEAXIndex} but only {groupedReverbEffects.Count} EAX presets are available.");
-                return listenerReverbEffect;
+                LogWarning($"Emitter {emitter.Name} has a grouped EAX index of {emitter.GroupedEAXIndex} but only {groupedReverbSlots.Count} EAX presets are available.");
+                return listenerReverbSlot;
             }
 
-            return groupedReverbEffects[emitter.GroupedEAXIndex];
+            return groupedReverbSlots[emitter.GroupedEAXIndex];
         }
 
         if (!emitter.UseListenerReverb)
             return null;
 
-        return listenerReverbEffect;
+        return listenerReverbSlot;
     }
 
     void OnReverbUpdated()
@@ -49,29 +49,30 @@ public partial class VAWorld
             var ambientGainLF = listener.AmbientFilter.GainLF;
             var ambientGainHF = listener.AmbientFilter.GainHF;
 
-            if (ALManager.Initialised)
+            if (AudioManager.Initialised)
             {
-                ambientFilter ??= new(ambientGainLF, ambientGainHF);
+                ambientFilter ??= AudioManager.Backend.CreateFilter(ambientGainLF, ambientGainHF);
                 ambientFilter.SetGain(ambientGainLF, ambientGainHF);
             }
         }
 
-        // Apply raytraced EAX results to ALReverbEffects
-        if (listener.EAX != null)
-            CopyReverb(listener.EAX, listenerReverbEffect, false);
+        // Apply raytraced EAX results to the reverb slots
+        if (listener.EAX != null && listenerReverbSlot != null)
+            CopyReverb(listener.EAX, listenerReverbEffect, listenerReverbSlot, false);
 
         for (int i = 0; i < world.GroupedEAX.Count; i++)
         {
-            if (groupedReverbEffects.Count <= i)
+            if (groupedReverbSlots.Count <= i)
+            {
+                groupedReverbSlots.Add(AudioManager.Backend.CreateReverbSlot());
                 groupedReverbEffects.Add(new());
+            }
 
-            CopyReverb(world.GroupedEAX[i], groupedReverbEffects[i], true);
-
-            groupedReverbEffects[i].Update();
+            CopyReverb(world.GroupedEAX[i], groupedReverbEffects[i], groupedReverbSlots[i], true);
         }
     }
 
-    void CopyReverb(vaudio.EAXReverb eax, ALReverbEffect effect, bool isGroupedEAX)
+    void CopyReverb(vaudio.EAXReverb eax, AudioReverbEffect effect, IAudioReverbSlot slot, bool isGroupedEAX)
     {
         effect.gain = 1f;
 
@@ -103,8 +104,8 @@ public partial class VAWorld
             ApplyGroupedEAXPan(eax, effect);
 
         effect.dirty = true;
-        effect.Update();
+        slot.Push(effect);
     }
 
-    partial void ApplyGroupedEAXPan(vaudio.EAXReverb eax, ALReverbEffect effect);
+    partial void ApplyGroupedEAXPan(vaudio.EAXReverb eax, AudioReverbEffect effect);
 }

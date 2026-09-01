@@ -1,5 +1,3 @@
-using OpenALSource = global::OpenAL.managed.ALSource;
-
 namespace vaudio_godot_mono_openal;
 
 [Tool]
@@ -24,7 +22,7 @@ public partial class ALSource3D : ALSource
         set => UpdateProperty(ref _referenceDistance, MathF.Max(0, value), (v, source) => source.SetReferenceDistance(v));
     }
 
-    protected override void ConfigureSource(OpenALSource source)
+    protected override void ConfigureSource(IAudioSourceHandle source)
     {
         source.SetMaxDistance(MaxDistance);
         source.SetReferenceDistance(ReferenceDistance);

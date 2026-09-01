@@ -24,7 +24,7 @@ public partial class ALSource
         if (Engine.IsEditorHint())
             return;
 
-        ALManager.Ensure();
+        AudioManager.Ensure();
     }
 
     public override void _Ready()

@@ -106,7 +106,7 @@ public partial class VASourceLeech
         }
 
         // Unregister the device recreated callback (only registered when not in editor)
-        ALManager.UnregisterDeviceRecreatedCallback(OnDeviceRecreated);
+        AudioManager.UnregisterDeviceRecreatedCallback(OnDeviceRecreated);
 
         cancelWaitForVAWorld?.Invoke();
         cancelWaitForVAWorld = null;

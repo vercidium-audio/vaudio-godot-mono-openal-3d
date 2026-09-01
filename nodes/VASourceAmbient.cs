@@ -64,8 +64,8 @@ public partial class VASourceAmbient : ALSourceRelative
         if (vercidiumAudio?.ambientFilter == null)
             return;
 
-        effect = null;// vercidiumAudio.listenerReverbEffect;
-        UpdateFilter(vercidiumAudio.ambientFilter.gain, vercidiumAudio.ambientFilter.gainHF);
+        effect = null;// vercidiumAudio.listenerReverbSlot;
+        UpdateFilter(vercidiumAudio.ambientFilter.Gain, vercidiumAudio.ambientFilter.GainHF);
 
         if (!played)
         {

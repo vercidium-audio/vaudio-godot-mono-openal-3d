@@ -36,7 +36,7 @@ public partial class VASourceRelative : ALSourceRelative
             return false;
 
         // Set the effect, with no filter
-        effect = vercidiumAudio.listenerReverbEffect;
+        effect = vercidiumAudio.listenerReverbSlot;
         UpdateFilter(1, 1);
 
         return base.Play();
