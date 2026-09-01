@@ -36,6 +36,9 @@ Copy `vaudio.dll` and `vaudio.xml` from the `3d/dotnet/dev/` folder in the Verci
 1. Open your project in Godot
 2. Ensure your C# solution is created: `Project > Tools > C# > Create C# Solution`
 3. Enable `Vercidium Audio` in `Project > Project Settings > Plugins`
+4. Build the C# solution (Alt + B, or hammer icon in the top right)
+
+You should then see a `[vaudio-godot-mono-openal-3d] Vercidium Audio (vaudio) plugin enabled` log in Godot's output window.
 
 ### 3. Automatic Dependency Setup
 
