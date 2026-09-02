@@ -150,6 +150,12 @@ public partial class VAEmitter
 
     public void AddTarget(vaudio.Emitter target)
     {
+        if (!emitter.OcclusionEnabled && !emitter.PermeationEnabled)
+        {
+            LogWarning($"The VAListener '{Name}' cannot determine how muffled other sounds are. Please increase its occlusion or permeation ray counts and try again.");
+            return;
+        }
+
         emitter.AddTarget(target);
     }
 
