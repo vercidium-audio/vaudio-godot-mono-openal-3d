@@ -396,8 +396,15 @@ public partial class VAWorld
         {
             _RenderingEnabled = value;
 
+            if (value && OS.GetName() == "macOS")
+            {
+                LogWarning("The debug window is not yet available on MacOS. Read more: https://github.com/vercidium-audio/support/issues/52");
+                _RenderingEnabled = false;
+                return;
+            }
+
             if (world != null)
-                world.RenderingEnabled = value;
+                world.RenderingEnabled = _RenderingEnabled;
         }
     }
 

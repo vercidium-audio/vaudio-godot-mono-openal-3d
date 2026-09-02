@@ -43,7 +43,8 @@ public partial class VAWorld
         world.MaximumConcurrencyLevel = MaximumConcurrencyLevel == 0 ? vaudio.ThreadStatistics.BackgroundThreadCount : MaximumConcurrencyLevel;
         world.WorkItemCount = WorkItemCount;
 
-        world.RenderingEnabled = RenderingEnabled;
+        // Re-run the setter now that world exists - it also drops RenderingEnabled on macOS (see VAWorldProperties).
+        RenderingEnabled = _RenderingEnabled;
         
 
         world.AirAbsorption.Humidity = Humidity;
