@@ -88,9 +88,13 @@ public partial class VAWorld
     // Re-evaluate every node against the current layer masks. This is invoked when RenderLayers / CollisionLayers change at runtime
     void RebuildPrimitives()
     {
-        Node root = GetTree()?.Root;
+        // Godot runs [Export] setters during scene deserialization, before _EnterTree. This world is still null then, so bail early
+        if (world == null || !IsInsideTree())
+            return;
 
-        if (world == null || root == null)
+        Node root = GetTree().Root;
+
+        if (root == null)
             return;
 
         foreach (var child in root.GetChildren())
