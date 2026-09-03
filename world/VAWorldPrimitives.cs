@@ -3,40 +3,82 @@ namespace vaudio_godot_mono_openal;
 public partial class VAWorld
 {
     void AddPrimitive(Node node, vaudio.MaterialType material, bool recursive) =>
-        AddPrimitive(node, material, false, recursive);
+        AddPrimitive(node, material, false, PropagateFilter.Default, recursive);
 
-    void AddPrimitive(Node node, vaudio.MaterialType material, bool useFlatTransmission, bool recursive)
+    void AddPrimitive(Node node, vaudio.MaterialType material, bool useFlatTransmission, PropagateFilter filter, bool recursive)
     {
-        // Use this specific material rather than the parent material
-        if (node.HasMeta(MATERIAL_META_KEY))
+        // A node's own material meta always wins and resets the propagation filter for its subtree
+        bool hasOwnMaterial = node.HasMeta(MATERIAL_META_KEY);
+
+        if (hasOwnMaterial)
+        {
             material = GetMaterial(node);
+            filter = PropagateFilter.Default;
+        }
 
         // Use this specific transmission setting rather than the parent's
         if (node.HasMeta(USE_FLAT_TRANSMISSION_META_KEY))
             useFlatTransmission = node.GetMeta(USE_FLAT_TRANSMISSION_META_KEY).As<bool>();
 
+        // A propagation filter declared here constrains the cascade into this node's descendants
+        filter = ReadPropagateFilter(node, filter);
+
+        // An inherited material only applies to this node if it passes the inherited filter.
+        // The cascade into children still uses the unfiltered material - a filtered-out mesh
+        // can still have a collider descendant that should receive the material.
+        var effectiveMaterial = hasOwnMaterial || PassesPropagateFilter(node, filter)
+            ? material
+            : vaudio.MaterialType.Air;
+
         // Ignore nodes without materials
-        if (material != vaudio.MaterialType.Air)
+        if (effectiveMaterial != vaudio.MaterialType.Air)
         {
             if (node is CsgBox3D csgBox)
-                CreateVAudioPrimitive(csgBox, material);
+                CreateVAudioPrimitive(csgBox, effectiveMaterial);
             else if (node is CsgCylinder3D csgCylinder)
-                CreateVAudioPrimitive(csgCylinder, material);
+                CreateVAudioPrimitive(csgCylinder, effectiveMaterial);
             else if (node is CsgSphere3D csgSphere)
-                CreateVAudioPrimitive(csgSphere, material);
+                CreateVAudioPrimitive(csgSphere, effectiveMaterial);
             else if (node is CsgPolygon3D csgPolygon)
-                CreateVAudioPrimitive(csgPolygon, material);
+                CreateVAudioPrimitive(csgPolygon, effectiveMaterial);
             else if (node is CsgMesh3D csgMesh)
-                CreateVAudioPrimitive(csgMesh, material);
+                CreateVAudioPrimitive(csgMesh, effectiveMaterial);
             else if (node is CollisionShape3D collisionShape)
-                CreateVAudioPrimitive(collisionShape, material);
+                CreateVAudioPrimitive(collisionShape, effectiveMaterial);
             else if (node is MeshInstance3D meshInstance)
-                CreateVAudioPrimitive(meshInstance, material, useFlatTransmission);
+                CreateVAudioPrimitive(meshInstance, effectiveMaterial, useFlatTransmission);
         }
 
         if (recursive)
             foreach (Node child in node.GetChildren())
-                AddPrimitive(child, material, useFlatTransmission, true);
+                AddPrimitive(child, material, useFlatTransmission, filter, true);
+    }
+
+    // Whether a cascading material reaches this node, given a filter declared on an ancestor
+    static bool PassesPropagateFilter(Node node, PropagateFilter filter)
+    {
+        bool isCollider = node is CollisionShape3D;
+
+        switch (filter.Mode)
+        {
+            case PropagateMode.Colliders when !isCollider:
+                return false;
+            case PropagateMode.Visuals when isCollider:
+                return false;
+        }
+
+        if (filter.Layer == 0)
+            return true;
+
+        // Match against the node's own render layers, or the parent body's collision layers
+        if (node is VisualInstance3D visual)
+            return (visual.Layers & filter.Layer) != 0;
+
+        if (isCollider && node.GetParentOrNull<CollisionObject3D>() is { } body)
+            return (body.CollisionLayer & filter.Layer) != 0;
+
+        // A layer filter is set but this node has no applicable layer - exclude it
+        return false;
     }
 
     public void SyncPrimitive(Node node)
@@ -45,7 +87,7 @@ public partial class VAWorld
             return;
 
         RemovePrimitive(node, true);
-        AddPrimitive(node, vaudio.MaterialType.Air, true, true);
+        AddPrimitive(node, vaudio.MaterialType.Air, true, PropagateFilter.Default, true);
     }
 
     void RemovePrimitive(Node node, bool recursive)
