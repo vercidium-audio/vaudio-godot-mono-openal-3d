@@ -6,27 +6,21 @@ public partial class VAWorld
     public const string MATERIAL_META_KEY = "vercidium_audio_material";
     public const string USE_FLAT_TRANSMISSION_META_KEY = "vercidium_audio_use_flat_transmission";
 
-    // Constrains which descendants a cascading material applies to. Set on an ancestor; a node
-    // with its own MATERIAL_META_KEY ignores an inherited filter and resets it for its subtree.
+    // Controls which child nodes a material applies to. Does not affect child nodes that have their own material
     public const string PROPAGATE_META_KEY = "vercidium_audio_propagate";
 
     public enum PropagateMode { All, Colliders, Visuals }
 
-    public readonly record struct PropagateFilter(PropagateMode Mode)
-    {
-        public static readonly PropagateFilter Default = new(PropagateMode.All);
-    }
-
-    protected static PropagateFilter ReadPropagateFilter(Node node, PropagateFilter inherited)
+    protected static PropagateMode ReadPropagateMode(Node node, PropagateMode inherited)
     {
         if (!node.HasMeta(PROPAGATE_META_KEY))
             return inherited;
 
         return node.GetMeta(PROPAGATE_META_KEY).As<string>().ToLowerInvariant() switch
         {
-            "colliders" => inherited with { Mode = PropagateMode.Colliders },
-            "visuals" => inherited with { Mode = PropagateMode.Visuals },
-            _ => inherited with { Mode = PropagateMode.All },
+            "colliders" => PropagateMode.Colliders,
+            "visuals" => PropagateMode.Visuals,
+            _ => PropagateMode.All,
         };
     }
 

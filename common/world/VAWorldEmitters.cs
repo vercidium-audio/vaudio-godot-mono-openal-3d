@@ -4,7 +4,7 @@ public partial class VAWorld
 {
     public List<vaudio.Emitter> emitters = [];
 
-    // Every non-listener emitter currently registered with this world, in registration order. Re-walked to wire listener targets whenever the listener appears (or re-appears after a scene reload), so VASource/VAListener/VAWorld can enter the tree in any order.
+    // Contains every non-listener emitter. When the listener is finally added, this list is processed
     List<vaudio.Emitter> registeredEmitters = [];
 
     bool wirePendingTargetsQueued = false;
@@ -75,7 +75,7 @@ public partial class VAWorld
             {
                 listener = node;
 
-                // Wire up every source registered so far, in either order - some may have registered before this listener existed
+                // Set up the sources that were created before the listener existed
                 WirePendingTargets();
             }
             else
@@ -85,7 +85,7 @@ public partial class VAWorld
         }
         else
         {
-            // Recorded before the listener check so a listener whose CreateEmitter runs later this same frame still sees this source when it walks registeredEmitters.
+            // Keep track of all emitters
             registeredEmitters.Add(emitter);
 
             if (listener != null)
@@ -94,7 +94,7 @@ public partial class VAWorld
             }
             else if (!wirePendingTargetsQueued)
             {
-                // No listener registered yet. If a VAListener node is in the tree but its own CreateEmitter simply hasn't run this frame (child-emitter registration order vs sibling _EnterTree), the walk it does on registering already covers us. This deferred re-walk is the belt-and-braces path for any other ordering where neither immediate wiring nor the listener's walk reached this source.
+                // If this node was added before the VAlistener was created, we need to defer-process all sources/emitters later
                 wirePendingTargetsQueued = true;
                 Callable.From(WirePendingTargets).CallDeferred();
             }
@@ -104,7 +104,7 @@ public partial class VAWorld
         return emitter;
     }
 
-    // (Re-)adds every registeredEmitters entry as a target of the current listener. Safe to call repeatedly - vaudio.Emitter.AddTarget treats an existing target as a no-op.
+    // Process sources/emitters that were created before the VAListener node was created
     void WirePendingTargets()
     {
         wirePendingTargetsQueued = false;
@@ -113,11 +113,8 @@ public partial class VAWorld
             return;
 
         foreach (var emitter in registeredEmitters)
-        {
-            // Skip a source whose SDK handle has already been torn down (RaytraceOnce removal, pending destroy) but whose node is still briefly in registeredEmitters.
             if (!emitter.PendingRemoval)
                 listener.AddTarget(emitter);
-        }
     }
 
     public void RemoveEmitter(vaudio.Emitter emitter)

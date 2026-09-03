@@ -79,12 +79,11 @@ public partial class VAEmitter
     }
 
     void OnRaytracedByAnotherEmitter(vaudio.Emitter emitter)
-    {        
-        if (ALManager.Initialised)
-        {
-            Debug.Assert(filter == null);
-            filter = new(1, 1);
-        }
+    {
+        ALManager.Ensure();
+
+        Debug.Assert(filter == null);
+        filter = new(1, 1);
 
         ApplyRaytracingResults();
 

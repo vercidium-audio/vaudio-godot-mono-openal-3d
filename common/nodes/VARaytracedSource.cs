@@ -122,7 +122,7 @@ public partial class VARaytracedSource
     {
         base._Process(delta);
 
-        // Raytraced only checks this source's own emitter - the listener can still be absent (added later, or mid scene-reload), so guard it here the way VAEmitter.ApplyRaytracingResults does.
+        // Even if we have cast our own reverb rays, we also need to wait for the listener to initialise
         if (Raytraced && vercidiumAudio.listener != null)
             ApplyRaytracingResults(vercidiumAudio.listener.emitter);
     }
