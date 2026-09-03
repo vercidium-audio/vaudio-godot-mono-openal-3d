@@ -228,7 +228,6 @@ public partial class VAWorld
         var rotation = data[1].As<Vector3>();
         var fovDegrees = data[2].As<float>();
 
-        world.ManualCamera = false;
         world.CameraPosition = ToVAudio(position);
         world.CameraYaw = rotation.Y;
         world.CameraPitch = rotation.X;
