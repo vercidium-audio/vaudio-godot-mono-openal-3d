@@ -14,9 +14,23 @@ public partial class VAWorld
         // Use this specific transmission setting rather than the parent's
         if (node.HasMeta(USE_FLAT_TRANSMISSION_META_KEY))
             useFlatTransmission = node.GetMeta(USE_FLAT_TRANSMISSION_META_KEY).As<bool>();
-
-        // Ignore nodes without materials
-        if (material != vaudio.MaterialType.Air)
+        
+        bool inAllowedLayer = false;
+        if (node is VisualInstance3D vi3d) 
+        {
+            inAllowedLayer = (vi3d.Layers & Allowed3DRenderLayers) > 0;
+        } 
+        else if (node is CollisionShape3D cs3d) 
+        {
+            var parent = cs3d.GetParent();
+            if (parent is CollisionObject3D co3d) 
+            {
+                inAllowedLayer = (co3d.CollisionLayer & Allowed3DCollisionLayers) > 0;
+            } 
+        }
+            
+        // Ignore nodes without materials and node which are not part of the AllowedLayers
+        if (material != vaudio.MaterialType.Air && inAllowedLayer)
         {
             if (node is CsgBox3D csgBox)
                 CreateVAudioPrimitive(csgBox, material);

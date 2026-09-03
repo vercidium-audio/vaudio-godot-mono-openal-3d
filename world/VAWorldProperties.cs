@@ -384,6 +384,17 @@ public partial class VAWorld
     }
 
 
+    [ExportGroup("Allowed Layers")]
+    
+    /// <summary> Which render layers will be selected for audio raytracing. </summary>
+    [Export(PropertyHint.Layers3DRender)]
+    public uint Allowed3DRenderLayers = 0b_1111_1111_1111_1111_1111; // first 20 fields
+    
+    /// <summary> Which collision layers will be selected for audio raytracing. </summary>
+    [Export(PropertyHint.Layers3DPhysics)]
+    public uint Allowed3DCollisionLayers = 0b_1111_1111_1111_1111_1111_1111; // first 24 fields
+
+    
     [ExportGroup("Rendering")]
 
     bool _RenderingEnabled = true;
