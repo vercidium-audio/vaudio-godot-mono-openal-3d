@@ -66,10 +66,9 @@ public partial class VAWorld
                 return false;
         }
 
-        // The VAWorld's render/collision layer masks decide which nodes an inherited material
-        // reaches. Node types with no applicable layer (plain Node3D groupers etc.) always pass.
+        // The VAWorld's render/collision layer masks control which nodes an inherited material are applied to
         if (node is VisualInstance3D visual)
-            return (visual.Layers & Layers) != 0;
+            return (visual.Layers & RenderLayers) != 0;
 
         if (isCollider && node.GetParentOrNull<CollisionObject3D>() is { } body)
             return (body.CollisionLayer & CollisionLayers) != 0;
@@ -86,8 +85,7 @@ public partial class VAWorld
         AddPrimitive(node, vaudio.MaterialType.Air, true, PropagateFilter.Default, true);
     }
 
-    // Re-evaluate every node against the current layer masks - used when Layers / CollisionLayers
-    // change at runtime, so nodes that now match get added and nodes that no longer match get removed.
+    // Re-evaluate every node against the current layer masks. This is invoked when RenderLayers / CollisionLayers change at runtime
     void RebuildPrimitives()
     {
         Node root = GetTree()?.Root;

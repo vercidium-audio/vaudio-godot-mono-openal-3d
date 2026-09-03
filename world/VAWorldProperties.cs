@@ -99,20 +99,20 @@ public partial class VAWorld
 
     [ExportGroup("Layers")]
 
-    uint _Layers = 0xFFFFF;
+    uint _RenderLayers = 0xFFFFF;
     /// <summary>
     /// The render layers that should affect raytracing. A node only inherits a cascading material if its visual render layer is in this mask. A node with its own material is always included.
     /// </summary>
     [Export(PropertyHint.Layers3DRender)]
-    public uint Layers
+    public uint RenderLayers
     {
-        get => _Layers;
+        get => _RenderLayers;
         set
         {
-            if (_Layers == value)
+            if (_RenderLayers == value)
                 return;
 
-            _Layers = value;
+            _RenderLayers = value;
             RebuildPrimitives();
         }
     }
