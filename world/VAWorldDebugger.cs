@@ -102,16 +102,6 @@ public partial class VAWorld
                 node.SetMeta(PROPAGATE_META_KEY, propagate);
         }
 
-        if (data.Count > 5)
-        {
-            var propagateLayer = data[5];
-
-            if (propagateLayer.VariantType == Variant.Type.Nil)
-                node.RemoveMeta(PROPAGATE_LAYER_META_KEY);
-            else
-                node.SetMeta(PROPAGATE_LAYER_META_KEY, propagateLayer);
-        }
-
         SyncPrimitive(node);
 
         return true;

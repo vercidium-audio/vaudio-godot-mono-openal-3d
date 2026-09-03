@@ -97,6 +97,45 @@ public partial class VAWorld
     }
 
 
+    [ExportGroup("Layers")]
+
+    uint _Layers = 0xFFFFF;
+    /// <summary>
+    /// The render layers that should affect raytracing. A node only inherits a cascading material if its visual render layer is in this mask. A node with its own material is always included.
+    /// </summary>
+    [Export(PropertyHint.Layers3DRender)]
+    public uint Layers
+    {
+        get => _Layers;
+        set
+        {
+            if (_Layers == value)
+                return;
+
+            _Layers = value;
+            RebuildPrimitives();
+        }
+    }
+
+    uint _CollisionLayers = 0xFFFFF;
+    /// <summary>
+    /// The collision layers that should affect raytracing. A collider only inherits a cascading material if its body's collision layer is in this mask. A node with its own material is always included.
+    /// </summary>
+    [Export(PropertyHint.Layers3DPhysics)]
+    public uint CollisionLayers
+    {
+        get => _CollisionLayers;
+        set
+        {
+            if (_CollisionLayers == value)
+                return;
+
+            _CollisionLayers = value;
+            RebuildPrimitives();
+        }
+    }
+
+
     [ExportGroup("OpenAL")]
 
     float _MasterVolume = 1;

@@ -23,10 +23,8 @@ public partial class VAWorld
         // A propagation filter declared here constrains the cascade into this node's descendants
         filter = ReadPropagateFilter(node, filter);
 
-        // An inherited material only applies to this node if it passes the inherited filter.
-        // The cascade into children still uses the unfiltered material - a filtered-out mesh
-        // can still have a collider descendant that should receive the material.
-        var effectiveMaterial = hasOwnMaterial || PassesPropagateFilter(node, filter)
+        // An inherited material only applies to this node if it passes the inherited filter
+        var effectiveMaterial = hasOwnMaterial || PassesPropagationFilter(node, filter)
             ? material
             : vaudio.MaterialType.Air;
 
@@ -54,8 +52,9 @@ public partial class VAWorld
                 AddPrimitive(child, material, useFlatTransmission, filter, true);
     }
 
-    // Whether a cascading material reaches this node, given a filter declared on an ancestor
-    static bool PassesPropagateFilter(Node node, PropagateFilter filter)
+    // Whether a cascading material should reach this node.
+    // Only inherited materials are gated - a node with its own material is always included
+    bool PassesPropagationFilter(Node node, PropagateFilter filter)
     {
         bool isCollider = node is CollisionShape3D;
 
@@ -67,18 +66,15 @@ public partial class VAWorld
                 return false;
         }
 
-        if (filter.Layer == 0)
-            return true;
-
-        // Match against the node's own render layers, or the parent body's collision layers
+        // The VAWorld's render/collision layer masks decide which nodes an inherited material
+        // reaches. Node types with no applicable layer (plain Node3D groupers etc.) always pass.
         if (node is VisualInstance3D visual)
-            return (visual.Layers & filter.Layer) != 0;
+            return (visual.Layers & Layers) != 0;
 
         if (isCollider && node.GetParentOrNull<CollisionObject3D>() is { } body)
-            return (body.CollisionLayer & filter.Layer) != 0;
+            return (body.CollisionLayer & CollisionLayers) != 0;
 
-        // A layer filter is set but this node has no applicable layer - exclude it
-        return false;
+        return true;
     }
 
     public void SyncPrimitive(Node node)
@@ -88,6 +84,22 @@ public partial class VAWorld
 
         RemovePrimitive(node, true);
         AddPrimitive(node, vaudio.MaterialType.Air, true, PropagateFilter.Default, true);
+    }
+
+    // Re-evaluate every node against the current layer masks - used when Layers / CollisionLayers
+    // change at runtime, so nodes that now match get added and nodes that no longer match get removed.
+    void RebuildPrimitives()
+    {
+        Node root = GetTree()?.Root;
+
+        if (world == null || root == null)
+            return;
+
+        foreach (var child in root.GetChildren())
+        {
+            RemovePrimitive(child, true);
+            AddPrimitive(child, vaudio.MaterialType.Air, true);
+        }
     }
 
     void RemovePrimitive(Node node, bool recursive)

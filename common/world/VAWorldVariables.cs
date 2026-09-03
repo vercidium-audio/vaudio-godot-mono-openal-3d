@@ -9,34 +9,25 @@ public partial class VAWorld
     // Constrains which descendants a cascading material applies to. Set on an ancestor; a node
     // with its own MATERIAL_META_KEY ignores an inherited filter and resets it for its subtree.
     public const string PROPAGATE_META_KEY = "vercidium_audio_propagate";
-    public const string PROPAGATE_LAYER_META_KEY = "vercidium_audio_propagate_layer";
 
     public enum PropagateMode { All, Colliders, Visuals }
 
-    // Layer 0 means "no layer restriction"
-    public readonly record struct PropagateFilter(PropagateMode Mode, uint Layer)
+    public readonly record struct PropagateFilter(PropagateMode Mode)
     {
-        public static readonly PropagateFilter Default = new(PropagateMode.All, 0);
+        public static readonly PropagateFilter Default = new(PropagateMode.All);
     }
 
     protected static PropagateFilter ReadPropagateFilter(Node node, PropagateFilter inherited)
     {
-        var filter = inherited;
+        if (!node.HasMeta(PROPAGATE_META_KEY))
+            return inherited;
 
-        if (node.HasMeta(PROPAGATE_META_KEY))
+        return node.GetMeta(PROPAGATE_META_KEY).As<string>().ToLowerInvariant() switch
         {
-            filter = node.GetMeta(PROPAGATE_META_KEY).As<string>().ToLowerInvariant() switch
-            {
-                "colliders" => filter with { Mode = PropagateMode.Colliders },
-                "visuals" => filter with { Mode = PropagateMode.Visuals },
-                _ => filter with { Mode = PropagateMode.All },
-            };
-        }
-
-        if (node.HasMeta(PROPAGATE_LAYER_META_KEY))
-            filter = filter with { Layer = (uint)node.GetMeta(PROPAGATE_LAYER_META_KEY).As<int>() };
-
-        return filter;
+            "colliders" => inherited with { Mode = PropagateMode.Colliders },
+            "visuals" => inherited with { Mode = PropagateMode.Visuals },
+            _ => inherited with { Mode = PropagateMode.All },
+        };
     }
 
     public vaudio.World world;
