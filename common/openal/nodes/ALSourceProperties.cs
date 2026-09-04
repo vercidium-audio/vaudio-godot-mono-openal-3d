@@ -7,7 +7,8 @@ public partial class ALSource
     float _volume = 1;
     float _pitch = 1;
     bool _looping = false;
-    AudioStream[] _streams = [];
+    // Untyped so element access never hard-casts - Godot can hand us EncodedObjectAsId entries that a typed Array<AudioStream> would throw InvalidCastException on when read.
+    Godot.Collections.Array _streams = [];
     bool _playbackNoRepeat = true;
     bool _autoplay = false;
     float _pitchRandomness = 1;
@@ -50,8 +51,9 @@ public partial class ALSource
     }
 
     /// <summary>The pool of sounds to pick from each time this source plays. Decoded on demand via Godot's own AudioStream/import pipeline and cached per-resource by ALManager.</summary>
+    // Untyped array so a half-added inspector slot (an EncodedObjectAsId, not an AudioStream) doesn't throw on read; go through StreamAt.
     [Export]
-    public AudioStream[] Streams
+    public Godot.Collections.Array Streams
     {
         get => _streams;
         set
@@ -60,6 +62,8 @@ public partial class ALSource
             UpdateConfigurationWarnings();
         }
     }
+
+    AudioStream StreamAt(int index) => VariantToStream(_streams[index]);
 
     /// <summary>When true and Streams has more than one entry, the same entry is never picked twice in a row</summary>
     [Export]
@@ -95,11 +99,11 @@ public partial class ALSource
 
     // snake_case GDScript aliases
 
-    /// <summary>Script-only alias for <see cref="Streams"/>, matching AudioStreamPlayer3D's single "stream" property. Lets a script written against AudioStreamPlayer3D keep working unmodified after converting to this node. Reads back the first entry of <see cref="Streams"/>; writes replace <see cref="Streams"/> with a one-entry array.</summary>
-    [Export]
+    /// <summary>Script-only alias for <see cref="Streams"/>, matching AudioStreamPlayer3D's single "stream" property. Reads the first entry; writes replace Streams with a one-entry array.</summary>
+    // Not [Export] - routed through _Get/_Set so the generated single-object setter never hard-casts a non-stream value and throws.
     public AudioStream stream
     {
-        get => _streams.Length == 0 ? null : _streams[0];
+        get => _streams.Count == 0 ? null : StreamAt(0);
         set => Streams = [value];
     }
 
@@ -121,7 +125,6 @@ public partial class ALSource
 
     static readonly StringName[] scriptOnlyAliasProperties =
     [
-        PropertyName.stream,
         PropertyName.pitch_scale,
         PropertyName.volume_db,
     ];
@@ -130,7 +133,46 @@ public partial class ALSource
     {
         base._ValidateProperty(property);
 
-        if (Array.IndexOf(scriptOnlyAliasProperties, property["name"].AsStringName()) >= 0)
+        var name = property["name"].AsStringName();
+
+        if (Array.IndexOf(scriptOnlyAliasProperties, name) >= 0)
             property["usage"] = (int)PropertyUsageFlags.None;
+
+        // Streams stores untyped Variants, but present it to the inspector as a typed AudioStream array so the resource-slot editor shows up.
+        if (name == PropertyName.Streams)
+        {
+            property["hint"] = (int)PropertyHint.TypeString;
+            property["hint_string"] = $"{(int)Variant.Type.Object}/{(int)PropertyHint.ResourceType}:AudioStream";
+        }
+    }
+
+    static readonly StringName StreamName = "stream";
+
+    public override Variant _Get(StringName property)
+    {
+        if (property == StreamName)
+            return Variant.From(stream);
+
+        return base._Get(property);
+    }
+
+    public override bool _Set(StringName property, Variant value)
+    {
+        if (property == StreamName)
+        {
+            stream = VariantToStream(value);
+            return true;
+        }
+
+        return base._Set(property, value);
+    }
+
+    // A freshly-added inspector array slot is an EncodedObjectAsId placeholder, not an AudioStream; treat anything that isn't a real stream as empty.
+    static AudioStream VariantToStream(Variant value)
+    {
+        if (value.VariantType != Variant.Type.Object)
+            return null;
+
+        return value.AsGodotObject() as AudioStream;
     }
 }

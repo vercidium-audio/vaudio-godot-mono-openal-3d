@@ -39,6 +39,8 @@ public partial class VAWorld
 
     void OnReverbUpdated()
     {
+        ALManager.Ensure();
+        
         // Shouldn't access anything until user adds a VAListener to the scene - else what is reverb relative to?
         if (listener == null)
             return;
@@ -49,11 +51,8 @@ public partial class VAWorld
             var ambientGainLF = listener.AmbientFilter.GainLF;
             var ambientGainHF = listener.AmbientFilter.GainHF;
 
-            if (ALManager.Initialised)
-            {
-                ambientFilter ??= new(ambientGainLF, ambientGainHF);
-                ambientFilter.SetGain(ambientGainLF, ambientGainHF);
-            }
+            ambientFilter ??= new(ambientGainLF, ambientGainHF);
+            ambientFilter.SetGain(ambientGainLF, ambientGainHF);
         }
 
         // Apply raytraced EAX results to ALReverbEffects

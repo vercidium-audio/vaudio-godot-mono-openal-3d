@@ -8,6 +8,10 @@ public partial class VAWorld
     {
         SetNotifyTransform(true);
 
+        // A VAWorld can only have a position, however it may inherit rotation/scale when being unparented from another node.
+        // Reset rotation/scale here so the editor and debug window always match
+        NormalizeTransform();
+
         if (Engine.IsEditorHint())
             return;
 
@@ -43,8 +47,8 @@ public partial class VAWorld
         world.MaximumConcurrencyLevel = MaximumConcurrencyLevel == 0 ? vaudio.ThreadStatistics.BackgroundThreadCount : MaximumConcurrencyLevel;
         world.WorkItemCount = WorkItemCount;
 
-        world.RenderingEnabled = RenderingEnabled;
-        
+        // Re-run the setter now that the world exists. Handles gl_compatibility and Mac restrictions
+        RenderingEnabled = _RenderingEnabled;        
 
         world.AirAbsorption.Humidity = Humidity;
         world.AirAbsorption.Temperature = Temperature;
@@ -52,11 +56,6 @@ public partial class VAWorld
 
         // Create reverb effects
         OnDeviceRecreated();
-
-        if (!ALManager.Initialised)
-        {
-            LogError("The godot-mono-openal addon is not enabled. Ensure godot-mono-openal is enabled in Project Settings > Plugins (try toggling it off and on if it's already enabled)");
-        }
 
         // Register for device destroyed/recreated callbacks to clean up and recreate reverb effects
         RegisterDeviceRecreatedCallback(OnDeviceRecreated);
@@ -73,14 +72,22 @@ public partial class VAWorld
         if (what != NotificationTransformChanged)
             return;
 
-        if (Quaternion != Quaternion.Identity)
-            Quaternion = Quaternion.Identity;
+        NormalizeTransform();
 
         // Rebuild the bounds gizmo whenever the node moves
         UpdateGizmos();
 
         if (world != null)
             world.Position = ToVAudio(Position);
+    }
+
+    void NormalizeTransform()
+    {
+        if (Quaternion != Quaternion.Identity)
+            Quaternion = Quaternion.Identity;
+
+        if (Scale != Vector3.One)
+            Scale = Vector3.One;
     }
 
     void OnDeviceRecreated()
@@ -160,6 +167,8 @@ public partial class VAWorld
             return;
         }
 
+        ALManager.Ensure();
+        
         if (listener == null)
         {
             if (!NoListenerWarningLogged)
@@ -168,7 +177,7 @@ public partial class VAWorld
                 NoListenerWarningLogged = true;
             }
         }
-        else if (ALManager.Initialised)
+        else
         {
             // Sync the AL listener to our main listener
             Vector3 listenerRotation = listener.GlobalRotation;

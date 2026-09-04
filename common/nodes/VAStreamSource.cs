@@ -13,13 +13,9 @@ public partial class VAStreamSource : VARaytracedSource
 
     public bool OpenStream(int format, int frequency)
     {
+        ALManager.Ensure();
+        
         CloseStream();
-
-        if (!ALManager.Initialised)
-        {
-            LogWarning($"Unable to open a stream on {Name} because the ALManager has not been initialised yet. Ensure the autoload is set up correctly.");
-            return false;
-        }
 
         var sourceID = AL.GenSource();
 

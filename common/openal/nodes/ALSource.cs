@@ -14,8 +14,7 @@ public partial class ALSource
 
     public void UpdateFilter(float gain, float gainHF, bool fullReverb = false)
     {
-        if (!ALManager.Initialised)
-            return;
+        ALManager.Ensure();
 
         if (filter == null)
             filter = new(gain, gainHF);
@@ -34,7 +33,6 @@ public partial class ALSource
     }
 
     bool streamsErrorLogged = false;
-    bool alWarningLogged = false;
     int lastPlayedStreamIndex = -1;
     static Random random = new();
 
@@ -42,16 +40,16 @@ public partial class ALSource
 
     int PickStreamIndex()
     {
-        if (_streams.Length == 0)
+        if (_streams.Count == 0)
             return -1;
 
-        if (_streams.Length == 1)
+        if (_streams.Count == 1)
             return 0;
 
-        var index = random.Next(_streams.Length);
+        var index = random.Next(_streams.Count);
 
         if (PlaybackNoRepeat && index == lastPlayedStreamIndex)
-            index = (index + 1) % _streams.Length;
+            index = (index + 1) % _streams.Count;
 
         return index;
     }
@@ -62,6 +60,8 @@ public partial class ALSource
 
     public virtual bool Play()
     {
+        ALManager.Ensure();
+
         var streamIndex = PickStreamIndex();
 
         if (streamIndex < 0)
@@ -75,18 +75,20 @@ public partial class ALSource
             return false;
         }
 
-        if (!ALManager.Initialised)
+        var pickedStream = StreamAt(streamIndex);
+
+        if (pickedStream == null)
         {
-            if (!alWarningLogged)
+            if (!streamsErrorLogged)
             {
-                LogWarning($"Unable to play the ALSource {Name} because the ALManager has not been initialised yet. Ensure the autoload is set up correctly.");
-                alWarningLogged = true;
+                LogWarning($"Unable to play the ALSource {Name} because Streams[{streamIndex}] is not a valid AudioStream");
+                streamsErrorLogged = true;
             }
 
             return false;
         }
 
-        if (!ALManager.TryCreateSource(_streams[streamIndex], true, out var source))
+        if (!ALManager.TryCreateSource(pickedStream, true, out var source))
         {
             // Buffer is still decoding in the background
             playRequested = true;

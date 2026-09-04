@@ -79,12 +79,11 @@ public partial class VAEmitter
     }
 
     void OnRaytracedByAnotherEmitter(vaudio.Emitter emitter)
-    {        
-        if (ALManager.Initialised)
-        {
-            Debug.Assert(filter == null);
-            filter = new(1, 1);
-        }
+    {
+        ALManager.Ensure();
+
+        Debug.Assert(filter == null);
+        filter = new(1, 1);
 
         ApplyRaytracingResults();
 
@@ -150,6 +149,12 @@ public partial class VAEmitter
 
     public void AddTarget(vaudio.Emitter target)
     {
+        if (!emitter.OcclusionEnabled && !emitter.PermeationEnabled)
+        {
+            LogWarning($"VAListener '{Name}' cannot determine how muffled other sounds are. Please increase its occlusion or permeation ray counts and try again.");
+            return;
+        }
+        
         emitter.AddTarget(target);
     }
 

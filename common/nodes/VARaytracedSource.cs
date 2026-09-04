@@ -122,7 +122,8 @@ public partial class VARaytracedSource
     {
         base._Process(delta);
 
-        if (Raytraced)
+        // Even if we have cast our own reverb rays, we also need to wait for the listener to initialise
+        if (Raytraced && vercidiumAudio.listener != null)
             ApplyRaytracingResults(vercidiumAudio.listener.emitter);
     }
 

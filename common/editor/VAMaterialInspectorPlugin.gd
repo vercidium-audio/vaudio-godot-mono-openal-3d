@@ -14,6 +14,13 @@ func _addon_root() -> String:
 const MATERIAL_META_KEY = "vercidium_audio_material"
 const USE_FLAT_TRANSMISSION_META_KEY = "vercidium_audio_use_flat_transmission"
 
+# Controls which child nodes a cascading material applies to. Only affects inherited materials - a node with its own material is always included
+const PROPAGATE_META_KEY = "vercidium_audio_propagate"
+
+# Index 0 is the default ("All") and is never written as metadata - it's the absence of the key.
+const PROPAGATE_MODES = ["Inherit", "All", "Colliders only", "Visuals only"]
+const PROPAGATE_MODE_META_VALUES = ["", "all", "colliders", "visuals"]
+
 var debugger_plugin
 
 const BUILTIN_MATERIAL_NAMES = [
@@ -40,6 +47,10 @@ func _parse_end(object):
 
 	section.add_child(_make_material_row(node))
 	section.add_child(_make_use_flat_transmission_row(node))
+
+	# Propagation controls only matter when this node has children to cascade into
+	if node.get_child_count() > 0:
+		section.add_child(_make_propagate_row(node))
 
 	add_custom_control(section)
 
@@ -111,6 +122,33 @@ func _make_use_flat_transmission_row(node: Node) -> HBoxContainer:
 
 	return row
 
+func _make_propagate_row(node: Node) -> HBoxContainer:
+	var row := HBoxContainer.new()
+
+	var label := Label.new()
+	label.text = "Propagate To"
+	label.tooltip_text = "Which child nodes a material set on this node cascades down to.\n\nInherit: use the parent node's setting\nAll: every child\nColliders only: only collision shape children - skips the visual mesh of a mesh + collider pair\nVisuals only: only mesh / non-collision children"
+	label.custom_minimum_size.x = 120 * EditorInterface.get_editor_scale()
+	row.add_child(label)
+
+	var option_button := OptionButton.new()
+	option_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	for mode_name in PROPAGATE_MODES:
+		option_button.add_item(mode_name)
+
+	option_button.selected = 0
+	if node.has_meta(PROPAGATE_META_KEY):
+		var current := str(node.get_meta(PROPAGATE_META_KEY)).to_lower()
+		var found := PROPAGATE_MODE_META_VALUES.find(current)
+		if found > 0:
+			option_button.selected = found
+
+	option_button.item_selected.connect(_on_propagate_selected.bind(node))
+	row.add_child(option_button)
+
+	return row
+
 func _on_material_selected(index: int, node: Node, option_button: OptionButton):
 	if index == 0:
 		node.remove_meta(MATERIAL_META_KEY)
@@ -125,6 +163,15 @@ func _on_use_flat_transmission_toggled(toggled_on: bool, node: Node):
 		node.set_meta(USE_FLAT_TRANSMISSION_META_KEY, true)
 	else:
 		node.remove_meta(USE_FLAT_TRANSMISSION_META_KEY)
+
+	EditorInterface.mark_scene_as_unsaved()
+	_sync_running_game(node)
+
+func _on_propagate_selected(index: int, node: Node):
+	if index == 0:
+		node.remove_meta(PROPAGATE_META_KEY)
+	else:
+		node.set_meta(PROPAGATE_META_KEY, PROPAGATE_MODE_META_VALUES[index])
 
 	EditorInterface.mark_scene_as_unsaved()
 	_sync_running_game(node)
@@ -148,8 +195,12 @@ func _sync_running_game(node: Node) -> void:
 	if node.has_meta(USE_FLAT_TRANSMISSION_META_KEY):
 		use_flat_transmission = node.get_meta(USE_FLAT_TRANSMISSION_META_KEY)
 
+	var propagate := ""
+	if node.has_meta(PROPAGATE_META_KEY):
+		propagate = str(node.get_meta(PROPAGATE_META_KEY))
+
 	var node_path := scene_root.get_path_to(node)
-	debugger_plugin.sync_primitive(scene_root.name, node_path, material, use_flat_transmission)
+	debugger_plugin.sync_primitive(scene_root.name, node_path, material, use_flat_transmission, propagate)
 
 func _find_custom_materials(node: Node) -> Array:
 	var scene_root := EditorInterface.get_edited_scene_root()

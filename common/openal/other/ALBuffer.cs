@@ -14,6 +14,10 @@ public class ALBuffer
 
     short[] pcmData;
     int sampleRate;
+
+    /// <summary>
+    /// The duration of the sound in milliseconds
+    /// </summary>
     public int Duration { get; private set; }
 
     public ALBuffer(ALContext context, AudioStream stream)
@@ -107,6 +111,9 @@ public class ALBuffer
 
     uint handle;
 
+    /// <summary>
+    /// Copy PCM data to the OpenAL buffer. PCM data is freed afterwards
+    /// </summary>
     public unsafe void BufferOpenALData()
     {
         if (pcmData == null)
@@ -128,6 +135,9 @@ public class ALBuffer
         pcmData = null;
     }
 
+    /// <summary>
+    /// Try to create an AL source from this buffer. Will fail if the buffer is still loading, or if too many sources have been created (increase MaximumMonoSources or MaximumStereoSources in project settings)
+    /// </summary>
     public bool TryCreateSource(bool spatialised, out OpenALSource source)
     {
         // Bail if this buffer is still loading, or we failed to initialise OpenAL

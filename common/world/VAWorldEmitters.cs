@@ -4,8 +4,10 @@ public partial class VAWorld
 {
     public List<vaudio.Emitter> emitters = [];
 
-    // Emitters that registered before the listener existed - added to the listener's targets once it registers
-    List<vaudio.Emitter> pendingTargets = [];
+    // Contains every non-listener emitter. When the listener is finally added, this list is processed
+    List<vaudio.Emitter> registeredEmitters = [];
+
+    bool wirePendingTargetsQueued = false;
 
     public vaudio.Emitter CreateEmitter(VAEmitter node, Action OnRaytracingComplete, Action<vaudio.Emitter> OnRaytracedByAnotherEmitter)
     {
@@ -73,11 +75,8 @@ public partial class VAWorld
             {
                 listener = node;
 
-                // Wire up any emitters that registered before this listener existed
-                foreach (var pendingTarget in pendingTargets)
-                    listener.AddTarget(pendingTarget);
-
-                pendingTargets.Clear();
+                // Set up the sources that were created before the listener existed
+                WirePendingTargets();
             }
             else
             {
@@ -86,19 +85,36 @@ public partial class VAWorld
         }
         else
         {
-            if (listener == null)
-            {
-                // List of emitters to initialise later when the VAListener node is created
-                pendingTargets.Add(emitter);
-            }
-            else
+            // Keep track of all emitters
+            registeredEmitters.Add(emitter);
+
+            if (listener != null)
             {
                 listener.AddTarget(emitter);
+            }
+            else if (!wirePendingTargetsQueued)
+            {
+                // If this node was added before the VAlistener was created, we need to defer-process all sources/emitters later
+                wirePendingTargetsQueued = true;
+                Callable.From(WirePendingTargets).CallDeferred();
             }
         }
 
         emitters.Add(emitter);
         return emitter;
+    }
+
+    // Process sources/emitters that were created before the VAListener node was created
+    void WirePendingTargets()
+    {
+        wirePendingTargetsQueued = false;
+
+        if (listener == null)
+            return;
+
+        foreach (var emitter in registeredEmitters)
+            if (!emitter.PendingRemoval)
+                listener.AddTarget(emitter);
     }
 
     public void RemoveEmitter(vaudio.Emitter emitter)
@@ -126,7 +142,7 @@ public partial class VAWorld
         world.RemoveEmitter(emitter);
     }
 
-    public void UnregisterPendingTarget(vaudio.Emitter emitter) => pendingTargets.Remove(emitter);
+    public void UnregisterPendingTarget(vaudio.Emitter emitter) => registeredEmitters.Remove(emitter);
 
     public void UnregisterListener(VAEmitter node)
     {

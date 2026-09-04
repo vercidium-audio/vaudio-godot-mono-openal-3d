@@ -91,6 +91,17 @@ public partial class VAWorld
         else
             node.SetMeta(USE_FLAT_TRANSMISSION_META_KEY, useFlatTransmission);
 
+        // Propagation filter (optional - older editor builds send a 4-element payload)
+        if (data.Count > 4)
+        {
+            var propagate = data[4].As<string>();
+
+            if (string.IsNullOrEmpty(propagate))
+                node.RemoveMeta(PROPAGATE_META_KEY);
+            else
+                node.SetMeta(PROPAGATE_META_KEY, propagate);
+        }
+
         SyncPrimitive(node);
 
         return true;
@@ -207,7 +218,6 @@ public partial class VAWorld
         var rotation = data[1].As<Vector3>();
         var fovDegrees = data[2].As<float>();
 
-        world.ManualCamera = false;
         world.CameraPosition = ToVAudio(position);
         world.CameraYaw = rotation.Y;
         world.CameraPitch = rotation.X;
