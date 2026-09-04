@@ -27,7 +27,7 @@ public partial class VAWorld
             "all" => PropagateMode.All,
             "colliders" => PropagateMode.Colliders,
             "visuals" => PropagateMode.Visuals,
-            _ => PropagateMode.Inherit,
+            _ => inherited,
         };
     }
 
