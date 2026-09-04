@@ -33,7 +33,6 @@ public partial class ALSource
     }
 
     bool streamsErrorLogged = false;
-    bool alWarningLogged = false;
     int lastPlayedStreamIndex = -1;
     static Random random = new();
 
@@ -62,7 +61,7 @@ public partial class ALSource
     public virtual bool Play()
     {
         ALManager.Ensure();
-        
+
         var streamIndex = PickStreamIndex();
 
         if (streamIndex < 0)

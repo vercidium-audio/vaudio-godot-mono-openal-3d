@@ -40,7 +40,7 @@ public partial class VAWorld
     void OnReverbUpdated()
     {
         ALManager.Ensure();
-
+        
         // Shouldn't access anything until user adds a VAListener to the scene - else what is reverb relative to?
         if (listener == null)
             return;

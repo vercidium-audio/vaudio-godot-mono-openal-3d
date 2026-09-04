@@ -127,7 +127,7 @@ func _make_propagate_row(node: Node) -> HBoxContainer:
 
 	var label := Label.new()
 	label.text = "Propagate To"
-	label.tooltip_text = "Which child nodes a material set on this node cascades down to.\n\nAll: every child (default)\nColliders only: only collision shape children - skips the visual mesh of a mesh + collider pair\nVisuals only: only mesh / non-collision children"
+	label.tooltip_text = "Which child nodes a material set on this node cascades down to.\n\nInherit: use the parent node's setting\nAll: every child\nColliders only: only collision shape children - skips the visual mesh of a mesh + collider pair\nVisuals only: only mesh / non-collision children"
 	label.custom_minimum_size.x = 120 * EditorInterface.get_editor_scale()
 	row.add_child(label)
 
