@@ -10,9 +10,9 @@ public partial class ALSource
     {
         var warnings = new List<string>();
 
-        for (int i = 0; i < Streams.Length; i++)
+        for (int i = 0; i < Streams.Count; i++)
         {
-            if (Streams[i] == null)
+            if (StreamAt(i) == null)
                 warnings.Add($"Streams[{i}] is not set");
         }
 
