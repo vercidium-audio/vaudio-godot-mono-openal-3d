@@ -72,15 +72,6 @@ public partial class VAWorld
         return true;
     }
 
-    public void SyncPrimitive(Node node)
-    {
-        if (world == null)
-            return;
-
-        RemovePrimitive(node, true);
-        AddPrimitive(node, vaudio.MaterialType.Air, true, PropagateMode.All, true);
-    }
-
     // Re-evaluate every node against the current layer masks. Invoked when the VAWorld RenderLayers / CollisionLayers settings change at runtime
     void RebuildPrimitives()
     {
