@@ -11,19 +11,12 @@ public partial class VAWorld
 
         if (hasOwnMaterial)
         {
-            // A node's own material always wins and resets the propagation filter
+            // A node's own material always wins
             material = GetMaterial(node);
-            filter = PropagateMode.All;
         }
 
-        // Get this node's filter (if any). Defaults to the current filter
+        // Get this node's filter (if any). Defaults to the inherited filter
         filter = ReadPropagateMode(node, filter);
-
-        if (!hasOwnMaterial && !PassesPropagationFilter(node, filter))
-        {
-            // Reset to air if it fails the propagation filter
-            material = vaudio.MaterialType.Air;
-        }
 
         // Use this specific transmission setting rather than the parent's
         if (node.HasMeta(USE_FLAT_TRANSMISSION_META_KEY))
@@ -32,20 +25,23 @@ public partial class VAWorld
         // Ignore nodes without materials
         if (material != vaudio.MaterialType.Air)
         {
-            if (node is CsgBox3D csgBox)
-                CreateVAudioPrimitive(csgBox, material);
-            else if (node is CsgCylinder3D csgCylinder)
-                CreateVAudioPrimitive(csgCylinder, material);
-            else if (node is CsgSphere3D csgSphere)
-                CreateVAudioPrimitive(csgSphere, material);
-            else if (node is CsgPolygon3D csgPolygon)
-                CreateVAudioPrimitive(csgPolygon, material);
-            else if (node is CsgMesh3D csgMesh)
-                CreateVAudioPrimitive(csgMesh, material);
-            else if (node is CollisionShape3D collisionShape)
-                CreateVAudioPrimitive(collisionShape, material);
-            else if (node is MeshInstance3D meshInstance)
-                CreateVAudioPrimitive(meshInstance, material, useFlatTransmission);
+            if (hasOwnMaterial || PassesPropagationFilter(node, filter))
+            {
+                if (node is CsgBox3D csgBox)
+                    CreateVAudioPrimitive(csgBox, material);
+                else if (node is CsgCylinder3D csgCylinder)
+                    CreateVAudioPrimitive(csgCylinder, material);
+                else if (node is CsgSphere3D csgSphere)
+                    CreateVAudioPrimitive(csgSphere, material);
+                else if (node is CsgPolygon3D csgPolygon)
+                    CreateVAudioPrimitive(csgPolygon, material);
+                else if (node is CsgMesh3D csgMesh)
+                    CreateVAudioPrimitive(csgMesh, material);
+                else if (node is CollisionShape3D collisionShape)
+                    CreateVAudioPrimitive(collisionShape, material);
+                else if (node is MeshInstance3D meshInstance)
+                    CreateVAudioPrimitive(meshInstance, material, useFlatTransmission);
+            }
         }
 
         if (recursive)

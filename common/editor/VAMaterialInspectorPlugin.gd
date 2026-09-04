@@ -18,8 +18,8 @@ const USE_FLAT_TRANSMISSION_META_KEY = "vercidium_audio_use_flat_transmission"
 const PROPAGATE_META_KEY = "vercidium_audio_propagate"
 
 # Index 0 is the default ("All") and is never written as metadata - it's the absence of the key.
-const PROPAGATE_MODES = ["All", "Colliders only", "Visuals only"]
-const PROPAGATE_MODE_META_VALUES = ["", "colliders", "visuals"]
+const PROPAGATE_MODES = ["Inherit", "All", "Colliders only", "Visuals only"]
+const PROPAGATE_MODE_META_VALUES = ["", "all", "colliders", "visuals"]
 
 var debugger_plugin
 

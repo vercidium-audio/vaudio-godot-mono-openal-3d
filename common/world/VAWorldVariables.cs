@@ -1,5 +1,13 @@
 namespace vaudio_godot_mono_openal;
 
+public enum PropagateMode
+{
+    Inherit = 0,
+    All,
+    Colliders,
+    Visuals
+}
+
 public partial class VAWorld
 {
     public const string PRIMITIVE_META_KEY = "vercidium_audio_primitive";
@@ -9,8 +17,6 @@ public partial class VAWorld
     // Controls which child nodes a material applies to. Does not affect child nodes that have their own material
     public const string PROPAGATE_META_KEY = "vercidium_audio_propagate";
 
-    public enum PropagateMode { All, Colliders, Visuals }
-
     protected static PropagateMode ReadPropagateMode(Node node, PropagateMode inherited)
     {
         if (!node.HasMeta(PROPAGATE_META_KEY))
@@ -18,9 +24,10 @@ public partial class VAWorld
 
         return node.GetMeta(PROPAGATE_META_KEY).As<string>().ToLowerInvariant() switch
         {
+            "all" => PropagateMode.All,
             "colliders" => PropagateMode.Colliders,
             "visuals" => PropagateMode.Visuals,
-            _ => PropagateMode.All,
+            _ => PropagateMode.Inherit,
         };
     }
 
