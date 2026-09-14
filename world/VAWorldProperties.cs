@@ -32,7 +32,7 @@ public partial class VAWorld
     /// The size of the world. <br />
     /// <see cref="VASource"/>s outside the world will not be raytraced, and Nodes that are fully outside these bounds will be ignored
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown when worldSize is NaN, Infinity, or less than or equal to (0, 0, 0)</exception>
+    /// <exception cref="ArgumentException">Thrown when worldSize is NaN, infinity, or less than or equal to (0, 0, 0)</exception>
     [Export]
     public Vector3 Size
     {
@@ -222,8 +222,8 @@ public partial class VAWorld
     /// Gets meters per world unit. Affects air absorption and reverb calculation.
     /// Also affects OpenAL's own air-absorption and reverb decay math.
     /// If multiple VAWorlds exist, the last one to set this wins.
-    /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity or less than or equal to 0</exception>
     /// </summary>
+    /// <exception cref="ArgumentException">Thrown when the value is NaN, infinity or &lt;= 0</exception>
     [Export(PropertyHint.Range, "0.0001,1.0,or_greater")]
     public float MetersPerUnit
     {
@@ -247,7 +247,7 @@ public partial class VAWorld
     /// Also affects OpenAL's own Doppler calculation.    
     /// If multiple VAWorlds exist, the last one to set this wins.
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity or less than or equal to 0</exception>
+    /// <exception cref="ArgumentException">Thrown when the value is NaN, infinity or less than or equal to 0</exception>
     [Export(PropertyHint.Range, "0.0001,1000.0,1,or_greater")]
     public float SpeedOfSound
     {
