@@ -79,23 +79,6 @@ public partial class VAWorld
         }
     }
 
-    bool _WorldIsIndoors = false;
-    /// <summary>
-    /// Whether the entire world is considered indoors or outdoors. When false, reverb rays stop checking for line-of-sight after hitting the world edge
-    /// </summary>
-    [Export]
-    public bool WorldIsIndoors
-    {
-        get => _WorldIsIndoors;
-        set
-        {
-            _WorldIsIndoors = value;
-
-            if (world != null)
-                world.WorldIsIndoors = value;
-        }
-    }
-
 
     [ExportGroup("Layers")]
 
