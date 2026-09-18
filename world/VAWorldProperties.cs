@@ -29,10 +29,10 @@ public partial class VAWorld
 
     Vector3 _Size = new(200, 100, 200);
     /// <summary>
-    /// The size of the world. <br />
+    /// The size of the world.<br/>
     /// <see cref="VASource"/>s outside the world will not be raytraced, and Nodes that are fully outside these bounds will be ignored
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown when worldSize is NaN, infinity, or less than or equal to (0, 0, 0)</exception>
+    /// <exception cref="ArgumentException">Thrown if NaN, infinity or &lt;= 0</exception>
     [Export]
     public Vector3 Size
     {
@@ -183,7 +183,7 @@ public partial class VAWorld
     /// <summary>
     /// The maximum number of grouped EAX reverb properties created for all emitters. Higher values increase accuracy but are more expensive to run
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown when the value is less than 1</exception>
+    /// <exception cref="ArgumentException">Thrown if &lt; 1</exception>
     [Export]
     public int MaximumGroupedEAXCount
     {
@@ -206,7 +206,7 @@ public partial class VAWorld
     /// Also affects OpenAL's own air-absorption and reverb decay math.
     /// If multiple VAWorlds exist, the last one to set this wins.
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown when the value is NaN, infinity or &lt;= 0</exception>
+    /// <exception cref="ArgumentException">Thrown if NaN, infinity or &lt;= 0</exception>
     [Export(PropertyHint.Range, "0.0001,1.0,or_greater")]
     public float MetersPerUnit
     {
@@ -226,11 +226,11 @@ public partial class VAWorld
     float _SpeedOfSound = 343.0f;
 
     /// <summary>
-    /// Speed of sound in seconds per meter. Defaults to 343.0f. Affects reverb calculation.
+    /// Speed of sound in seconds per meter. Affects reverb calculation.
     /// Also affects OpenAL's own Doppler calculation.    
     /// If multiple VAWorlds exist, the last one to set this wins.
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown when the value is NaN, infinity or less than or equal to 0</exception>
+    /// <exception cref="ArgumentException">Thrown if NaN, infinity or &lt;= 0</exception>
     [Export(PropertyHint.Range, "0.0001,1000.0,1,or_greater")]
     public float SpeedOfSound
     {
@@ -296,7 +296,7 @@ public partial class VAWorld
     /// <summary>
     /// Low-frequency reference (Hz) for air absorption, reverb, and material scattering
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown when the value is NaN or Infinity, or less than or equal to 0</exception>
+    /// <exception cref="ArgumentException">Thrown if NaN, infinity or &lt;= 0</exception>
     [Export(PropertyHint.Range, "0.0001,1000,1,or_greater")]
     public float ReferenceFrequencyLF
     {
@@ -314,7 +314,7 @@ public partial class VAWorld
     /// <summary>
     /// High-frequency reference (Hz) for air absorption, reverb, and material scattering
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown when the value is NaN or Infinity, or less than or equal to 0</exception>
+    /// <exception cref="ArgumentException">Thrown if NaN, infinity or &lt;= 0</exception>
     [Export(PropertyHint.Range, "0.0001,20000,1,or_greater")]
     public float ReferenceFrequencyHF
     {
@@ -373,7 +373,7 @@ public partial class VAWorld
     /// <summary>
     /// The number of work items to split trails across for load balancing. A higher workItemCount helps evenly distribute work across all threads.
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown when the value is less than 1</exception>
+    /// <exception cref="ArgumentException">Thrown if &lt; 1</exception>
     [Export(PropertyHint.Range, "1,256,1,or_greater")]
     public int WorkItemCount
     {
@@ -389,7 +389,7 @@ public partial class VAWorld
 
     bool _PendingShutdown = false;
     /// <summary>
-    /// When set to true, <see cref="Update"/> will stop submitting work to background threads. <br />
+    /// When set to true, <see cref="Update"/> will stop submitting work to background threads.<br/>
     /// When <see cref="ThreadsRunning"/> becomes false, it is safe to call <see cref="World.Dispose"/>.
     /// </summary>
     [Export]
@@ -409,7 +409,7 @@ public partial class VAWorld
     [ExportGroup("Rendering")]
 
     bool _RenderingEnabled = true;
-    /// <summary>Whether to render the raytracing scene in a separate window.</summary>
+    /// <summary>Whether to render the raytracing simulation in a separate window.</summary>
     [Export]
     public bool RenderingEnabled
     {

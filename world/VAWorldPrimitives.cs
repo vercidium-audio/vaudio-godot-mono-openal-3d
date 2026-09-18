@@ -132,7 +132,7 @@ public partial class VAWorld
     {
         Debug.Assert(material != vaudio.MaterialType.Air);
 
-        // Skip if it's already been added to the raytracing scene
+        // Skip if it's already been added to the raytracing simulation
         if (csgBox.HasMeta(PRIMITIVE_META_KEY))
         {
             Debug.Assert(false);
@@ -163,7 +163,7 @@ public partial class VAWorld
     {
         Debug.Assert(material != vaudio.MaterialType.Air);
 
-        // Skip if it's already been added to the raytracing scene
+        // Skip if it's already been added to the raytracing simulation
         if (csgCylinder.HasMeta(PRIMITIVE_META_KEY))
         {
             Debug.Assert(false);
@@ -222,7 +222,7 @@ public partial class VAWorld
     {
         Debug.Assert(material != vaudio.MaterialType.Air);
 
-        // Skip if it's already been added to the raytracing scene
+        // Skip if it's already been added to the raytracing simulation
         if (csgSphere.HasMeta(PRIMITIVE_META_KEY))
         {
             Debug.Assert(false);
@@ -251,7 +251,7 @@ public partial class VAWorld
     {
         Debug.Assert(material != vaudio.MaterialType.Air);
 
-        // Skip if it's already been added to the raytracing scene
+        // Skip if it's already been added to the raytracing simulation
         if (csgPolygon.HasMeta(PRIMITIVE_META_KEY))
         {
             Debug.Assert(false);
@@ -296,7 +296,7 @@ public partial class VAWorld
     {
         Debug.Assert(material != vaudio.MaterialType.Air);
 
-        // Skip if it's already been added to the raytracing scene
+        // Skip if it's already been added to the raytracing simulation
         if (csgMesh.HasMeta(PRIMITIVE_META_KEY))
         {
             Debug.Assert(false);
@@ -332,7 +332,7 @@ public partial class VAWorld
     {
         Debug.Assert(material != vaudio.MaterialType.Air);
 
-        // Skip if it's already been added to the raytracing scene
+        // Skip if it's already been added to the raytracing simulation
         if (collisionShape.HasMeta(PRIMITIVE_META_KEY))
         {
             Debug.Assert(false);
@@ -422,7 +422,7 @@ public partial class VAWorld
 
             world.AddPrimitive(prim = new vaudio.PlanePrimitive()
             {
-                // Use the max world size to ensure the plane covers the raytracing scene
+                // Use the max world size to ensure the plane covers the raytracing simulation
                 //  * 2 in case the plane is positioned in the corner of the world
                 width = worldMagnitude * 2,
                 height = worldMagnitude * 2,
@@ -553,7 +553,7 @@ public partial class VAWorld
     {
         Debug.Assert(material != vaudio.MaterialType.Air);
 
-        // Skip if it's already been added to the raytracing scene
+        // Skip if it's already been added to the raytracing simulation
         if (meshInstance.HasMeta(PRIMITIVE_META_KEY))
         {
             Debug.Assert(false);
