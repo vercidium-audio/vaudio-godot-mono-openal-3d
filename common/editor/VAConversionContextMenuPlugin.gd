@@ -127,7 +127,10 @@ func convert_node(old_node: Node, target_class: String) -> void:
 	var is_spatialised_target = target_class == "VASource" or target_class == "VASourceLeech"
 
 	if is_spatialised_target:
-		copy_property(old_node, new_node, "max_distance", "MaxDistance")
+		# AudioStreamPlayer(3D)'s max_distance of 0.0 means "unlimited" there, but is literal here, so skip the copy and keep our own default.
+		if has_property(old_node, "max_distance") and old_node.max_distance != 0.0:
+			copy_property(old_node, new_node, "max_distance", "MaxDistance")
+
 		copy_property(old_node, new_node, "unit_size", "ReferenceDistance")
 
 	if target_class != old_node.get_class():
@@ -140,6 +143,7 @@ func convert_node(old_node: Node, target_class: String) -> void:
 		if is_spatialised_target:
 			copy_property(old_node, new_node, "MaxDistance", "MaxDistance")
 			copy_property(old_node, new_node, "ReferenceDistance", "ReferenceDistance")
+			copy_property(old_node, new_node, "RolloffFactor", "RolloffFactor")
 
 	if not has_property(old_node, "Looping"):
 		new_node.Looping = any_stream_wants_looping(new_node.Streams)
