@@ -418,13 +418,6 @@ public partial class VAWorld
         {
             _RenderingEnabled = value;
 
-            if (value && OS.GetName() == "macOS")
-            {
-                LogWarning("The debug window is not yet available on MacOS. Read more: https://github.com/vercidium-audio/support/issues/52");
-                _RenderingEnabled = false;
-                return;
-            }
-
             if (world != null)
                 world.RenderingEnabled = _RenderingEnabled;
         }
@@ -433,7 +426,7 @@ public partial class VAWorld
     /// <summary>
     /// While playing, mirrors the editor's 3D viewport camera into the debug window's camera - move
     /// the camera in the editor viewport and the debug window follows, instead of flying the debug
-    /// window's own F1 free-fly camera separately.
+    /// window's own free-fly camera separately.
     /// </summary>
     [Export]
     public bool SyncViewport = true;
