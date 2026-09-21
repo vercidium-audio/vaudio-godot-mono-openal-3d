@@ -9,6 +9,19 @@ public partial class VARaytracedSource
 
     public bool Raytraced => emitter != null && emitter.Raytraced;
 
+    // True once the world's listener has actually raytraced this source, i.e. GainLF/GainHF reflect a real listener->source occlusion result rather than the unmuffled default. Stricter than Raytraced.
+    public bool IsRaytracedByListener
+    {
+        get
+        {
+            if (!Raytraced || vercidiumAudio?.listener == null)
+                return false;
+
+            var listener = vercidiumAudio.listener;
+            return listener != emitter && listener.HasRaytracedTarget(emitter);
+        }
+    }
+
     private bool _RaytraceOnce = false;
 
     [Export]
@@ -18,9 +31,9 @@ public partial class VARaytracedSource
         set => _RaytraceOnce = value;
     }
 
-    // Read-only muffling stats
-    public float MufflingGainLF => emitter?.GainLF ?? 0;
-    public float MufflingGainHF => emitter?.GainHF ?? 0;
+    // Read-only muffling stats - how muffled this source currently is (0..1, 1 = not muffled)
+    public float GainLF => emitter?.GainLF ?? 0;
+    public float GainHF => emitter?.GainHF ?? 0;
 
     // Set while waiting for a VAWorld to appear. _ExitTree cancels the pending retry if this node leaves the tree before one is found.
     Action cancelWaitForVAWorld;
@@ -95,8 +108,7 @@ public partial class VARaytracedSource
             AmbientPermeationEnergyCap = AmbientPermeationEnergyCap,
 
             // Advanced
-            Type = Type,
-            RefreshRayCount = RefreshRayCount,
+            TrailRefreshCount = TrailRefreshCount,
             RefreshDistanceThreshold = RefreshDistanceThreshold,
             ScatteringSeed = ScatteringSeed,
             ClampPosition = ClampPosition,

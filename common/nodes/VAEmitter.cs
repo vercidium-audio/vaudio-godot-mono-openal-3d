@@ -36,6 +36,18 @@ public partial class VAEmitter
         CreateEmitter();
     }
 
+    // Compatibility shim: forwards the pre-1.9.0 "RefreshRayCount" export to TrailRefreshCount so existing .tscn/.tres files keep loading. It's not in the property list, so the inspector doesn't show it and Godot rewrites the scene to the new name on next save.
+    public override bool _Set(StringName property, Variant value)
+    {
+        if (property == "RefreshRayCount")
+        {
+            TrailRefreshCount = value.AsInt32();
+            return true;
+        }
+
+        return base._Set(property, value);
+    }
+
     public override string[] _GetConfigurationWarnings()
     {
         var sceneRoot = Engine.IsEditorHint() ? GetTree()?.EditedSceneRoot : GetTree()?.CurrentScene;

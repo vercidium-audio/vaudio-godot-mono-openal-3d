@@ -23,6 +23,7 @@ const PROPERTY_GROUP = """    <PropertyGroup>
 
 const DLL_SOURCE_WINDOWS = "addons/vaudio-godot-mono-openal-3d/bin/soft_oal.dll"
 const DLL_SOURCE_LINUX = "addons/vaudio-godot-mono-openal-3d/bin/libopenal.so.1"
+const DLL_SOURCE_MAC = "addons/vaudio-godot-mono-openal-3d/bin/libopenal.1.dylib"
 
 var _setup_done := false
 var _no_csproj_error_shown := false
@@ -137,6 +138,10 @@ func _copy_dll():
 		source_path = DLL_SOURCE_LINUX
 		dest_path = "res://libopenal.so.1"
 		lib_name = "libopenal.so.1"
+	elif OS.get_name() == "macOS":
+		source_path = DLL_SOURCE_MAC
+		dest_path = "res://libopenal.1.dylib"
+		lib_name = "libopenal.1.dylib"
 	else:
 		return
 

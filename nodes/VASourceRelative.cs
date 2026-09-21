@@ -35,6 +35,10 @@ public partial class VASourceRelative : ALSourceRelative
         if (Engine.IsEditorHint())
             return false;
 
+        // Don't play until we've found our VAWorld
+        if (vercidiumAudio == null)
+            return false;
+
         // Set the effect, with no filter
         effect = vercidiumAudio.listenerReverbEffect;
         UpdateFilter(1, 1);

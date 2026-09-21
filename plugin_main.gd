@@ -100,6 +100,9 @@ func _enter_tree():
 	# Register audio/vaudio/* Project Settings
 	_register_project_settings()
 
+	# Populate the output_device dropdown with the real OpenAL device list
+	VAWorld.RefreshOutputDeviceList()
+
 	print("[vaudio-godot-mono-openal-3d] Vercidium Audio (vaudio) plugin enabled")
 
 func _exit_tree():

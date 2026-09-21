@@ -60,8 +60,7 @@ public partial class VAWorld
             AmbientPermeationColor = ToVAudio(node.AmbientPermeationColor),
 
             // Advanced
-            Type = node.Type,
-            RefreshRayCount = node.RefreshRayCount,
+            TrailRefreshCount = node.TrailRefreshCount,
             RefreshDistanceThreshold = node.RefreshDistanceThreshold,
             ScatteringSeed = node.ScatteringSeed,
             ClampPosition = node.ClampPosition,

@@ -42,7 +42,7 @@ public partial class VARaytracedSource
     /// <summary>
     /// The percentage of returning energy required for reverb to be at maximum volume. Defaults to 15% of this emitter's <see cref="ReverbRayCount"/> * <see cref="ReverbBounceCount"/>.
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity, less than 0 or greater than 1</exception>
+    /// <exception cref="ArgumentException">Thrown if NaN, infinity, &lt; 0 or > 1</exception>
     [Export(PropertyHint.Range, "0.0,1.0")]
     public float ReverbEnergyCap
     {
@@ -58,9 +58,9 @@ public partial class VARaytracedSource
 
     float _MaxVolume = 1.0f;
     /// <summary>
-    /// The loudest linear volume (0–1) this emitter's dry source will ever be played at by the consuming application. Used to estimate how long the emitter's reverb tail stays audible - a quieter source reaches an inaudible reverb tail sooner. Defaults to 1 (full volume)
+    /// The loudest linear volume (0–1) this emitter's dry source will ever be played at by the consuming application. Used to estimate how long the emitter's reverb tail stays audible - a quieter source reaches an inaudible reverb tail sooner.
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity, less than 0 or greater than 1</exception>
+    /// <exception cref="ArgumentException">Thrown if NaN, infinity, &lt; 0 or > 1</exception>
     [Export(PropertyHint.Range, "0.0,1.0")]
     public float MaxVolume
     {
@@ -147,7 +147,7 @@ public partial class VARaytracedSource
     /// <summary>
     /// The percentage of occlusion energy required for this emitter to be at full volume. Defaults to 15% of the other emitter's <see cref="Emitter.OcclusionRayCount"/>.
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity, or less than 0</exception>
+    /// <exception cref="ArgumentException">Thrown if NaN, infinity or &lt; 0</exception>
     [Export(PropertyHint.Range, "0.0,1.0")]
     public float OcclusionEnergyCap
     {
@@ -165,7 +165,7 @@ public partial class VARaytracedSource
     /// <summary>
     /// The percentage of permeation energy required for this emitter to be at full volume. Defaults to 15% of the other emitter's <see cref="Emitter.PermeationRayCount"/> * <see cref="Emitter.PermeationBounceCount"/>.
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity, or less than 0</exception>
+    /// <exception cref="ArgumentException">Thrown if NaN, infinity or &lt; 0</exception>
     [Export(PropertyHint.Range, "0.0,1.0")]
     public float PermeationEnergyCap
     {
@@ -220,7 +220,7 @@ public partial class VARaytracedSource
     /// <summary>
     /// The percentage of occlusion energy required for the emitter to be at full volume. Defaults to 15% of this emitter's <see cref="AmbientOcclusionRayCount"/>.
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity, or less than 0</exception>
+    /// <exception cref="ArgumentException">Thrown if NaN, infinity or &lt; 0</exception>
     [Export(PropertyHint.Range, "0.0,1.0")]
     public float AmbientOcclusionEnergyCap
     {
@@ -272,7 +272,7 @@ public partial class VARaytracedSource
     /// <summary>
     /// The percentage of permeation energy required for the emitter to be at full volume. Defaults to 15% of this emitter's <see cref="AmbientPermeationRayCount"/> * <see cref="AmbientPermeationBounceCount"/>.
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown when the value is NaN, Infinity, or less than 0</exception>
+    /// <exception cref="ArgumentException">Thrown if NaN, infinity or &lt; 0</exception>
     [Export(PropertyHint.Range, "0.0,1.0")]
     public float AmbientPermeationEnergyCap
     {
@@ -289,41 +289,38 @@ public partial class VARaytracedSource
 
     [ExportGroup("Advanced")]
 
-    int _Type;
-    /// <summary>User-defined type for this emitter</summary>
-    [Export]
-    public int Type
-    {
-        get => _Type;
-        set
-        {
-            _Type = value;
-
-            if (emitter != null)
-                emitter.Type = value;
-        }
-    }
-
-    int _RefreshRayCount = 16;
+    int _TrailRefreshCount = 16;
     /// <summary>
     /// The number of trails that are rebuilt from scratch each frame to prevent staleness when the listener moves. Clamped to minimum of 0.
     /// </summary>
     [Export]
-    public int RefreshRayCount
+    public int TrailRefreshCount
     {
-        get => _RefreshRayCount;
+        get => _TrailRefreshCount;
         set
         {
-            _RefreshRayCount = value;
+            _TrailRefreshCount = value;
 
             if (emitter != null)
-                emitter.RefreshRayCount = value;
+                emitter.TrailRefreshCount = value;
         }
+    }
+
+    // Compatibility shim: forwards the pre-1.9.0 "RefreshRayCount" export to TrailRefreshCount so existing .tscn/.tres files keep loading. It's not in the property list, so the inspector doesn't show it and Godot rewrites the scene to the new name on next save.
+    public override bool _Set(StringName property, Variant value)
+    {
+        if (property == "RefreshRayCount")
+        {
+            TrailRefreshCount = value.AsInt32();
+            return true;
+        }
+
+        return base._Set(property, value);
     }
 
     float _RefreshDistanceThreshold = 1.0f;
     /// <summary>
-    /// A ray trail will be re-created if an old ray bounce position is too far away from the new ray bounce position. This setting controls the allowed distance between old and new ray bounce positions. Defaults to 1.0f. Clamped to minimum of 0.
+    /// A ray trail will be re-created if an old ray bounce position is too far away from the new ray bounce position. This setting controls the allowed distance between old and new ray bounce positions.
     /// </summary>
     [Export]
     public float RefreshDistanceThreshold

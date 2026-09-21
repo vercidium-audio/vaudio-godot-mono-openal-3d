@@ -9,8 +9,30 @@ public partial class ALSource
     public ALFilter filter;
     public ALReverbEffect effect;
 
-    public static ALFilter silenceFilter = new(0, 0);
-    public static ALFilter fullFilter = new(1, 1);
+    static ALFilter _silenceFilter;
+    static ALFilter _fullFilter;
+    static bool nativeLoadErrorLogged = false;
+
+    public static ALFilter silenceFilter => _silenceFilter ??= CreateFilterSafe(0, 0);
+    public static ALFilter fullFilter => _fullFilter ??= CreateFilterSafe(1, 1);
+
+    static ALFilter CreateFilterSafe(float gain, float gainHF)
+    {
+        try
+        {
+            return new ALFilter(gain, gainHF);
+        }
+        catch (Exception ex)
+        {
+            if (!nativeLoadErrorLogged)
+            {
+                LogError($"Failed to initialise OpenAL ({ex.Message}). Audio playback will not work until this is fixed.");
+                nativeLoadErrorLogged = true;
+            }
+
+            return null;
+        }
+    }
 
     public void UpdateFilter(float gain, float gainHF, bool fullReverb = false)
     {
