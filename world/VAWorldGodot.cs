@@ -22,7 +22,8 @@ public partial class VAWorld
         SceneRoot = GetTree().CurrentScene as Node3D;
 
         world = new();
-        
+        world.CoordinateSystem = vaudio.CoordinateSystem.Godot;
+
         world.LogCallback = Log;
         world.Position = ToVAudio(Position);
         world.Size = ToVAudio(Size);
