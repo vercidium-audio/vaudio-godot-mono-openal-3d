@@ -5,7 +5,7 @@ public partial class VAEmitter
 {
     public bool IsMainListener => this is VAListener;
 
-    VAWorld vercidiumAudio;
+    protected VAWorld vercidiumAudio;
     public vaudio.Emitter emitter;
 
     public ALReverbEffect effect;
@@ -33,7 +33,19 @@ public partial class VAEmitter
         cancelWaitForVAWorld = null;
         vercidiumAudio = world;
 
-        CreateEmitter();
+        AttachToWorld();
+    }
+
+    // Listeners override these to go through VAWorld's shared listener emitter instead of owning one
+    protected virtual void AttachToWorld() => CreateEmitter();
+
+    protected virtual void DetachFromWorld()
+    {
+        if (emitter == null)
+            return;
+
+        vercidiumAudio.UnregisterPendingTarget(emitter);
+        ReleaseEmitter();
     }
 
     // Compatibility shim: forwards the pre-1.9.0 "RefreshRayCount" export to TrailRefreshCount so existing .tscn/.tres files keep loading. It's not in the property list, so the inspector doesn't show it and Godot rewrites the scene to the new name on next save.
@@ -67,7 +79,16 @@ public partial class VAEmitter
             throw new InvalidOperationException("Emitter already created");
 
         emitter = vercidiumAudio.CreateEmitter(this, OnRaytracingComplete, OnRaytracedByAnotherEmitter);
-        emitter.OnRemoved = OnEmitterRemoved;
+        SetOnRemoved(emitter);
+    }
+
+    protected void SetOnRemoved(vaudio.Emitter created) => created.OnRemoved = () => OnEmitterRemoved(created);
+
+    // Re-points an existing emitter at this node (position, settings and callbacks)
+    protected void ConfigureEmitter(vaudio.Emitter existing)
+    {
+        vercidiumAudio.ConfigureEmitter(this, existing, OnRaytracingComplete, OnRaytracedByAnotherEmitter);
+        SetOnRemoved(existing);
     }
 
     public void RemoveEmitter()
@@ -79,10 +100,24 @@ public partial class VAEmitter
         vercidiumAudio.RemoveEmitter(emitter);
     }
 
-    void OnEmitterRemoved()
+    // Removes the emitter from the world and detaches it from this node, even if its removal is still pending (reverb tail), so re-entering the tree (e.g. reparent) creates a fresh one
+    protected void ReleaseEmitter()
     {
+        RemoveEmitter();
         emitter = null;
-        OnEmitterRemovedCallback?.Invoke();
+    }
+
+    void OnEmitterRemoved(vaudio.Emitter removed)
+    {
+        vercidiumAudio?.UnregisterPendingTarget(removed);
+
+        // May be an older emitter than this node's current one, e.g. after a reparent while a reverb tail was still playing
+        if (emitter == removed)
+            emitter = null;
+
+        // This node may have been freed while the reverb tail finished
+        if (IsInstanceValid(this))
+            OnEmitterRemovedCallback?.Invoke();
     }
 
     void OnRaytracingComplete()
@@ -148,12 +183,10 @@ public partial class VAEmitter
             LogWarning($"'{Name}' left the tree without ever finding a VAWorld - no emitter was created for it. Make sure this node's scene was added under a VAWorld while it was in the tree.");
         }
 
-        if (emitter != null)
+        if (vercidiumAudio != null)
         {
-            vercidiumAudio.UnregisterPendingTarget(emitter);
-            vercidiumAudio.UnregisterListener(this);
-
-            RemoveEmitter();
+            DetachFromWorld();
+            vercidiumAudio = null;
         }
 
         base._ExitTree();
