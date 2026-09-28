@@ -1,0 +1,23 @@
+<Project Sdk="Godot.NET.Sdk/4.7.0">
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <EnableDynamicLoading>true</EnableDynamicLoading>
+        <RootNamespace>vaudiogodotmonoopenal3dtestproject</RootNamespace>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);1591</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Reference Include="vaudio">
+            <HintPath>addons\vaudio-godot-mono-openal-3d\bin\vaudio.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="openal_soft_bindings" Version="1.0.10" />
+    </ItemGroup>
+</Project>

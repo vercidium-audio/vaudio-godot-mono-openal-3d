@@ -1,0 +1,268 @@
+[gd_scene format=3]
+
+[ext_resource type="AudioStream" path="res://audio/speech.ogg" id="1_speech"]
+[ext_resource type="Script" path="res://test_controller.gd" id="2_controller"]
+[ext_resource type="Script" path="res://addons/vaudio-godot-mono-openal-3d/world/VAWorld.cs" id="3_world"]
+[ext_resource type="Script" path="res://addons/vaudio-godot-mono-openal-3d/common/nodes/VACustomMaterial.cs" id="4_custommaterial"]
+[ext_resource type="Script" path="res://addons/vaudio-godot-mono-openal-3d/common/nodes/VAListener.cs" id="5_listener"]
+[ext_resource type="Script" path="res://addons/vaudio-godot-mono-openal-3d/common/nodes/VASource.cs" id="6_source"]
+[ext_resource type="Script" path="res://addons/vaudio-godot-mono-openal-3d/nodes/VAVisualisation.cs" id="7_visualisation"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_concrete"]
+albedo_color = Color(0.6, 0.6, 0.6, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_brick"]
+albedo_color = Color(0.62, 0.27, 0.2, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_metal"]
+albedo_color = Color(0.72, 0.74, 0.78, 1)
+metallic = 1.0
+roughness = 0.3
+
+[sub_resource type="StandardMaterial3D" id="Mat_glass"]
+transparency = 1
+albedo_color = Color(0.6, 0.85, 0.95, 0.4)
+roughness = 0.1
+
+[sub_resource type="StandardMaterial3D" id="Mat_wood"]
+albedo_color = Color(0.55, 0.36, 0.2, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_carpet"]
+albedo_color = Color(0.6, 0.2, 0.25, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_listener"]
+albedo_color = Color(0.2, 0.5, 1, 1)
+emission_enabled = true
+emission = Color(0.2, 0.5, 1, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_source"]
+albedo_color = Color(1, 0.6, 0.1, 1)
+emission_enabled = true
+emission = Color(1, 0.6, 0.1, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_floor"]
+material = SubResource("Mat_concrete")
+size = Vector3(56, 1, 32)
+
+[sub_resource type="SphereMesh" id="SphereMesh_marker_listener"]
+material = SubResource("Mat_listener")
+radius = 0.4
+height = 0.8
+
+[sub_resource type="SphereMesh" id="SphereMesh_marker_source"]
+material = SubResource("Mat_source")
+radius = 0.4
+height = 0.8
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wall"]
+size = Vector3(0.6, 6, 18)
+
+[sub_resource type="BoxMesh" id="BoxMesh_wall"]
+material = SubResource("Mat_brick")
+size = Vector3(0.6, 6, 18)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wall_right"]
+size = Vector3(2, 6, 18)
+
+[sub_resource type="BoxMesh" id="BoxMesh_wall_right"]
+material = SubResource("Mat_brick")
+size = Vector3(2, 6, 18)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_1"]
+radius = 3.0
+
+[sub_resource type="SphereMesh" id="SphereMesh_metal"]
+material = SubResource("Mat_metal")
+radius = 3.0
+height = 6.0
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
+radius = 1.5
+height = 8.0
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_1"]
+material = SubResource("Mat_glass")
+radius = 1.5
+height = 8.0
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_1"]
+height = 6.0
+radius = 1.5
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_pillar"]
+material = SubResource("Mat_concrete")
+top_radius = 1.5
+bottom_radius = 1.5
+height = 6.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_plank_wood"]
+material = SubResource("Mat_wood")
+size = Vector3(15, 3, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_plank_carpet"]
+material = SubResource("Mat_carpet")
+size = Vector3(15, 3, 1)
+
+[sub_resource type="PrismMesh" id="PrismMesh_ramp"]
+material = SubResource("Mat_wood")
+left_to_right = 0.0
+size = Vector3(6, 3, 4)
+
+[sub_resource type="SphereMesh" id="SphereMesh_dome"]
+material = SubResource("Mat_glass")
+radius = 2.5
+height = 2.5
+is_hemisphere = true
+
+[node name="TestScene" type="Node3D"]
+script = ExtResource("2_controller")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.422618, 0.906308, 0, -0.906308, 0.422618, 0, 32.6, 15.2)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.642788, 0.766044, 0, -0.766044, 0.642788, 0, 10, 0)
+shadow_enabled = true
+
+[node name="VAWorld" type="Node3D" parent="."]
+script = ExtResource("3_world")
+position = Vector3(-28, -2, -16)
+Size = Vector3(56, 14, 32)
+
+[node name="VACustomMaterial" type="Node" parent="VAWorld"]
+script = ExtResource("4_custommaterial")
+MaterialName = "carpet"
+AbsorptionLF = 0.4
+AbsorptionHF = 0.6
+
+[node name="Listener" type="Node3D" parent="."]
+script = ExtResource("5_listener")
+OcclusionRayCount = 1024
+OcclusionBounceCount = 8
+PermeationRayCount = 256
+PermeationBounceCount = 4
+ScatteringSeed = 1765728616
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 1, 0)
+
+[node name="Marker" type="MeshInstance3D" parent="Listener"]
+mesh = SubResource("SphereMesh_marker_listener")
+
+[node name="VASource" type="Node3D" parent="."]
+script = ExtResource("6_source")
+ReverbRayCount = 64
+ReverbBounceCount = 64
+ScatteringSeed = 1303946308
+Streams = [ExtResource("1_speech")]
+Looping = true
+Autoplay = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.6, 1, 0)
+
+[node name="Marker" type="MeshInstance3D" parent="VASource"]
+mesh = SubResource("SphereMesh_marker_source")
+
+[node name="VAVisualisation" type="Node3D" parent="VASource"]
+script = ExtResource("7_visualisation")
+
+[node name="ConcreteFloor" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+mesh = SubResource("BoxMesh_floor")
+metadata/vercidium_audio_material = "concrete"
+
+[node name="BrickWall" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.1, 3, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BrickWall"]
+shape = SubResource("BoxShape3D_wall")
+metadata/vercidium_audio_material = "brick"
+
+[node name="Mesh" type="MeshInstance3D" parent="BrickWall"]
+mesh = SubResource("BoxMesh_wall")
+
+[node name="BrickWallRight" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27, 3, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BrickWallRight"]
+shape = SubResource("BoxShape3D_wall_right")
+metadata/vercidium_audio_material = "brick"
+
+[node name="Mesh" type="MeshInstance3D" parent="BrickWallRight"]
+mesh = SubResource("BoxMesh_wall_right")
+
+[node name="MetalSphere" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.5, 3, -7.5)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MetalSphere"]
+shape = SubResource("SphereShape3D_1")
+metadata/vercidium_audio_material = "metal"
+
+[node name="Mesh" type="MeshInstance3D" parent="MetalSphere"]
+mesh = SubResource("SphereMesh_metal")
+
+[node name="GlassCapsule" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, -7.5, 1.5, 7.5)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="GlassCapsule"]
+shape = SubResource("CapsuleShape3D_1")
+metadata/vercidium_audio_material = "glass"
+
+[node name="Mesh" type="MeshInstance3D" parent="GlassCapsule"]
+mesh = SubResource("CapsuleMesh_1")
+
+[node name="ConcretePillar" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, -12.5)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ConcretePillar"]
+shape = SubResource("CylinderShape3D_1")
+metadata/vercidium_audio_material = "concrete"
+
+[node name="Mesh" type="MeshInstance3D" parent="ConcretePillar"]
+mesh = SubResource("CylinderMesh_pillar")
+
+[node name="WoodPlank" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 1.5, -9)
+mesh = SubResource("BoxMesh_plank_wood")
+metadata/vercidium_audio_material = "woodindoor"
+
+[node name="CarpetPlank" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 1.5, 9)
+mesh = SubResource("BoxMesh_plank_carpet")
+metadata/vercidium_audio_material = "carpet"
+
+[node name="WoodRamp" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 1.5, 11)
+mesh = SubResource("PrismMesh_ramp")
+metadata/vercidium_audio_material = "woodindoor"
+
+[node name="GlassDome" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 10)
+mesh = SubResource("SphereMesh_dome")
+metadata/vercidium_audio_material = "glass"
+
+[node name="ConcreteCsgBox" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 1.5, -10)
+size = Vector3(4, 3, 4)
+material = SubResource("Mat_concrete")
+metadata/vercidium_audio_material = "concrete"
+
+[node name="MetalCsgCylinder" type="CSGCylinder3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2, 4)
+radius = 1.0
+height = 4.0
+material = SubResource("Mat_metal")
+metadata/vercidium_audio_material = "metal"
+
+[node name="BrickCsgSphere" type="CSGSphere3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.5, 12)
+radius = 1.5
+material = SubResource("Mat_brick")
+metadata/vercidium_audio_material = "brick"
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="Label" type="Label" parent="UI"]
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 600.0
+offset_bottom = 60.0
+text = "Move the mouse to move the listener across the floor. Hold right mouse to move the source instead.
+Enable Debug > Visible Collision Shapes to see the CollisionShape3D occluders."

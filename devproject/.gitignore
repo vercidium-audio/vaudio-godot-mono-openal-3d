@@ -1,0 +1,8 @@
+.godot/
+addons/
+*.csproj.user
+
+# Copied to the project root by plugin.gd
+soft_oal.dll
+libopenal.so.1
+libopenal.1.dylib

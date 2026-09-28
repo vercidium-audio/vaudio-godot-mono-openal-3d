@@ -1,0 +1,23 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="vaudio-godot-mono-openal-3d test project"
+run/main_scene="res://test_scene.tscn"
+config/features=PackedStringArray("4.7", "C#")
+
+[dotnet]
+
+project/assembly_name="vaudio-godot-mono-openal-3d test project"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/vaudio-godot-mono-openal-3d/plugin.cfg")
