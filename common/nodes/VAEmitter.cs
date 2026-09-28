@@ -212,7 +212,7 @@ public partial class VAEmitter
     public vaudio.ProcessedReverb ProcessedReverb => emitter.ProcessedReverb;
     public vaudio.EAXReverb EAX => emitter.EAX;
     public vaudio.LowPassFilter AmbientFilter => emitter.AmbientFilter;
-    public int GroupedEAXIndex => emitter.GroupedEAXIndex;
+    public int GroupedEAXIndex => emitter?.GroupedEAXIndex ?? -1;
 
     public bool IsAmbientFilterReady => Raytraced && AmbientFilter != null;
     public float GetAmbientFilterGainLF() => AmbientFilter?.GainLF ?? 1.0f;

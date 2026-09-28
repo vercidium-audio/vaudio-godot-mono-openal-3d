@@ -35,6 +35,9 @@ public partial class VARaytracedSource
     public float GainLF => emitter?.GainLF ?? 0;
     public float GainHF => emitter?.GainHF ?? 0;
 
+    // Index into VAWorld's grouped EAX list, or -1 if this source doesn't contribute to it (yet)
+    public int GroupedEAXIndex => emitter?.GroupedEAXIndex ?? -1;
+
     // Set while waiting for a VAWorld to appear. _ExitTree cancels the pending retry if this node leaves the tree before one is found.
     Action cancelWaitForVAWorld;
 
