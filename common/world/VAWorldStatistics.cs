@@ -8,6 +8,10 @@ public partial class VAWorld
     public double GetRaytracingTime() => world?.RaytracingTime ?? 0;
     public double GetAnalysisTime() => world?.AnalysisTime ?? 0;
 
+    // Number of completed raytracing passes, so tests can wait for fresh results after changing the scene. No signal on purpose - it would fire inside world.Update(), and a handler that edits the world would re-enter it
+    int raytraceCount;
+    public int GetRaytraceCount() => raytraceCount;
+
     public int GetGroupedEAXCount() => world?.GroupedEAX.Count ?? 0;
     public float GetGroupedEAXGainLF(int index) => world.GroupedEAX[index].GainLF;
     public float GetGroupedEAXGainHF(int index) => world.GroupedEAX[index].GainHF;
