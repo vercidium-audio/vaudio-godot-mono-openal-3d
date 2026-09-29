@@ -18,6 +18,27 @@ public partial class VAWorld
         AddPrimitive(syncRoot, vaudio.MaterialType.Air, false, PropagateMode.All, true);
     }
 
+    // NodeAdded fires once per node rather than once per subtree, so a node inside an added subtree (e.g. an instanced scene whose root carries the material) has to pick up what its ancestors would have cascaded to it. Applied outermost first, the same order a recursive AddPrimitive cascades them in. Unknown materials aren't warned about here - they already were when their own node was added
+    void ResolveInherited(Node node, out vaudio.MaterialType material, out bool useFlatTransmission, out PropagateMode filter)
+    {
+        material = vaudio.MaterialType.Air;
+        useFlatTransmission = false;
+        filter = PropagateMode.All;
+
+        if (node.GetParent() is not { } parent)
+            return;
+
+        ResolveInherited(parent, out material, out useFlatTransmission, out filter);
+
+        if (parent.HasMeta(MATERIAL_META_KEY))
+            material = GetMaterial(parent, false);
+
+        filter = ReadPropagateMode(parent, filter);
+
+        if (parent.HasMeta(USE_FLAT_TRANSMISSION_META_KEY))
+            useFlatTransmission = parent.GetMeta(USE_FLAT_TRANSMISSION_META_KEY).As<bool>();
+    }
+
     // The highest ancestor of node that sits directly under the scene tree root, or null if node isn't under the tree
     static Node TopLevelSceneNode(Node node)
     {

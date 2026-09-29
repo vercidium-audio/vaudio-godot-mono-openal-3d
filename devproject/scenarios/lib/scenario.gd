@@ -76,6 +76,14 @@ func wait_raytraced(passes := 2) -> void:
 	while VA.raytrace_count(root.world) < target:
 		await root.get_tree().process_frame
 
+# Waits for fresh results after a change, then prints and returns the source's (muffling LF, muffling HF)
+func measure_muffling(label: String, banner: String) -> Vector2:
+	await wait_raytraced(SETTLE_PASSES)
+	await step(banner, 1.0)
+	var muffling := Vector2(VA.muffling_lf(root.source), VA.muffling_hf(root.source))
+	print("[devproject] %s -> muffling LF %.4f HF %.4f" % [label, muffling.x, muffling.y])
+	return muffling
+
 # For sources created or moved at runtime - waits until the listener has actually raytraced them, not just until any pass completes
 func wait_raytraced_by_listener(source: Node) -> void:
 	while not VA.is_raytraced_by_listener(source):

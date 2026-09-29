@@ -149,7 +149,11 @@ public partial class VAWorld
 
     // This fires for the new parent node AND each of its child nodes separately
     //  Parent node is invoked first
-    void OnNodeAdded(Node node) => AddPrimitive(node, vaudio.MaterialType.Air, false);
+    void OnNodeAdded(Node node)
+    {
+        ResolveInherited(node, out var material, out var useFlatTransmission, out var filter);
+        AddPrimitive(node, material, useFlatTransmission, filter, false);
+    }
 
     // This fires for the new parent node AND each of its child nodes separately
     //  Child nodes are invoked first

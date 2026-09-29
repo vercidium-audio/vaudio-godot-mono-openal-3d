@@ -25,7 +25,7 @@ public partial class VAWorld
     /// <summary>
     /// Extract a material type from a node. Returns MaterialType.Air if no materials are found
     /// </summary>
-    vaudio.MaterialType GetMaterial(Node node)
+    vaudio.MaterialType GetMaterial(Node node, bool warnUnknown = true)
     {
         if (!node.HasMeta(MATERIAL_META_KEY))
             return vaudio.MaterialType.Air;
@@ -42,7 +42,8 @@ public partial class VAWorld
             return type;
 
         // No material found
-        LogWarning($"Unknown material for node {node.Name}: {materialString}. Defaulting to Air");
+        if (warnUnknown)
+            LogWarning($"Unknown material for node {node.Name}: {materialString}. Defaulting to Air");
         return vaudio.MaterialType.Air;
     }
 }

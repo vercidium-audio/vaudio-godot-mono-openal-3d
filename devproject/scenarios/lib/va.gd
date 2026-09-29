@@ -5,7 +5,12 @@ extends RefCounted
 # to_pascal_case() gets acronyms wrong (GroupedEax, GainHf), so fix up the ones the C# plugin uses
 const ACRONYMS := {"Eax": "EAX", "Lf": "LF", "Hf": "HF"}
 
+# Properties whose C# name isn't just the PascalCase native name
+const RENAMES := {"bounds_size": "Size"}
+
 static func csharp_name(property: String) -> String:
+	if RENAMES.has(property):
+		return RENAMES[property]
 	var words := property.split("_", false)
 	var result := ""
 	for word in words:
