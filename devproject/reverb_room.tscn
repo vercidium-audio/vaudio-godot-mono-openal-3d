@@ -1,0 +1,141 @@
+[gd_scene format=3]
+
+[ext_resource type="AudioStream" path="res://audio/speech.ogg" id="1_speech"]
+[ext_resource type="Script" path="res://test_controller.gd" id="2_controller"]
+[ext_resource type="Script" path="res://addons/vaudio-godot-mono-openal-3d/world/VAWorld.cs" id="3_world"]
+[ext_resource type="Script" path="res://addons/vaudio-godot-mono-openal-3d/common/nodes/VACustomMaterial.cs" id="4_custommaterial"]
+[ext_resource type="Script" path="res://addons/vaudio-godot-mono-openal-3d/common/nodes/VAListener.cs" id="5_listener"]
+[ext_resource type="Script" path="res://addons/vaudio-godot-mono-openal-3d/common/nodes/VASource.cs" id="6_source"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_room"]
+albedo_color = Color(0.7, 0.7, 0.65, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_room_see_through"]
+transparency = 1
+albedo_color = Color(0.7, 0.7, 0.65, 0.15)
+
+[sub_resource type="StandardMaterial3D" id="Mat_listener"]
+albedo_color = Color(0.2, 0.5, 1, 1)
+emission_enabled = true
+emission = Color(0.2, 0.5, 1, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_source"]
+albedo_color = Color(1, 0.6, 0.1, 1)
+emission_enabled = true
+emission = Color(1, 0.6, 0.1, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_marker_listener"]
+material = SubResource("Mat_listener")
+radius = 0.4
+height = 0.8
+
+[sub_resource type="SphereMesh" id="SphereMesh_marker_source"]
+material = SubResource("Mat_source")
+radius = 0.4
+height = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_floor"]
+material = SubResource("Mat_room")
+size = Vector3(13, 0.5, 9)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ceiling"]
+material = SubResource("Mat_room_see_through")
+size = Vector3(13, 0.5, 9)
+
+[sub_resource type="BoxMesh" id="BoxMesh_side_wall"]
+material = SubResource("Mat_room")
+size = Vector3(0.5, 7, 9)
+
+[sub_resource type="BoxMesh" id="BoxMesh_back_wall"]
+material = SubResource("Mat_room")
+size = Vector3(13, 7, 0.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_front_wall"]
+material = SubResource("Mat_room_see_through")
+size = Vector3(13, 7, 0.5)
+
+[node name="ReverbRoom" type="Node3D"]
+script = ExtResource("2_controller")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.422618, 0.906308, 0, -0.906308, 0.422618, 0, 14, 7)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.642788, 0.766044, 0, -0.766044, 0.642788, 0, 10, 0)
+
+[node name="VAWorld" type="Node3D" parent="."]
+script = ExtResource("3_world")
+position = Vector3(-10, -3, -8)
+Size = Vector3(20, 12, 16)
+
+[node name="RoomMaterial" type="Node" parent="VAWorld"]
+script = ExtResource("4_custommaterial")
+MaterialName = "room"
+AbsorptionLF = 0.1
+AbsorptionHF = 0.15
+Scattering = 0.3
+
+[node name="Listener" type="Node3D" parent="."]
+script = ExtResource("5_listener")
+OcclusionRayCount = 1024
+OcclusionBounceCount = 8
+PermeationRayCount = 256
+PermeationBounceCount = 4
+ScatteringSeed = 1765728616
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1, 0)
+
+[node name="Marker" type="MeshInstance3D" parent="Listener"]
+mesh = SubResource("SphereMesh_marker_listener")
+
+[node name="VASource" type="Node3D" parent="."]
+script = ExtResource("6_source")
+ReverbRayCount = 64
+ReverbBounceCount = 64
+ScatteringSeed = 1303946308
+Streams = [ExtResource("1_speech")]
+Looping = true
+Autoplay = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1, 1.5)
+
+[node name="Marker" type="MeshInstance3D" parent="VASource"]
+mesh = SubResource("SphereMesh_marker_source")
+
+[node name="Floor" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, 0)
+mesh = SubResource("BoxMesh_floor")
+metadata/vercidium_audio_material = "room"
+
+[node name="Ceiling" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.25, 0)
+mesh = SubResource("BoxMesh_ceiling")
+metadata/vercidium_audio_material = "room"
+
+[node name="WallLeft" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.25, 3, 0)
+mesh = SubResource("BoxMesh_side_wall")
+metadata/vercidium_audio_material = "room"
+
+[node name="WallRight" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.25, 3, 0)
+mesh = SubResource("BoxMesh_side_wall")
+metadata/vercidium_audio_material = "room"
+
+[node name="WallBack" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, -4.25)
+mesh = SubResource("BoxMesh_back_wall")
+metadata/vercidium_audio_material = "room"
+
+[node name="WallFront" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 4.25)
+mesh = SubResource("BoxMesh_front_wall")
+metadata/vercidium_audio_material = "room"
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="Label" type="Label" parent="UI"]
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 600.0
+offset_bottom = 60.0
+text = "Closed 12 x 6 x 8 m room, every surface uses the \"room\" VACustomMaterial.
+Move the mouse to move the listener. Hold right mouse to move the source instead."

@@ -15,7 +15,7 @@ public partial class VAWorld
         Node syncRoot = TopLevelSceneNode(node) ?? node;
 
         RemovePrimitive(syncRoot, true);
-        AddPrimitive(syncRoot, vaudio.MaterialType.Air, true, PropagateMode.All, true);
+        AddPrimitive(syncRoot, vaudio.MaterialType.Air, false, PropagateMode.All, true);
     }
 
     // The highest ancestor of node that sits directly under the scene tree root, or null if node isn't under the tree

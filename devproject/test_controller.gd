@@ -1,21 +1,32 @@
 extends Node3D
 
-# Run with `-- --test` to sweep the listener around the scene for a fixed duration and then quit - used by the vaudio package script's headless tests
-const TEST_DURATION_SECONDS := 5.0
-const TEST_PASSED_MARKER := "[devproject] Test passed"
+# Root script of both test_scene.tscn and reverb_room.tscn. Run with `-- --test` to run the scenarios in res://scenarios and then quit - see scenarios/lib/runner.gd for the options
+const RUNNER := "res://scenarios/lib/runner.gd"
+const VA_ADAPTER := "res://scenarios/lib/va.gd"
 
 const EAR_HEIGHT := 1.0
 
 @onready var camera: Camera3D = $Camera3D
 @onready var listener: Node3D = $Listener
 @onready var source: Node3D = $VASource
+@onready var world: Node = $VAWorld
 
 var test_mode := OS.get_cmdline_user_args().has("--test")
-var test_elapsed := 0.0
 
-func _process(delta: float) -> void:
+# Runs before VAWorld._enter_tree (parents enter the tree first), which creates the world and would otherwise show the debug window straight away
+func _enter_tree() -> void:
+	if test_mode and not OS.get_cmdline_user_args().has("--debugwindow"):
+		load(VA_ADAPTER).set_value($VAWorld, "rendering_enabled", false)
+
+func _ready() -> void:
+	# The runner outlives scene changes, so only the first scene starts it
+	if test_mode and not get_tree().root.has_node("TestRunner"):
+		var runner: Node = load(RUNNER).new()
+		runner.name = "TestRunner"
+		get_tree().root.add_child.call_deferred(runner)
+
+func _process(_delta: float) -> void:
 	if test_mode:
-		_process_test(delta)
 		return
 
 	var mouse := get_viewport().get_mouse_position()
@@ -27,11 +38,3 @@ func _process(delta: float) -> void:
 		source.global_position = target
 	else:
 		listener.global_position = target
-
-func _process_test(delta: float) -> void:
-	test_elapsed += delta
-	listener.global_position = Vector3(cos(test_elapsed * 2.0) * 22.5, EAR_HEIGHT + sin(test_elapsed * 5.0) * 0.5, sin(test_elapsed * 3.0) * 12.5)
-
-	if test_elapsed >= TEST_DURATION_SECONDS:
-		print("%s after %d frames" % [TEST_PASSED_MARKER, Engine.get_process_frames()])
-		get_tree().quit()
