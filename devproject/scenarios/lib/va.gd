@@ -87,3 +87,6 @@ static func decay_time(world: Node, source: Node) -> float:
 	if index < 0 or index >= grouped_eax_count(world):
 		return -1.0
 	return grouped_eax_decay_time(world, index)
+
+static func is_playing(source: Node) -> bool:
+	return source.IsPlaying()

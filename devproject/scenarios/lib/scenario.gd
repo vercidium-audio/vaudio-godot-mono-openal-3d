@@ -76,13 +76,38 @@ func wait_raytraced(passes := 2) -> void:
 	while VA.raytrace_count(root.world) < target:
 		await root.get_tree().process_frame
 
-# Waits for fresh results after a change, then prints and returns the source's (muffling LF, muffling HF)
-func measure_muffling(label: String, banner: String) -> Vector2:
+# Waits for fresh results after a change, then prints and returns the source's (muffling LF, muffling HF). Defaults to the scene's own source
+func measure_muffling(label: String, banner: String, source: Node = null) -> Vector2:
+	if source == null:
+		source = root.source
 	await wait_raytraced(SETTLE_PASSES)
 	await step(banner, 1.0)
-	var muffling := Vector2(VA.muffling_lf(root.source), VA.muffling_hf(root.source))
+	var muffling := Vector2(VA.muffling_lf(source), VA.muffling_hf(source))
 	print("[devproject] %s -> muffling LF %.4f HF %.4f" % [label, muffling.x, muffling.y])
 	return muffling
+
+# Adds a looping, autoplaying VASource that plays the scene source's streams. Freed emitters linger until their reverb tails finish - see wait_grouped_eax_count()
+func spawn_source(source_name: String, position, scattering_seed: int) -> Node:
+	var source := VA.create_node(root.world, "VASource")
+	source.name = source_name
+	source.position = position
+	VA.set_value(source, "streams", VA.get_value(root.source, "streams"))
+	VA.set_value(source, "looping", true)
+	VA.set_value(source, "autoplay", true)
+	VA.set_value(source, "reverb_ray_count", 64)
+	VA.set_value(source, "reverb_bounce_count", 64)
+	VA.set_value(source, "scattering_seed", scattering_seed)
+	root.add_child(source)
+	return source
+
+# Freed emitters stay in the world until their reverb tails finish, so this polls for the grouped EAX count to reach target rather than waiting a fixed number of passes. Returns the last count seen
+func wait_grouped_eax_count(target: int, timeout_ms := 10000) -> int:
+	var started := Time.get_ticks_msec()
+	var count := VA.grouped_eax_count(root.world)
+	while count != target and Time.get_ticks_msec() - started < timeout_ms:
+		await wait_raytraced()
+		count = VA.grouped_eax_count(root.world)
+	return count
 
 # For sources created or moved at runtime - waits until the listener has actually raytraced them, not just until any pass completes
 func wait_raytraced_by_listener(source: Node) -> void:

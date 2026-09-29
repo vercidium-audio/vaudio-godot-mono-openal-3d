@@ -42,7 +42,8 @@ public partial class VASource
     {
         base.OnRaytracedByAnotherEmitter(other);
 
-        if (Autoplay)
+        // Only autoplay once - a reparent creates a fresh emitter that gets raytraced again
+        if (Autoplay && !played)
             Play();
     }
 

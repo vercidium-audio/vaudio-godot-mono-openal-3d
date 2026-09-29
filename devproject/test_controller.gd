@@ -17,6 +17,8 @@ var test_mode := OS.get_cmdline_user_args().has("--test")
 func _enter_tree() -> void:
 	if test_mode and not OS.get_cmdline_user_args().has("--debugwindow"):
 		load(VA_ADAPTER).set_value($VAWorld, "rendering_enabled", false)
+	if test_mode and OS.get_cmdline_user_args().has("--mute"):
+		load(VA_ADAPTER).set_value($VAWorld, "master_volume", 0.0)
 
 func _ready() -> void:
 	# The runner outlives scene changes, so only the first scene starts it

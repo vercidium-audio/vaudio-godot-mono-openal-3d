@@ -111,9 +111,11 @@ public partial class VAEmitter
     {
         vercidiumAudio?.UnregisterPendingTarget(removed);
 
-        // May be an older emitter than this node's current one, e.g. after a reparent while a reverb tail was still playing
-        if (emitter == removed)
-            emitter = null;
+        // May be an older emitter than this node's current one, e.g. after a reparent while a reverb tail was still playing. Only the current one's removal is reported, or a stale tail finishing would tear down the node's new emitter
+        if (emitter != removed)
+            return;
+
+        emitter = null;
 
         // This node may have been freed while the reverb tail finished
         if (IsInstanceValid(this))
@@ -188,6 +190,10 @@ public partial class VAEmitter
             DetachFromWorld();
             vercidiumAudio = null;
         }
+
+        // Re-entering the tree (e.g. reparent) creates a fresh emitter, which creates a fresh filter once it's raytraced
+        filter?.Delete();
+        filter = null;
 
         base._ExitTree();
     }

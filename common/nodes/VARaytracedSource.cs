@@ -56,7 +56,9 @@ public partial class VARaytracedSource
         cancelWaitForVAWorld = null;
         vercidiumAudio = world;
 
-        CreateEmitter();
+        // After a reparent the child VAEmitter is still here and re-attaches itself to the world
+        if (emitter == null)
+            CreateEmitter();
     }
 
     public override string[] _GetConfigurationWarnings()

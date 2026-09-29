@@ -4,6 +4,7 @@ extends Node
 #   --scenarios=a,b   only run these scenarios, in this order (default: every top-level script in res://scenarios, alphabetically)
 #   --listen          stretch each step and print what to listen for
 #   --debugwindow     leave VAWorld.rendering_enabled on (dev builds) - off by default so test runs don't open debug windows. Applied by test_controller.gd's _enter_tree, before the world is created
+#   --mute            set VAWorld.master_volume (the OpenAL listener gain) to 0 so headless runs are silent. Also applied by test_controller.gd's _enter_tree
 
 const TEST_PASSED_MARKER := "[devproject] Test passed"
 const SCENARIOS_DIR := "res://scenarios"

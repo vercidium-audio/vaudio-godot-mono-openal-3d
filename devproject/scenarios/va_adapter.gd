@@ -18,6 +18,8 @@ func run() -> void:
 
 	var debug_window := OS.get_cmdline_user_args().has("--debugwindow")
 	check(VA.get_value(root.world, "rendering_enabled") == debug_window, "rendering_enabled should be %s when --debugwindow is %s" % [debug_window, "passed" if debug_window else "not passed"])
+	if OS.get_cmdline_user_args().has("--mute"):
+		check(VA.get_value(root.world, "master_volume") == 0.0, "master_volume should be 0 when --mute is passed")
 
 	await wait_raytraced_by_listener(root.source)
 	check(VA.is_raytraced(root.source), "raytraced by listener but not raytraced")

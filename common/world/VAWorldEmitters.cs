@@ -117,6 +117,9 @@ public partial class VAWorld
         if (emitter.PendingRemoval)
             return;
 
+        // The emitter outlives its node while its reverb tail plays, so stop reading the node's position - it may be freed before the tail finishes
+        emitter.Position = emitter.Position.GetPosition();
+
         if (emitter.ReverbEnabled && emitter.AffectsGroupedEAX)
         {
             // Capture the old callback (if any)
