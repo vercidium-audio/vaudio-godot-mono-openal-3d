@@ -113,3 +113,10 @@ func wait_grouped_eax_count(target: int, timeout_ms := 10000) -> int:
 func wait_raytraced_by_listener(source: Node) -> void:
 	while not VA.is_raytraced_by_listener(source):
 		await root.get_tree().process_frame
+
+# The Standard plugin autoplays once the source is raytraced, but only starts once its streams finish decoding on a worker thread, so is_playing() can lag a few frames behind. Returns whether it started before the timeout
+func wait_playing(source: Node, timeout_ms := 5000) -> bool:
+	var started := Time.get_ticks_msec()
+	while not VA.is_playing(source) and Time.get_ticks_msec() - started < timeout_ms:
+		await root.get_tree().process_frame
+	return VA.is_playing(source)

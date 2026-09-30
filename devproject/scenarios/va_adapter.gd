@@ -44,6 +44,10 @@ func run() -> void:
 		check(VA.grouped_eax_gain_hf(root.world, index) >= 0.0, "negative reverb gain HF")
 		check(VA.decay_time(root.world, root.source) == VA.grouped_eax_decay_time(root.world, index), "decay_time doesn't match the source's group")
 
+	# Already current, so this is a no-op
+	VA.make_current(root.listener)
+	check(VA.get_value(root.listener, "current") == true, "scene listener isn't current after make_current()")
+
 	VA.sync_primitive(root.world, root.listener)
 	await wait_raytraced()
 	check(VA.is_raytraced(root.source), "not raytraced after sync_primitive")

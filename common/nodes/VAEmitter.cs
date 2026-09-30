@@ -131,8 +131,8 @@ public partial class VAEmitter
     {
         ALManager.Ensure();
 
-        Debug.Assert(filter == null);
-        filter = new(1, 1);
+        // Already set if a new listener emitter raytraced this again, e.g. after the last VAListener left the tree and came back
+        filter ??= new(1, 1);
 
         ApplyRaytracingResults();
 

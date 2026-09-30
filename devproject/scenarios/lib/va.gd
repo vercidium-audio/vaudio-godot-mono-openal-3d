@@ -90,3 +90,6 @@ static func decay_time(world: Node, source: Node) -> float:
 
 static func is_playing(source: Node) -> bool:
 	return source.IsPlaying()
+
+static func make_current(listener: Node) -> void:
+	listener.MakeCurrent()
