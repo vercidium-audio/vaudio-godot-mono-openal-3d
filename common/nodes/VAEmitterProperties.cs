@@ -47,9 +47,7 @@ public partial class VAEmitter
     }
 
     float _ReverbEnergyCap = 0.15f;
-    /// <summary>
-    /// The percentage of returning energy required for reverb to be at maximum volume. Defaults to 15% of this emitter's <see cref="ReverbRayCount"/> * <see cref="ReverbBounceCount"/>.
-    /// </summary>
+    /// <summary>The percentage of returning energy required for reverb to be at full volume.</summary>
     /// <exception cref="ArgumentException">Thrown if NaN, infinity, &lt;= 0 or > 1</exception>
     [Export(PropertyHint.Range, "0.001,1.0")]
     public float ReverbEnergyCap
@@ -330,9 +328,7 @@ public partial class VAEmitter
     }
 
     float _AmbientOcclusionEnergyCap = 0.15f;
-    /// <summary>
-    /// The percentage of occlusion energy required for the emitter to be at full volume. Defaults to 15% of this emitter's <see cref="AmbientOcclusionRayCount"/>.
-    /// </summary>
+    /// <summary>The percentage of occlusion energy required for the emitter to be at full volume.</summary>
     /// <exception cref="ArgumentException">Thrown if NaN, infinity or &lt; 0</exception>
     [Export(PropertyHint.Range, "0.0,1.0")]
     public float AmbientOcclusionEnergyCap
@@ -378,9 +374,7 @@ public partial class VAEmitter
     }
 
     float _AmbientPermeationEnergyCap = 0.15f;
-    /// <summary>
-    /// The percentage of permeation energy required for the emitter to be at full volume. Defaults to 15% of this emitter's <see cref="AmbientPermeationRayCount"/> * <see cref="AmbientPermeationBounceCount"/>.
-    /// </summary>
+    /// <summary>The percentage of permeation energy required for the emitter to be at full volume.</summary>
     /// <exception cref="ArgumentException">Thrown if NaN, infinity or &lt; 0</exception>
     [Export(PropertyHint.Range, "0.0,1.0")]
     public float AmbientPermeationEnergyCap

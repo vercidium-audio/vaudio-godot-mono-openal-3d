@@ -41,6 +41,7 @@ public partial class VAWorld
 
         // Emitters 
         world.EmittersOutsideTheWorldAreMuffled = EmittersOutsideTheWorldAreMuffled;
+        world.OcclusionRaysLoseEnergyFromWorldBounds = OcclusionRaysLoseEnergyFromWorldBounds;
 
         // Threading
         // 0 maps to processor count - 1, matching the native plugin's behaviour
