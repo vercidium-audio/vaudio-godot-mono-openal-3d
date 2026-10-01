@@ -123,6 +123,21 @@ public partial class VARaytracedSource
         }
     }
 
+    bool _KeepReverbTailAlive = true;
+    /// <summary>Whether this source is kept alive while its reverb tail continues to play</summary>
+    [Export]
+    public bool KeepReverbTailAlive
+    {
+        get => _KeepReverbTailAlive;
+        set
+        {
+            _KeepReverbTailAlive = value;
+
+            if (emitter != null)
+                emitter.KeepReverbTailAlive = value;
+        }
+    }
+
     bool _UseListenerReverb = false;
     /// <summary>If true, this source's reverb send uses the listener's reverb effect rather than its own</summary>
     [Export]

@@ -80,7 +80,7 @@ public partial class VAListener : VAEmitter
         string name = property["name"].AsStringName();
 
         // Hide irrelevant fields
-        if (name == "HasRelativeReverb" || name == "AffectsGroupedEAX" || name == "OcclusionEnergyCap" || name == "PermeationEnergyCap" || name == "RaytraceOnce")
+        if (name == "HasRelativeReverb" || name == "AffectsGroupedEAX" || name == "KeepReverbTailAlive" ||name == "OcclusionEnergyCap" || name == "PermeationEnergyCap" || name == "RaytraceOnce")
         {
             var usage = property["usage"].As<PropertyUsageFlags>();
             usage &= ~PropertyUsageFlags.Editor;

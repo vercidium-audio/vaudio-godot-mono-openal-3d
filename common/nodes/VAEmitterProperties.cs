@@ -135,6 +135,21 @@ public partial class VAEmitter
         }
     }
 
+    bool _KeepReverbTailAlive = true;
+    /// <summary>Whether this emitter is kept alive while its reverb tail continues to play</summary>
+    [Export]
+    public bool KeepReverbTailAlive
+    {
+        get => _KeepReverbTailAlive;
+        set
+        {
+            _KeepReverbTailAlive = value;
+
+            if (emitter != null)
+                emitter.KeepReverbTailAlive = value;
+        }
+    }
+
     bool _HasRelativeReverb = true;
     /// <summary>
     /// Whether this emitter is used as a reference point for calculating relative reverb gain and direction.

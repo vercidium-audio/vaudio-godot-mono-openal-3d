@@ -62,6 +62,7 @@ public partial class VAWorld
         emitter.MaxEchogramTime = node.MaxEchogramTime;
         emitter.EchogramGranularity = node.EchogramGranularity;
         emitter.AffectsGroupedEAX = node.AffectsGroupedEAX;
+        emitter.KeepReverbTailAlive = node.KeepReverbTailAlive;
         emitter.HasRelativeReverb = node.HasRelativeReverb;
         emitter.RelativeReverbInnerThreshold = node.RelativeReverbInnerThreshold;
         emitter.RelativeReverbOuterThreshold = node.RelativeReverbOuterThreshold;
@@ -120,7 +121,7 @@ public partial class VAWorld
         // The emitter outlives its node while its reverb tail plays, so stop reading the node's position - it may be freed before the tail finishes
         emitter.Position = emitter.Position.GetPosition();
 
-        if (emitter.ReverbEnabled && emitter.AffectsGroupedEAX)
+        if (emitter.ReverbEnabled && emitter.AffectsGroupedEAX && emitter.KeepReverbTailAlive)
         {
             // Capture the old callback (if any)
             var existingCallback = emitter.OnRemoved;

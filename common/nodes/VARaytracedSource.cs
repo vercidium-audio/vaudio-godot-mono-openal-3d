@@ -93,6 +93,7 @@ public partial class VARaytracedSource
             MaxEchogramTime = MaxEchogramTime,
             EchogramGranularity = EchogramGranularity,
             AffectsGroupedEAX = AffectsGroupedEAX,
+            KeepReverbTailAlive = KeepReverbTailAlive,
             UseListenerReverb = UseListenerReverb,
             HasRelativeReverb = false,
 
