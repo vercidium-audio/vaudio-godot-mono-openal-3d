@@ -44,6 +44,32 @@ public partial class VACustomMaterial : Node
         vercidiumAudio.world.AddMaterial((vaudio.MaterialType)materialType, vaudioMaterial, GetDebugColor());
     }
 
+    // Custom materials can't be removed at runtime. Children leave the tree before their VAWorld, so a scene unload looks the same as this node alone being removed until the end of the frame - check then
+    public override void _ExitTree()
+    {
+        if (vercidiumAudio == null)
+            return;
+
+        var world = vercidiumAudio;
+        var name = MaterialName;
+        vercidiumAudio = null;
+
+        Callable.From(() => ReportIfRemovedAtRuntime(world, this, name)).CallDeferred();
+    }
+
+    static void ReportIfRemovedAtRuntime(VAWorld world, VACustomMaterial material, string name)
+    {
+        // The world went too, e.g. a scene change
+        if (!IsInstanceValid(world) || !world.IsInsideTree())
+            return;
+
+        // Re-added (e.g. reparented), so it registered itself again
+        if (IsInstanceValid(material) && material.IsInsideTree())
+            return;
+
+        Logger.LogError($"VACustomMaterial '{name}' was removed while its VAWorld is still running. Custom materials can't be removed at runtime - primitives using it keep its last values until the scene is reloaded");
+    }
+
     string _materialName = "CustomMaterial";
 
     /// <summary>

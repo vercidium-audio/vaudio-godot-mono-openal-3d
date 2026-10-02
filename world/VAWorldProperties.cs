@@ -347,6 +347,23 @@ public partial class VAWorld
         }
     }
 
+    bool _OcclusionRaysLoseEnergyFromWorldBounds = false;
+    /// <summary>
+    /// Whether occlusion rays should be affected by the world bounds material.
+    /// </summary>
+    [Export]
+    public bool OcclusionRaysLoseEnergyFromWorldBounds
+    {
+        get => _OcclusionRaysLoseEnergyFromWorldBounds;
+        set
+        {
+            _OcclusionRaysLoseEnergyFromWorldBounds = value;
+
+            if (world != null)
+                world.OcclusionRaysLoseEnergyFromWorldBounds = value;
+        }
+    }
+
 
     [ExportGroup("Threading")]
 

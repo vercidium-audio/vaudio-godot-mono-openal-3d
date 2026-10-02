@@ -79,6 +79,27 @@ public partial class VADefaultMaterial : Node
         vercidiumAudio.world.SetMaterialColor(MaterialType, GetDebugColor());
     }
 
+    // Puts the SDK's built-in values back into the world, so removing the node undoes its override. The node's own properties are left alone so re-adding it re-applies the same override
+    public override void _ExitTree()
+    {
+        if (vercidiumAudio?.world == null)
+            return;
+
+        var defaults = GetMaterialDefaults(MaterialType);
+        var mat = vercidiumAudio.world.GetMaterial(MaterialType);
+
+        mat.AbsorptionLF = defaults.AbsorptionLF;
+        mat.AbsorptionHF = defaults.AbsorptionHF;
+        mat.Scattering = defaults.Scattering;
+        mat.TransmissionLF = defaults.TransmissionLF;
+        mat.TransmissionHF = defaults.TransmissionHF;
+        mat.FlatTransmissionLF = defaults.FlatTransmissionLF;
+        mat.FlatTransmissionHF = defaults.FlatTransmissionHF;
+
+        vercidiumAudio.world.SetMaterialColor(MaterialType, new vaudio.Color(defaults.Color.R, defaults.Color.G, defaults.Color.B, 1.0f));
+        vercidiumAudio = null;
+    }
+
     vaudio.MaterialType _materialType = vaudio.MaterialType.Metal;
 
     /// <summary>

@@ -35,6 +35,9 @@ public partial class VARaytracedSource
     public float GainLF => emitter?.GainLF ?? 0;
     public float GainHF => emitter?.GainHF ?? 0;
 
+    // Index into VAWorld's grouped EAX list, or -1 if this source doesn't contribute to it (yet)
+    public int GroupedEAXIndex => emitter?.GroupedEAXIndex ?? -1;
+
     // Set while waiting for a VAWorld to appear. _ExitTree cancels the pending retry if this node leaves the tree before one is found.
     Action cancelWaitForVAWorld;
 
@@ -53,7 +56,9 @@ public partial class VARaytracedSource
         cancelWaitForVAWorld = null;
         vercidiumAudio = world;
 
-        CreateEmitter();
+        // After a reparent the child VAEmitter is still here and re-attaches itself to the world
+        if (emitter == null)
+            CreateEmitter();
     }
 
     public override string[] _GetConfigurationWarnings()
@@ -84,10 +89,12 @@ public partial class VARaytracedSource
             ReverbRayCount = ReverbRayCount,
             ReverbBounceCount = ReverbBounceCount,
             ReverbEnergyCap = ReverbEnergyCap,
+            MinimumReverbEnergy = MinimumReverbEnergy,
             MaxVolume = MaxVolume,
             MaxEchogramTime = MaxEchogramTime,
             EchogramGranularity = EchogramGranularity,
             AffectsGroupedEAX = AffectsGroupedEAX,
+            KeepReverbTailAlive = KeepReverbTailAlive,
             UseListenerReverb = UseListenerReverb,
             HasRelativeReverb = false,
 
@@ -106,6 +113,8 @@ public partial class VARaytracedSource
             AmbientPermeationBounceCount = AmbientPermeationBounceCount,
             AmbientOcclusionEnergyCap = AmbientOcclusionEnergyCap,
             AmbientPermeationEnergyCap = AmbientPermeationEnergyCap,
+            MinimumAmbientOcclusionEnergy = MinimumAmbientOcclusionEnergy,
+            MinimumAmbientPermeationEnergy = MinimumAmbientPermeationEnergy,
 
             // Advanced
             TrailRefreshCount = TrailRefreshCount,

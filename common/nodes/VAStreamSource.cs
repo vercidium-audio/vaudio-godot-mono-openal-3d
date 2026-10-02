@@ -46,7 +46,8 @@ public partial class VAStreamSource : VARaytracedSource
             return;
         }
 
-        if (data == null || data.Length == 0)
+        // Stop() or finishing releases the source without going through CloseStream
+        if (data == null || data.Length == 0 || streamSource.IsDisposed())
             return;
 
         streamSource.EnqueueData(data, 0, data.Length);
@@ -58,7 +59,10 @@ public partial class VAStreamSource : VARaytracedSource
             return;
 
         sources.Remove(streamSource);
-        streamSource.Dispose();
+
+        if (!streamSource.IsDisposed())
+            streamSource.Dispose();
+
         streamSource = null;
     }
 
@@ -71,7 +75,7 @@ public partial class VAStreamSource : VARaytracedSource
 
     void DrainUsedChunks()
     {
-        while (streamSource != null && streamSource.TryGetUsedData(out _))
+        while (streamSource != null && !streamSource.IsDisposed() && streamSource.TryGetUsedData(out _))
         {
         }
     }

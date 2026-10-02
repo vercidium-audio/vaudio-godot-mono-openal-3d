@@ -39,9 +39,7 @@ public partial class VARaytracedSource
     }
 
     float _ReverbEnergyCap = 0.15f;
-    /// <summary>
-    /// The percentage of returning energy required for reverb to be at maximum volume. Defaults to 15% of this emitter's <see cref="ReverbRayCount"/> * <see cref="ReverbBounceCount"/>.
-    /// </summary>
+    /// <summary>The percentage of returning energy required for reverb to be at full volume.</summary>
     /// <exception cref="ArgumentException">Thrown if NaN, infinity, &lt; 0 or > 1</exception>
     [Export(PropertyHint.Range, "0.0,1.0")]
     public float ReverbEnergyCap
@@ -53,6 +51,21 @@ public partial class VARaytracedSource
 
             if (emitter != null)
                 emitter.ReverbEnergyCap = _ReverbEnergyCap;
+        }
+    }
+
+    float _MinimumReverbEnergy = 0.01f;
+    /// <summary>Optimisation field - reverb rays will stop bouncing when their energy drops below this threshold</summary>
+    [Export(PropertyHint.Range, "0.0,1.0,0.001")]
+    public float MinimumReverbEnergy
+    {
+        get => _MinimumReverbEnergy;
+        set
+        {
+            _MinimumReverbEnergy = Math.Clamp(value, 0, 1);
+
+            if (emitter != null)
+                emitter.MinimumReverbEnergy = _MinimumReverbEnergy;
         }
     }
 
@@ -122,6 +135,21 @@ public partial class VARaytracedSource
 
             if (emitter != null)
                 emitter.AffectsGroupedEAX = value;
+        }
+    }
+
+    bool _KeepReverbTailAlive = true;
+    /// <summary>Whether this source is kept alive while its reverb tail continues to play</summary>
+    [Export]
+    public bool KeepReverbTailAlive
+    {
+        get => _KeepReverbTailAlive;
+        set
+        {
+            _KeepReverbTailAlive = value;
+
+            if (emitter != null)
+                emitter.KeepReverbTailAlive = value;
         }
     }
 
@@ -217,9 +245,7 @@ public partial class VARaytracedSource
     }
 
     float _AmbientOcclusionEnergyCap = 0.15f;
-    /// <summary>
-    /// The percentage of occlusion energy required for the emitter to be at full volume. Defaults to 15% of this emitter's <see cref="AmbientOcclusionRayCount"/>.
-    /// </summary>
+    /// <summary>The percentage of occlusion energy required for the emitter to be at full volume.</summary>
     /// <exception cref="ArgumentException">Thrown if NaN, infinity or &lt; 0</exception>
     [Export(PropertyHint.Range, "0.0,1.0")]
     public float AmbientOcclusionEnergyCap
@@ -231,6 +257,21 @@ public partial class VARaytracedSource
 
             if (emitter != null)
                 emitter.AmbientOcclusionEnergyCap = _AmbientOcclusionEnergyCap;
+        }
+    }
+
+    float _MinimumAmbientOcclusionEnergy = 0.01f;
+    /// <summary>Optimisation field - ambient occlusion rays will stop bouncing when their low-frequency energy drops below this threshold</summary>
+    [Export(PropertyHint.Range, "0.0,1.0,0.001")]
+    public float MinimumAmbientOcclusionEnergy
+    {
+        get => _MinimumAmbientOcclusionEnergy;
+        set
+        {
+            _MinimumAmbientOcclusionEnergy = Math.Clamp(value, 0, 1);
+
+            if (emitter != null)
+                emitter.MinimumAmbientOcclusionEnergy = _MinimumAmbientOcclusionEnergy;
         }
     }
 
@@ -246,7 +287,7 @@ public partial class VARaytracedSource
 
             if (emitter != null)
             {
-                emitter.AmbientOcclusionRayCount = _AmbientPermeationRayCount;
+                emitter.AmbientPermeationRayCount = _AmbientPermeationRayCount;
             }
         }
     }
@@ -269,9 +310,7 @@ public partial class VARaytracedSource
     }
 
     float _AmbientPermeationEnergyCap = 0.15f;
-    /// <summary>
-    /// The percentage of permeation energy required for the emitter to be at full volume. Defaults to 15% of this emitter's <see cref="AmbientPermeationRayCount"/> * <see cref="AmbientPermeationBounceCount"/>.
-    /// </summary>
+    /// <summary>The percentage of permeation energy required for the emitter to be at full volume.</summary>
     /// <exception cref="ArgumentException">Thrown if NaN, infinity or &lt; 0</exception>
     [Export(PropertyHint.Range, "0.0,1.0")]
     public float AmbientPermeationEnergyCap
@@ -283,6 +322,21 @@ public partial class VARaytracedSource
 
             if (emitter != null)
                 emitter.AmbientPermeationEnergyCap = _AmbientPermeationEnergyCap;
+        }
+    }
+
+    float _MinimumAmbientPermeationEnergy = 0.01f;
+    /// <summary>Optimisation field - ambient permeation rays will stop permeating when their energy drops below this threshold</summary>
+    [Export(PropertyHint.Range, "0.0,1.0,0.001")]
+    public float MinimumAmbientPermeationEnergy
+    {
+        get => _MinimumAmbientPermeationEnergy;
+        set
+        {
+            _MinimumAmbientPermeationEnergy = Math.Clamp(value, 0, 1);
+
+            if (emitter != null)
+                emitter.MinimumAmbientPermeationEnergy = _MinimumAmbientPermeationEnergy;
         }
     }
 

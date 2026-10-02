@@ -58,13 +58,19 @@ public partial class ALSource
         }
     }
 
-    public override void _ExitTree()
+    // Released on free rather than _ExitTree, so a reparent keeps playing (matches the native plugin, which releases them in its destructor)
+    public override void _Notification(int what)
     {
-        filter?.Delete();
+        if (what != NotificationPredelete)
+            return;
 
         foreach (var s in sources)
             s.Dispose();
 
         sources.Clear();
+
+        // Must delete the filter after deleting the sources
+        filter?.Delete();
+        filter = null;
     }
 }

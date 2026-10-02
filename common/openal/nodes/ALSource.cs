@@ -149,17 +149,23 @@ public partial class ALSource
     {
         playRequested = false;
 
+        // Release them now - a stopped looping source never reports finished, so _Process would never clean it up
         foreach (var s in sources)
+        {
             s.Stop();
+            s.Dispose();
+        }
+
+        sources.Clear();
     }
 
     public bool IsPlaying()
     {
         foreach (var s in sources)
             if (!s.Finished())
-                return false;
+                return true;
 
-        return true;
+        return false;
     }
 
     // GDScript aliases so existing AudioStreamPlayer scripts don't break
