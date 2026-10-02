@@ -54,6 +54,21 @@ public partial class VARaytracedSource
         }
     }
 
+    float _MinimumReverbEnergy = 0.01f;
+    /// <summary>Optimisation field - reverb rays will stop bouncing when their energy drops below this threshold</summary>
+    [Export(PropertyHint.Range, "0.0,1.0,0.001")]
+    public float MinimumReverbEnergy
+    {
+        get => _MinimumReverbEnergy;
+        set
+        {
+            _MinimumReverbEnergy = Math.Clamp(value, 0, 1);
+
+            if (emitter != null)
+                emitter.MinimumReverbEnergy = _MinimumReverbEnergy;
+        }
+    }
+
     float _MaxVolume = 1.0f;
     /// <summary>
     /// The loudest linear volume (0–1) this emitter's dry source will ever be played at by the consuming application. Used to estimate how long the emitter's reverb tail stays audible - a quieter source reaches an inaudible reverb tail sooner.
@@ -245,6 +260,21 @@ public partial class VARaytracedSource
         }
     }
 
+    float _MinimumAmbientOcclusionEnergy = 0.01f;
+    /// <summary>Optimisation field - ambient occlusion rays will stop bouncing when their low-frequency energy drops below this threshold</summary>
+    [Export(PropertyHint.Range, "0.0,1.0,0.001")]
+    public float MinimumAmbientOcclusionEnergy
+    {
+        get => _MinimumAmbientOcclusionEnergy;
+        set
+        {
+            _MinimumAmbientOcclusionEnergy = Math.Clamp(value, 0, 1);
+
+            if (emitter != null)
+                emitter.MinimumAmbientOcclusionEnergy = _MinimumAmbientOcclusionEnergy;
+        }
+    }
+
     int _AmbientPermeationRayCount = 0;
     /// <summary>Number of ambient permeation rays cast</summary>
     [Export]
@@ -257,7 +287,7 @@ public partial class VARaytracedSource
 
             if (emitter != null)
             {
-                emitter.AmbientOcclusionRayCount = _AmbientPermeationRayCount;
+                emitter.AmbientPermeationRayCount = _AmbientPermeationRayCount;
             }
         }
     }
@@ -292,6 +322,21 @@ public partial class VARaytracedSource
 
             if (emitter != null)
                 emitter.AmbientPermeationEnergyCap = _AmbientPermeationEnergyCap;
+        }
+    }
+
+    float _MinimumAmbientPermeationEnergy = 0.01f;
+    /// <summary>Optimisation field - ambient permeation rays will stop permeating when their energy drops below this threshold</summary>
+    [Export(PropertyHint.Range, "0.0,1.0,0.001")]
+    public float MinimumAmbientPermeationEnergy
+    {
+        get => _MinimumAmbientPermeationEnergy;
+        set
+        {
+            _MinimumAmbientPermeationEnergy = Math.Clamp(value, 0, 1);
+
+            if (emitter != null)
+                emitter.MinimumAmbientPermeationEnergy = _MinimumAmbientPermeationEnergy;
         }
     }
 

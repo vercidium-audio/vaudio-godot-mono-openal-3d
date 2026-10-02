@@ -89,6 +89,7 @@ public partial class VARaytracedSource
             ReverbRayCount = ReverbRayCount,
             ReverbBounceCount = ReverbBounceCount,
             ReverbEnergyCap = ReverbEnergyCap,
+            MinimumReverbEnergy = MinimumReverbEnergy,
             MaxVolume = MaxVolume,
             MaxEchogramTime = MaxEchogramTime,
             EchogramGranularity = EchogramGranularity,
@@ -112,6 +113,8 @@ public partial class VARaytracedSource
             AmbientPermeationBounceCount = AmbientPermeationBounceCount,
             AmbientOcclusionEnergyCap = AmbientOcclusionEnergyCap,
             AmbientPermeationEnergyCap = AmbientPermeationEnergyCap,
+            MinimumAmbientOcclusionEnergy = MinimumAmbientOcclusionEnergy,
+            MinimumAmbientPermeationEnergy = MinimumAmbientPermeationEnergy,
 
             // Advanced
             TrailRefreshCount = TrailRefreshCount,

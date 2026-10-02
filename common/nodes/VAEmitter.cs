@@ -60,6 +60,21 @@ public partial class VAEmitter
         return base._Set(property, value);
     }
 
+    public override void _ValidateProperty(Godot.Collections.Dictionary property)
+    {
+        base._ValidateProperty(property);
+
+        string name = property["name"].AsStringName();
+
+        // Occlusion/permeation rays are only cast by the listener, so their thresholds are only customisable there
+        if (this is not VAListener && (name == "MinimumOcclusionEnergy" || name == "MinimumPermeationEnergy"))
+        {
+            var usage = property["usage"].As<PropertyUsageFlags>();
+            usage &= ~PropertyUsageFlags.Editor;
+            property["usage"] = (int)usage;
+        }
+    }
+
     public override string[] _GetConfigurationWarnings()
     {
         var sceneRoot = Engine.IsEditorHint() ? GetTree()?.EditedSceneRoot : GetTree()?.CurrentScene;

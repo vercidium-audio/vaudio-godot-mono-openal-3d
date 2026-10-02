@@ -58,6 +58,7 @@ public partial class VAWorld
         emitter.ReverbRayCount = node.ReverbRayCount;
         emitter.ReverbBounceCount = node.ReverbBounceCount;
         emitter.ReverbEnergyCap = node.ReverbEnergyCap;
+        emitter.MinimumReverbEnergy = node.MinimumReverbEnergy;
         emitter.MaxVolume = node.MaxVolume;
         emitter.MaxEchogramTime = node.MaxEchogramTime;
         emitter.EchogramGranularity = node.EchogramGranularity;
@@ -74,6 +75,8 @@ public partial class VAWorld
         emitter.PermeationBounceCount = node.PermeationBounceCount;
         emitter.OcclusionEnergyCap = node.OcclusionEnergyCap;
         emitter.PermeationEnergyCap = node.PermeationEnergyCap;
+        emitter.MinimumOcclusionEnergy = node.MinimumOcclusionEnergy;
+        emitter.MinimumPermeationEnergy = node.MinimumPermeationEnergy;
 
         // Ambience
         emitter.AmbientOcclusionRayCount = node.AmbientOcclusionRayCount;
@@ -82,6 +85,8 @@ public partial class VAWorld
         emitter.AmbientPermeationBounceCount = node.AmbientPermeationBounceCount;
         emitter.AmbientOcclusionEnergyCap = node.AmbientOcclusionEnergyCap;
         emitter.AmbientPermeationEnergyCap = node.AmbientPermeationEnergyCap;
+        emitter.MinimumAmbientOcclusionEnergy = node.MinimumAmbientOcclusionEnergy;
+        emitter.MinimumAmbientPermeationEnergy = node.MinimumAmbientPermeationEnergy;
 
         // Debug rendering
         emitter.RandomTrailColor = node.RandomTrailColor;
