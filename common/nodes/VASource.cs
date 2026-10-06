@@ -51,7 +51,8 @@ public partial class VASource
 
     public override bool Play()
     {
-        if (!Raytraced)
+        // Wait for the muffling and reverb results, so the sound never starts unmuffled or without reverb
+        if (!IsReadyToPlay)
             return false;
 
         return played = base.Play();
@@ -61,7 +62,7 @@ public partial class VASource
     {
         base._Process(delta);
 
-        if (Raytraced && !played && Autoplay)
+        if (!played && Autoplay && IsReadyToPlay)
             Play();
     }
 

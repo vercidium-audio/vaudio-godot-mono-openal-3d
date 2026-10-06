@@ -7,6 +7,9 @@ public partial class VASourceLeech
 
     public bool Raytraced => emitter != null && emitter.Raytraced;
 
+    // See VAEmitter.IsReadyToPlay
+    public bool IsReadyToPlay => emitter != null && emitter.IsReadyToPlay;
+
     bool played = false;
 
     Action cancelWaitForVAWorld;
@@ -48,7 +51,8 @@ public partial class VASourceLeech
 
     public override bool Play()
     {
-        if (!Raytraced)
+        // Wait for the parent emitter's muffling and reverb results, so the sound never starts unmuffled or without reverb
+        if (!IsReadyToPlay)
             return false;
 
         return played = base.Play();
@@ -64,7 +68,7 @@ public partial class VASourceLeech
         if (!Raytraced)
             return;
 
-        if (!played && Autoplay)
+        if (!played && Autoplay && IsReadyToPlay)
             Play();
 
         if (vercidiumAudio?.listener == null)

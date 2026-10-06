@@ -65,7 +65,7 @@ func run() -> void:
 	await wait_raytraced()
 	root.add_child(root.listener)
 	check_current(root.listener, "after removing and re-adding the only listener")
-	var readded := await measure_muffling("only listener re-added", "only listener removed and added back - expect muffled speech")
+	var reAdded := await measure_muffling("only listener re-added", "only listener removed and added back - expect muffled speech")
 	check(VA.is_raytraced_by_listener(root.source), "source isn't raytraced after the only listener was removed and added back")
 
 	check(behind.y < 0.5, "muffling HF %.4f with the scene listener behind the wall, expected the partition to muffle it" % behind.y)
@@ -75,7 +75,7 @@ func run() -> void:
 	check_same(removed, behind, "after removing the current listener from the tree")
 	check_same(freed, behind, "after freeing the current listener")
 	check_same(only, behind, "after disabling current on the only listener")
-	check_same(readded, behind, "after removing and re-adding the only listener")
+	check_same(reAdded, behind, "after removing and re-adding the only listener")
 
 func add_listener(listener_name: String, current: bool) -> Node:
 	var listener := VA.create_node(root.world, "VAListener")

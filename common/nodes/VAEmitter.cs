@@ -94,6 +94,7 @@ public partial class VAEmitter
             throw new InvalidOperationException("Emitter already created");
 
         emitter = vercidiumAudio.CreateEmitter(this, OnRaytracingComplete, OnRaytracedByAnotherEmitter);
+        raytraceOnceRemoved = false;
         SetOnRemoved(emitter);
     }
 
@@ -152,10 +153,9 @@ public partial class VAEmitter
         ApplyRaytracingResults();
 
         OnRaytracedByAnotherEmitterCallback?.Invoke(emitter);
-
-        if (RaytraceOnce)
-            RemoveEmitter();
     }
+
+    bool raytraceOnceRemoved = false;
 
     public override void _Process(double delta)
     {
@@ -165,6 +165,31 @@ public partial class VAEmitter
 
         if (Raytraced)
             ApplyRaytracingResults();
+
+        // Once ready, cast rays no more. A parent VARaytracedSource processes before this node, so it has already played
+        if (RaytraceOnce && !raytraceOnceRemoved && IsReadyToPlay)
+        {
+            raytraceOnceRemoved = true;
+            RemoveEmitter();
+        }
+    }
+
+    // True once the listener has raytraced this emitter and, if it casts reverb rays and affects grouped EAX, it has cast its own reverb rays too. Sources don't play until then
+    public bool IsReadyToPlay
+    {
+        get
+        {
+            var listener = vercidiumAudio?.listener;
+
+            if (emitter == null || listener == null || listener == this || !listener.HasRaytracedTarget(this))
+                return false;
+
+            // Its grouped EAX slot, and so its reverb effect, isn't known until it casts its own reverb rays
+            if (emitter.AffectsGroupedEAX && emitter.ReverbEnabled)
+                return emitter.EAX != null;
+
+            return true;
+        }
     }
 
     void ApplyRaytracingResults()
