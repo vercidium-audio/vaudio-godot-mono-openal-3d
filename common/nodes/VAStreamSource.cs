@@ -50,7 +50,7 @@ public partial class VAStreamSource : VARaytracedSource
             return;
         }
 
-        // Stop() or finishing releases the source without going through CloseStream
+        // A destroyed device releases the source without going through CloseStream
         if (data == null || data.Length == 0 || streamSource.IsDisposed())
             return;
 
@@ -77,6 +77,13 @@ public partial class VAStreamSource : VARaytracedSource
             streamSource.Dispose();
 
         streamSource = null;
+    }
+
+    // Closes the stream too, else IsStreamOpen stays true with no source playing it
+    public override void Stop()
+    {
+        CloseStream();
+        base.Stop();
     }
 
     public override void _Process(double delta)
