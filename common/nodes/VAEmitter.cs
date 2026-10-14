@@ -96,7 +96,19 @@ public partial class VAEmitter
         emitter = vercidiumAudio.CreateEmitter(this, OnRaytracingComplete, OnRaytracedByAnotherEmitter);
         raytraceOnceRemoved = false;
         SetOnRemoved(emitter);
+
+        // A visualisation that entered the tree while this node had no emitter
+        InitializeVisualisation();
     }
+
+    // The VAVisualisation attached to this node, if any
+    internal VAVisualisation visualisation;
+
+    // Starts the attached VAVisualisation, once this node holds an emitter
+    internal void InitializeVisualisation() => visualisation?.InitializeVisualisation();
+
+    // Stops it. Call before this node lets go of its emitter
+    internal void TeardownVisualisation() => visualisation?.TeardownVisualisation();
 
     protected void SetOnRemoved(vaudio.Emitter created) => created.OnRemoved = () => OnEmitterRemoved(created);
 
@@ -119,6 +131,7 @@ public partial class VAEmitter
     // Removes the emitter from the world and detaches it from this node, even if its removal is still pending (reverb tail), so re-entering the tree (e.g. reparent) creates a fresh one
     protected void ReleaseEmitter()
     {
+        TeardownVisualisation();
         RemoveEmitter();
         emitter = null;
     }
@@ -135,7 +148,10 @@ public partial class VAEmitter
 
         // This node may have been freed while the reverb tail finished
         if (IsInstanceValid(this))
+        {
+            TeardownVisualisation();
             OnEmitterRemovedCallback?.Invoke();
+        }
     }
 
     void OnRaytracingComplete()

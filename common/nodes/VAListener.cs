@@ -56,10 +56,15 @@ public partial class VAListener : VAEmitter
 
         emitter = sharedEmitter;
         ConfigureEmitter(emitter);
+
+        InitializeVisualisation();
     }
 
     internal void Deactivate()
     {
+        // The next current listener takes the emitter, so its visualisation callback and ray count are cleared first
+        TeardownVisualisation();
+
         _Current = false;
         emitter = null;
     }
