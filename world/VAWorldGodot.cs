@@ -24,6 +24,7 @@ public partial class VAWorld
         world = new();
         world.CoordinateSystem = vaudio.CoordinateSystem.Godot;
 
+        world.Name = ResolvedWorldName;
         world.LogCallback = Log;
         world.Position = ToVAudio(Position);
         world.Size = ToVAudio(Size);

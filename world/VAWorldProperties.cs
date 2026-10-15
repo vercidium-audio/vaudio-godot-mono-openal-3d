@@ -27,6 +27,25 @@ public partial class VAWorld
 
     [ExportGroup("World")]
 
+    string _WorldName = string.Empty;
+    /// <summary>
+    /// The name displayed in the debug window and log messages. Uses the node's name when empty
+    /// </summary>
+    [Export]
+    public string WorldName
+    {
+        get => _WorldName;
+        set
+        {
+            _WorldName = value ?? string.Empty;
+
+            if (world != null)
+                world.Name = ResolvedWorldName;
+        }
+    }
+
+    string ResolvedWorldName => string.IsNullOrEmpty(_WorldName) ? Name.ToString() : _WorldName;
+
     Vector3 _Size = new(200, 100, 200);
     /// <summary>
     /// The size of the world.<br/>
