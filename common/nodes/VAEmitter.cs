@@ -28,12 +28,78 @@ public partial class VAEmitter
         cancelWaitForVAWorld = this.WaitForVAWorld(OnVAWorldFound);
     }
 
+    // Set from leaving the tree until the end of that frame. If this node re-enters the same VAWorld before then (e.g. a reparent), it keeps its emitter
+    bool detachPending = false;
+
     void OnVAWorldFound(VAWorld world)
     {
         cancelWaitForVAWorld = null;
+
+        if (detachPending)
+        {
+            if (world == vercidiumAudio)
+            {
+                detachPending = false;
+
+                // Follow this node again, as its position was frozen while it was out of the tree
+                if (emitter != null)
+                    vercidiumAudio.BindEmitterPosition(this, emitter);
+
+                return;
+            }
+
+            ReleaseFromWorld();
+        }
+
         vercidiumAudio = world;
 
         AttachToWorld();
+    }
+
+    void DeferRelease()
+    {
+        detachPending = true;
+
+        // Stop reading this node's position while it's out of the tree
+        if (emitter != null)
+            emitter.Position = emitter.Position.GetPosition();
+
+        Callable.From(ReleaseIfPending).CallDeferred();
+    }
+
+    void ReleaseIfPending()
+    {
+        if (detachPending)
+            ReleaseFromWorld();
+    }
+
+    void ReleaseFromWorld()
+    {
+        detachPending = false;
+
+        // The VAWorld may have left the tree first (e.g. a scene change), which disposed its world and every emitter in it
+        if (IsInstanceValid(vercidiumAudio) && vercidiumAudio.IsInsideTree())
+        {
+            DetachFromWorld();
+        }
+        else
+        {
+            TeardownVisualisation();
+            emitter = null;
+        }
+
+        vercidiumAudio = null;
+
+        // Creating a fresh emitter creates a fresh filter once it's raytraced
+        filter?.Delete();
+        filter = null;
+    }
+
+    public override void _Notification(int what)
+    {
+        // Freed before the end of the frame it left the tree in
+        if (what == NotificationPredelete && detachPending)
+            ReleaseFromWorld();
     }
 
     // Listeners override these to go through VAWorld's shared listener emitter instead of owning one
@@ -128,7 +194,7 @@ public partial class VAEmitter
         vercidiumAudio.RemoveEmitter(emitter);
     }
 
-    // Removes the emitter from the world and detaches it from this node, even if its removal is still pending (reverb tail), so re-entering the tree (e.g. reparent) creates a fresh one
+    // Removes the emitter from the world and detaches it from this node, even if its removal is still pending (reverb tail), so re-entering the tree creates a fresh one
     protected void ReleaseEmitter()
     {
         TeardownVisualisation();
@@ -140,7 +206,7 @@ public partial class VAEmitter
     {
         vercidiumAudio?.UnregisterPendingTarget(removed);
 
-        // May be an older emitter than this node's current one, e.g. after a reparent while a reverb tail was still playing. Only the current one's removal is reported, or a stale tail finishing would tear down the node's new emitter
+        // May be an older emitter than this node's current one, e.g. after moving to a different VAWorld while a reverb tail was still playing. Only the current one's removal is reported, or a stale tail finishing would tear down the node's new emitter
         if (emitter != removed)
             return;
 
@@ -241,15 +307,14 @@ public partial class VAEmitter
             LogWarning($"'{Name}' left the tree without ever finding a VAWorld - no emitter was created for it. Make sure this node's scene was added under a VAWorld while it was in the tree.");
         }
 
-        if (vercidiumAudio != null)
+        if (vercidiumAudio != null && !detachPending)
         {
-            DetachFromWorld();
-            vercidiumAudio = null;
+            // A reparent re-enters the tree straight away, so keep the emitter until the end of the frame in case it comes back to the same VAWorld. A raytrace-once emitter that has started its removal can't be reused, and a listener hands the shared emitter over to the next listener straight away
+            if (IsQueuedForDeletion() || raytraceOnceRemoved || IsMainListener)
+                ReleaseFromWorld();
+            else
+                DeferRelease();
         }
-
-        // Re-entering the tree (e.g. reparent) creates a fresh emitter, which creates a fresh filter once it's raytraced
-        filter?.Delete();
-        filter = null;
 
         base._ExitTree();
     }

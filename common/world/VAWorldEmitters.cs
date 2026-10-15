@@ -44,11 +44,7 @@ public partial class VAWorld
     // Also used when a VAListener takes over the shared listener emitter, so the emitter follows and uses the settings of its new node
     public void ConfigureEmitter(VAEmitter node, vaudio.Emitter emitter, Action OnRaytracingComplete, Action<vaudio.Emitter> OnRaytracedByAnotherEmitter)
     {
-        // RaytraceOnce emitters cast their rays once and are done — freeze their position at that
-        // moment (e.g. a dodgeball impact SFX) instead of tracking the node forever afterward.
-        emitter.Position = node.RaytraceOnce
-            ? (vaudio.IPosition)ToVAudio(node.GlobalPosition)
-            : new vaudio.FuncPosition(() => ToVAudio(node.GlobalPosition));
+        BindEmitterPosition(node, emitter);
 
         emitter.Name = node.Name;
         emitter.OnRaytracingComplete = OnRaytracingComplete;
@@ -100,6 +96,16 @@ public partial class VAWorld
         emitter.RefreshDistanceThreshold = node.RefreshDistanceThreshold;
         emitter.ScatteringSeed = node.ScatteringSeed;
         emitter.ClampPosition = node.ClampPosition;
+    }
+
+    // Also used when a node re-enters the tree with its existing emitter, e.g. after a reparent
+    public void BindEmitterPosition(VAEmitter node, vaudio.Emitter emitter)
+    {
+        // RaytraceOnce emitters cast their rays once and are done — freeze their position at that
+        // moment (e.g. a dodgeball impact SFX) instead of tracking the node forever afterward.
+        emitter.Position = node.RaytraceOnce
+            ? (vaudio.IPosition)ToVAudio(node.GlobalPosition)
+            : new vaudio.FuncPosition(() => ToVAudio(node.GlobalPosition));
     }
 
     // Process sources/emitters that were created before the VAListener node was created

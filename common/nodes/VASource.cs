@@ -42,7 +42,7 @@ public partial class VASource
     {
         base.OnRaytracedByAnotherEmitter(other);
 
-        // Only autoplay once - a reparent creates a fresh emitter that gets raytraced again
+        // Only autoplay once - moving to a different VAWorld creates a fresh emitter that gets raytraced again, while the sound is still playing
         if (Autoplay && !played)
             Play();
     }
