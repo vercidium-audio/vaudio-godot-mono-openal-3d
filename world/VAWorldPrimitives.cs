@@ -111,6 +111,8 @@ public partial class VAWorld
                     cs.Shape.Disconnect(Resource.SignalName.Changed, shapeCallable);
 
             world.RemovePrimitive(wrapper.Primitive);
+            ReleaseSharedMesh(wrapper.SharedMesh as SharedMesh);
+            wrapper.SharedMesh = null;
             node.RemoveMeta(PRIMITIVE_META_KEY);
         }
 
@@ -352,6 +354,7 @@ public partial class VAWorld
 
         // Create primitive based on shape type
         vaudio.Primitive prim = null;
+        SharedMesh sharedMesh = null;
 
         if (shape is BoxShape3D box)
         {
@@ -443,25 +446,17 @@ public partial class VAWorld
         }
         else if (shape is HeightMapShape3D heightMap)
         {
-            var triangles = Conversions.ConvertHeightMapToVector3FList(collisionShape.Name, heightMap, out var min, out var max, this);
-            var transform = ToVAudio(globalTransform);
+            prim = CreateSharedMeshPrimitive(heightMap, (out vaudio.Vector min, out vaudio.Vector max) => Conversions.ConvertHeightMapToVector3FList(collisionShape.Name, heightMap, out min, out max, this), material, ToVAudio(globalTransform), out sharedMesh);
 
-            if (triangles.Count > 0)
-            {
-                prim = new vaudio.MeshPrimitive(material, triangles, min, max, transform);
+            if (prim != null)
                 world.AddPrimitive(prim);
-            }
         }
         else if (shape is ConcavePolygonShape3D polygon)
         {
-            var triangles = Conversions.ConvertConcavePolygonToVector3FList(collisionShape.Name, polygon, out var min, out var max, this);
-            var transform = ToVAudio(globalTransform);
+            prim = CreateSharedMeshPrimitive(polygon, (out vaudio.Vector min, out vaudio.Vector max) => Conversions.ConvertConcavePolygonToVector3FList(collisionShape.Name, polygon, out min, out max, this), material, ToVAudio(globalTransform), out sharedMesh);
 
-            if (triangles.Count > 0)
-            {
-                prim = new vaudio.MeshPrimitive(material, triangles, min, max, transform);
+            if (prim != null)
                 world.AddPrimitive(prim);
-            }
         }
 
         // Store the primitive on the collision shape, so we can update it later if it moves
@@ -469,6 +464,7 @@ public partial class VAWorld
         {
             void update() => UpdateCollisionShapePrimitive(collisionShape, prim);
             var wrapper = AttachWatcher(collisionShape, prim, update);
+            wrapper.SharedMesh = sharedMesh;
 
             // Editing the shape resource (size, radius, points etc) doesn't move the node, so the watcher won't see it
             Action onShapeChanged = prim is vaudio.MeshPrimitive ? () => RebuildCollisionShapePrimitive(collisionShape) : update;
@@ -480,13 +476,15 @@ public partial class VAWorld
         }
     }
 
-    // Mesh triangles are baked into the primitive when it's created, so recreate it from scratch
+    // Mesh triangles are baked into the shared mesh when it's created, so recreate it from scratch. Every node using this shape gets the Changed signal, the first one invalidates the stale shared mesh and the rest pick up its replacement
     void RebuildCollisionShapePrimitive(CollisionShape3D collisionShape)
     {
         if (!collisionShape.HasMeta(PRIMITIVE_META_KEY))
             return;
 
-        var material = collisionShape.GetMeta(PRIMITIVE_META_KEY).As<VAPrimitiveRef>().Primitive.material;
+        var wrapper = collisionShape.GetMeta(PRIMITIVE_META_KEY).As<VAPrimitiveRef>();
+        var material = wrapper.Primitive.material;
+        InvalidateSharedMesh(wrapper.SharedMesh as SharedMesh);
         RemovePrimitive(collisionShape, false);
         CreateVAudioPrimitive(collisionShape, material);
     }
@@ -577,25 +575,73 @@ public partial class VAWorld
             return;
         }
 
-        // Convert mesh to triangle list
-        var triangles = Conversions.ConvertMeshToVector3FList(meshInstance.Name, mesh, out var min, out var max, this);
+        var prim = CreateSharedMeshPrimitive(mesh, (out vaudio.Vector min, out vaudio.Vector max) => Conversions.ConvertMeshToVector3FList(meshInstance.Name, mesh, out min, out max, this), material, ToVAudio(meshInstance.GlobalTransform), out var sharedMesh);
 
-        if (triangles.Count == 0)
+        if (prim == null)
             return;
 
-        var transform = ToVAudio(meshInstance.GlobalTransform);
-
-        vaudio.MeshPrimitive prim = new(material, triangles, min, max, transform)
-        {
-            UseFlatTransmission = useFlatTransmission
-        };
+        prim.UseFlatTransmission = useFlatTransmission;
 
         world.AddPrimitive(prim);
 
-        meshInstance.SetMeta(PRIMITIVE_META_KEY, AttachWatcher(meshInstance, prim, () =>
+        var wrapper = AttachWatcher(meshInstance, prim, () =>
         {
             prim.transform = ToVAudio(meshInstance.GlobalTransform);
-        }));
+        });
+
+        wrapper.SharedMesh = sharedMesh;
+        meshInstance.SetMeta(PRIMITIVE_META_KEY, wrapper);
+    }
+
+    // A vaudio Mesh built once per Godot Mesh/Shape3D resource and shared by every MeshPrimitive created from it. Stored on the world rather than as resource metadata, since a vaudio Mesh can only belong to one World
+    sealed class SharedMesh
+    {
+        public vaudio.Mesh Mesh;
+        public Resource Resource;
+        public int ReferenceCount;
+    }
+
+    // Keyed by the resource's instance id. Runtime edits to a Mesh resource (e.g. ArrayMesh surfaces) aren't detected, so nodes keep its old triangles until they're re-added
+    readonly Dictionary<ulong, SharedMesh> sharedMeshes = [];
+
+    delegate List<vaudio.Vector> ReadTriangles(out vaudio.Vector min, out vaudio.Vector max);
+
+    // readTriangles is only called if the resource doesn't have a shared mesh yet. Returns null if it has no triangles
+    vaudio.MeshPrimitive CreateSharedMeshPrimitive(Resource resource, ReadTriangles readTriangles, vaudio.MaterialType material, vaudio.Matrix transform, out SharedMesh sharedMesh)
+    {
+        if (!sharedMeshes.TryGetValue(resource.GetInstanceId(), out sharedMesh))
+        {
+            var triangles = readTriangles(out var min, out var max);
+
+            if (triangles.Count == 0)
+                return null;
+
+            sharedMesh = new SharedMesh { Mesh = new vaudio.Mesh(triangles, min, max), Resource = resource };
+            sharedMeshes[resource.GetInstanceId()] = sharedMesh;
+        }
+
+        sharedMesh.ReferenceCount++;
+        return new vaudio.MeshPrimitive(material, sharedMesh.Mesh, transform);
+    }
+
+    void ReleaseSharedMesh(SharedMesh sharedMesh)
+    {
+        // The SDK has no explicit destroy for a Mesh, it's collected once nothing references it
+        if (sharedMesh != null && --sharedMesh.ReferenceCount == 0)
+            InvalidateSharedMesh(sharedMesh);
+    }
+
+    // Stops new primitives reusing this shared mesh, e.g. after its Shape3D changed. Existing primitives keep it until they're removed
+    void InvalidateSharedMesh(SharedMesh sharedMesh)
+    {
+        if (sharedMesh == null)
+            return;
+
+        // Only remove it if it's still the current entry, since an earlier invalidation may have already replaced it
+        var id = sharedMesh.Resource.GetInstanceId();
+
+        if (sharedMeshes.TryGetValue(id, out var current) && current == sharedMesh)
+            sharedMeshes.Remove(id);
     }
 
 }
