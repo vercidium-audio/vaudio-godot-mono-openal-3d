@@ -106,5 +106,8 @@ static func close_stream(source: Node) -> void:
 static func is_stream_open(source: Node) -> bool:
 	return source.IsStreamOpen
 
+static func play(source: Node) -> bool:
+	return source.Play()
+
 static func stop(source: Node) -> void:
 	source.Stop()
