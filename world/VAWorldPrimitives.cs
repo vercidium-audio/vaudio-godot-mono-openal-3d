@@ -436,16 +436,10 @@ public partial class VAWorld
                 material = material
             });
         }
-        else if (shape is ConvexPolygonShape3D convexPolygon)
+        else if (shape is ConvexPolygonShape3D)
         {
-            var triangles = Conversions.ConvertConvexPolygonToVector3FList(collisionShape.Name, convexPolygon, out var min, out var max, this);
-            var transform = ToVAudio(globalTransform);
-
-            if (triangles.Count > 0)
-            {
-                prim = new vaudio.MeshPrimitive(material, triangles, min, max, transform);
-                world.AddPrimitive(prim);
-            }
+            // Godot doesn't expose a convex shape's hull triangles, only a wireframe debug mesh
+            LogWarning($"ConvexPolygonShape3D {collisionShape.Name} will not affect raytracing as convex polygon shapes are not supported. Use a ConcavePolygonShape3D or MeshInstance3D instead");
         }
         else if (shape is HeightMapShape3D heightMap)
         {
@@ -476,15 +470,25 @@ public partial class VAWorld
             void update() => UpdateCollisionShapePrimitive(collisionShape, prim);
             var wrapper = AttachWatcher(collisionShape, prim, update);
 
-            if (collisionShape.Shape is BoxShape3D box2)
-            {
-                var callable = Callable.From(update);
-                box2.Connect(Resource.SignalName.Changed, callable);
-                wrapper.ShapeCallable = callable;
-            }
+            // Editing the shape resource (size, radius, points etc) doesn't move the node, so the watcher won't see it
+            Action onShapeChanged = prim is vaudio.MeshPrimitive ? () => RebuildCollisionShapePrimitive(collisionShape) : update;
+            var callable = Callable.From(onShapeChanged);
+            shape.Connect(Resource.SignalName.Changed, callable);
+            wrapper.ShapeCallable = callable;
 
             collisionShape.SetMeta(PRIMITIVE_META_KEY, wrapper);
         }
+    }
+
+    // Mesh triangles are baked into the primitive when it's created, so recreate it from scratch
+    void RebuildCollisionShapePrimitive(CollisionShape3D collisionShape)
+    {
+        if (!collisionShape.HasMeta(PRIMITIVE_META_KEY))
+            return;
+
+        var material = collisionShape.GetMeta(PRIMITIVE_META_KEY).As<VAPrimitiveRef>().Primitive.material;
+        RemovePrimitive(collisionShape, false);
+        CreateVAudioPrimitive(collisionShape, material);
     }
 
     static void UpdateCollisionShapePrimitive(CollisionShape3D collisionShape, vaudio.Primitive primitive)

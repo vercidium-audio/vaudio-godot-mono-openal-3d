@@ -153,23 +153,6 @@ public static class Conversions
         return vertices;
     }
 
-    public static List<vaudio.Vector> ConvertConvexPolygonToVector3FList(string name, ConvexPolygonShape3D shape, out vaudio.Vector min, out vaudio.Vector max, VAWorld world)
-    {
-        // Use the debug mesh to triangulate the polygon
-        var debugMesh = shape.GetDebugMesh();
-
-        if (debugMesh == null)
-        {
-            min = new vaudio.Vector(0, 0, 0);
-            max = new vaudio.Vector(0, 0, 0);
-
-            LogWarning($"ConvexPolygonShape3D {name} will not affect raytracing as it cannot be triangulated");
-            return [];
-        }
-
-        return ConvertMeshToVector3FList(name, debugMesh, out min, out max, world);
-    }
-
     public static List<vaudio.Vector> ConvertHeightMapToVector3FList(string name, HeightMapShape3D shape, out vaudio.Vector min, out vaudio.Vector max, VAWorld world)
     {
         int mapWidth = shape.MapWidth;

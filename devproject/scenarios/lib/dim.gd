@@ -75,3 +75,35 @@ static func add_pivot(parent: Node, position: Vector3) -> Node:
 	pivot.position = position
 	parent.add_child(pivot)
 	return pivot
+
+# Wall-to-wall divider made of a single StaticBody3D holding the given shape, with the material on the body
+static func add_reverb_room_shape_partition(root: Node, shape: Shape3D, material: String) -> Node:
+	var collider := CollisionShape3D.new()
+	collider.shape = shape
+	var body := StaticBody3D.new()
+	body.position = Vector3(0, 3, 0)
+	body.set_meta(MATERIAL_META, material)
+	body.add_child(collider)
+	root.add_child(body)
+	return body
+
+const SEALING_SIZE := Vector3(PARTITION_THICKNESS_METRES, 7, 9)
+const NARROW_SIZE := Vector3(PARTITION_THICKNESS_METRES, 7, 0.9)
+
+static func box_faces(size: Vector3) -> PackedVector3Array:
+	var mesh := BoxMesh.new()
+	mesh.size = size
+	return mesh.get_faces()
+
+# Shapes that seal reverb_room.tscn for add_reverb_room_shape_partition, each with edits to the shape resource itself that narrow it to a 0.9 m column sound goes around, and seal it again
+static func sealing_shape_edits() -> Array:
+	var box := BoxShape3D.new()
+	box.size = SEALING_SIZE
+
+	var concave := ConcavePolygonShape3D.new()
+	concave.set_faces(box_faces(SEALING_SIZE))
+
+	return [
+		{"name": "box", "shape": box, "narrow": func(): box.size = NARROW_SIZE, "seal": func(): box.size = SEALING_SIZE},
+		{"name": "concave polygon", "shape": concave, "narrow": func(): concave.set_faces(box_faces(NARROW_SIZE)), "seal": func(): concave.set_faces(box_faces(SEALING_SIZE))},
+	]
