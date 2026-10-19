@@ -6,6 +6,6 @@ partial class VAPrimitiveRef : RefCounted
     public TransformWatcher Watcher { get; set; }
     public Callable? ShapeCallable { get; set; }
 
-    // 3D only - the VAWorld.SharedMesh this MeshPrimitive was created from, released in RemovePrimitive
-    public object SharedMesh { get; set; }
+    // The VAWorld.SharedMesh (3D) or VAWorld.SharedPolygon (2D) this primitive was created from, released in RemovePrimitive
+    public object SharedGeometry { get; set; }
 }

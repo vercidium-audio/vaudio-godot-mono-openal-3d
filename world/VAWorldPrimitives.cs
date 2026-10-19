@@ -111,8 +111,8 @@ public partial class VAWorld
                     cs.Shape.Disconnect(Resource.SignalName.Changed, shapeCallable);
 
             world.RemovePrimitive(wrapper.Primitive);
-            ReleaseSharedMesh(wrapper.SharedMesh as SharedMesh);
-            wrapper.SharedMesh = null;
+            ReleaseSharedMesh(wrapper.SharedGeometry as SharedMesh);
+            wrapper.SharedGeometry = null;
             node.RemoveMeta(PRIMITIVE_META_KEY);
         }
 
@@ -464,7 +464,7 @@ public partial class VAWorld
         {
             void update() => UpdateCollisionShapePrimitive(collisionShape, prim);
             var wrapper = AttachWatcher(collisionShape, prim, update);
-            wrapper.SharedMesh = sharedMesh;
+            wrapper.SharedGeometry = sharedMesh;
 
             // Editing the shape resource (size, radius, points etc) doesn't move the node, so the watcher won't see it
             Action onShapeChanged = prim is vaudio.MeshPrimitive ? () => RebuildCollisionShapePrimitive(collisionShape) : update;
@@ -484,7 +484,7 @@ public partial class VAWorld
 
         var wrapper = collisionShape.GetMeta(PRIMITIVE_META_KEY).As<VAPrimitiveRef>();
         var material = wrapper.Primitive.material;
-        InvalidateSharedMesh(wrapper.SharedMesh as SharedMesh);
+        InvalidateSharedMesh(wrapper.SharedGeometry as SharedMesh);
         RemovePrimitive(collisionShape, false);
         CreateVAudioPrimitive(collisionShape, material);
     }
@@ -589,7 +589,7 @@ public partial class VAWorld
             prim.transform = ToVAudio(meshInstance.GlobalTransform);
         });
 
-        wrapper.SharedMesh = sharedMesh;
+        wrapper.SharedGeometry = sharedMesh;
         meshInstance.SetMeta(PRIMITIVE_META_KEY, wrapper);
     }
 
