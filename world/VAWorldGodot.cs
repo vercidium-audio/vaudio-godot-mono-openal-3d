@@ -50,7 +50,8 @@ public partial class VAWorld
         world.WorkItemCount = WorkItemCount;
 
         // Re-run the setter now that the world exists. Handles gl_compatibility and Mac restrictions
-        RenderingEnabled = _RenderingEnabled;        
+        RenderingEnabled = _RenderingEnabled;
+        world.VisualisationScale = _VisualisationScale;
 
         world.AirAbsorption.Humidity = Humidity;
         world.AirAbsorption.Temperature = Temperature;

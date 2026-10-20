@@ -459,6 +459,21 @@ public partial class VAWorld
         }
     }
 
+    float _VisualisationScale = 1.0f;
+    /// <summary>The size of visualisation rays in the debug window.</summary>
+    [Export(PropertyHint.Range, "0.0,10.0,0.01,or_greater")]
+    public float VisualisationScale
+    {
+        get => _VisualisationScale;
+        set
+        {
+            _VisualisationScale = Math.Max(0, value);
+
+            if (world != null)
+                world.VisualisationScale = _VisualisationScale;
+        }
+    }
+
     /// <summary>
     /// While playing, mirrors the editor's 3D viewport camera into the debug window's camera - move
     /// the camera in the editor viewport and the debug window follows, instead of flying the debug
