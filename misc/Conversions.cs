@@ -17,7 +17,7 @@ public static class Conversions
             {
                 var edge1 = v1 - v0;
                 var edge2 = v2 - v0;
-                var calculatedNormal = edge1.Cross(edge2).Normalized();
+                var calculatedNormal = edge2.Cross(edge1).Normalized();
                 var meshNormal = normals[index];
 
                 if (calculatedNormal.Dot(meshNormal) < 0)
@@ -27,10 +27,10 @@ public static class Conversions
                 }
             }
 
-            // Godot uses CCW winding; VAudio expects CW — swap v1/v2 to convert
+            // Godot and vaudio both use CW winding for front faces
             vertices.Add(ToVAudio(v0));
-            vertices.Add(ToVAudio(v2));
             vertices.Add(ToVAudio(v1));
+            vertices.Add(ToVAudio(v2));
 
             // Update bounds
             min.X = Math.Min(min.X, Math.Min(v0.X, Math.Min(v1.X, v2.X)));
