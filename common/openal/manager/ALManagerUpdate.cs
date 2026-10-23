@@ -10,6 +10,7 @@ public static unsafe partial class ALManager
 
     public static void SetOutputDevice(string deviceName)
     {
+        EnsureSettingsRead();
         _outputDeviceName = deviceName;
         RecreateDevice();
     }

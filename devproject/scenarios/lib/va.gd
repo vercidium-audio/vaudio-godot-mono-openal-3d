@@ -111,3 +111,19 @@ static func play(source: Node) -> bool:
 
 static func stop(source: Node) -> void:
 	source.Stop()
+
+# The C# ALManager isn't a Godot object, so its HRTF functions are reached through VAWorld's static passthroughs
+static func available_hrtfs(world: Node) -> PackedStringArray:
+	return PackedStringArray(world.get_script().GetAvailableHrtfs())
+
+static func set_hrtf(world: Node, hrtf_name: String) -> bool:
+	return world.get_script().SetHrtf(hrtf_name)
+
+static func get_hrtf(world: Node) -> String:
+	return world.get_script().GetHrtf()
+
+static func active_hrtf(world: Node) -> String:
+	return world.get_script().GetActiveHrtf()
+
+static func set_hrtf_enabled(world: Node, value: bool) -> bool:
+	return world.get_script().SetHrtfEnabled(value)
