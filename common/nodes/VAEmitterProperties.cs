@@ -633,7 +633,7 @@ public partial class VAEmitter
     }
 
     bool _ClampPosition = true;
-    /// <summary>Whether to clamp this emitter's position to the world bounds, to prevent it from going out of bounds</summary>
+    /// <summary>Whether to clamp this emitter's position to the world bounds, to prevent it from going out of bounds. Defaults to true</summary>
     [Export]
     public bool ClampPosition
     {

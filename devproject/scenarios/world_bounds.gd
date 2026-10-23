@@ -1,6 +1,6 @@
 extends "res://scenarios/lib/scenario.gd"
 
-# Shrinks the world's bounds so they end between the listener and source, leaving the source outside. A clamped source (the default) is pulled back inside and still raytraced; an unclamped one follows emitters_outside_the_world_are_muffled
+# Shrinks the world's bounds so they end between the listener and source, leaving the source outside. A clamped source is pulled back inside and still raytraced; an unclamped one follows emitters_outside_the_world_are_muffled
 
 var original_size
 var original_muffled: bool

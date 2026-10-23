@@ -404,8 +404,8 @@ public partial class VARaytracedSource
         }
     }
 
-    bool _ClampPosition = true;
-    /// <summary>Whether to clamp this emitter's position to the world bounds, to prevent it from going out of bounds</summary>
+    bool _ClampPosition = false;
+    /// <summary>Whether to clamp this source's position to the world bounds, to prevent it from going out of bounds. Defaults to false</summary>
     [Export]
     public bool ClampPosition
     {
