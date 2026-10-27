@@ -496,7 +496,7 @@ public partial class VAEmitter
         }
     }
 
-    float _ClusteringDistance = 10.0f;
+    float _ClusteringDistance = 5.0f;
     /// <summary>The maximum distance between this emitter and the centre of a cluster, for it to share that cluster's rays. If two emitters have different distances, the smaller one is used</summary>
     [Export(PropertyHint.Range, "0.01,100.0,0.01,or_greater")]
     public float ClusteringDistance
@@ -526,7 +526,7 @@ public partial class VAEmitter
         }
     }
 
-    float _TargetClusteringDistance = 10.0f;
+    float _TargetClusteringDistance = 5.0f;
     /// <summary>The maximum distance between two sources for them to be in the same target cluster</summary>
     [Export(PropertyHint.Range, "0.01,100.0,0.01,or_greater")]
     public float TargetClusteringDistance

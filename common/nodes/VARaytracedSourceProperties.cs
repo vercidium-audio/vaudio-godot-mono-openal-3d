@@ -358,7 +358,7 @@ public partial class VARaytracedSource
         }
     }
 
-    float _ClusteringDistance = 10.0f;
+    float _ClusteringDistance = 5.0f;
     /// <summary>The maximum distance between this source and the centre of a cluster, for it to share that cluster's rays. If two sources have different distances, the smaller one is used</summary>
     [Export(PropertyHint.Range, "0.01,100.0,0.01,or_greater")]
     public float ClusteringDistance
