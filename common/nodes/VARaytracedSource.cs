@@ -119,6 +119,10 @@ public partial class VARaytracedSource
             MinimumAmbientOcclusionEnergy = MinimumAmbientOcclusionEnergy,
             MinimumAmbientPermeationEnergy = MinimumAmbientPermeationEnergy,
 
+            // Clustering
+            ClusteringEnabled = ClusteringEnabled,
+            ClusteringDistance = ClusteringDistance,
+
             // Advanced
             TrailRefreshCount = TrailRefreshCount,
             RefreshDistanceThreshold = RefreshDistanceThreshold,

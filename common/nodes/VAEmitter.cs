@@ -133,7 +133,7 @@ public partial class VAEmitter
         string name = property["name"].AsStringName();
 
         // Occlusion/permeation rays are only cast by the listener, so their thresholds are only customisable there
-        if (this is not VAListener && (name == "MinimumOcclusionEnergy" || name == "MinimumPermeationEnergy"))
+        if (this is not VAListener && (name == "MinimumOcclusionEnergy" || name == "MinimumPermeationEnergy" || name == "TargetClusteringEnabled" || name == "TargetClusteringDistance"))
         {
             var usage = property["usage"].As<PropertyUsageFlags>();
             usage &= ~PropertyUsageFlags.Editor;

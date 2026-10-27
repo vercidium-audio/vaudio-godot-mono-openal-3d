@@ -84,6 +84,12 @@ public partial class VAWorld
         emitter.MinimumAmbientOcclusionEnergy = node.MinimumAmbientOcclusionEnergy;
         emitter.MinimumAmbientPermeationEnergy = node.MinimumAmbientPermeationEnergy;
 
+        // Clustering
+        emitter.ClusteringEnabled = node.ClusteringEnabled;
+        emitter.ClusteringDistance = node.ClusteringDistance;
+        emitter.TargetClusteringEnabled = node.TargetClusteringEnabled;
+        emitter.TargetClusteringDistance = node.TargetClusteringDistance;
+
         // Debug rendering
         emitter.RandomTrailColor = node.RandomTrailColor;
         emitter.TrailColor = ToVAudio(node.TrailColor);
