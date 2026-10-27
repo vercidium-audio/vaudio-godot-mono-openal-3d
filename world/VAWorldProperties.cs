@@ -454,8 +454,18 @@ public partial class VAWorld
         {
             _RenderingEnabled = value;
 
-            if (world != null)
+            if (world == null)
+                return;
+
+            // Throws with the reason when the debug window failed to open - it opens in the World ctor, before LogCallback is set, so this is the only place that reason reaches Godot
+            try
+            {
                 world.RenderingEnabled = _RenderingEnabled;
+            }
+            catch (InvalidOperationException e)
+            {
+                LogError(e.Message);
+            }
         }
     }
 
