@@ -341,6 +341,39 @@ public partial class VARaytracedSource
     }
 
 
+    [ExportGroup("Clustering")]
+
+    bool _ClusteringEnabled = false;
+    /// <summary>Whether this source can share its rays with other nearby sources that also have clustering enabled. Sources in a cluster share the same reverb, EAX and ambience results</summary>
+    [Export]
+    public bool ClusteringEnabled
+    {
+        get => _ClusteringEnabled;
+        set
+        {
+            _ClusteringEnabled = value;
+
+            if (emitter != null)
+                emitter.ClusteringEnabled = value;
+        }
+    }
+
+    float _ClusteringDistance = 5.0f;
+    /// <summary>The maximum distance between this source and the centre of a cluster, for it to share that cluster's rays. If two sources have different distances, the smaller one is used</summary>
+    [Export(PropertyHint.Range, "0.01,100.0,0.01,or_greater")]
+    public float ClusteringDistance
+    {
+        get => _ClusteringDistance;
+        set
+        {
+            _ClusteringDistance = Math.Max(0.01f, value);
+
+            if (emitter != null)
+                emitter.ClusteringDistance = _ClusteringDistance;
+        }
+    }
+
+
     [ExportGroup("Advanced")]
 
     int _TrailRefreshCount = 16;
@@ -404,8 +437,8 @@ public partial class VARaytracedSource
         }
     }
 
-    bool _ClampPosition = true;
-    /// <summary>Whether to clamp this emitter's position to the world bounds, to prevent it from going out of bounds</summary>
+    bool _ClampPosition = false;
+    /// <summary>Whether to clamp this source's position to the world bounds, to prevent it from going out of bounds. Defaults to false</summary>
     [Export]
     public bool ClampPosition
     {

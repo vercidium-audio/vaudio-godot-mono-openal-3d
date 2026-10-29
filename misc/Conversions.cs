@@ -17,7 +17,7 @@ public static class Conversions
             {
                 var edge1 = v1 - v0;
                 var edge2 = v2 - v0;
-                var calculatedNormal = edge1.Cross(edge2).Normalized();
+                var calculatedNormal = edge2.Cross(edge1).Normalized();
                 var meshNormal = normals[index];
 
                 if (calculatedNormal.Dot(meshNormal) < 0)
@@ -27,10 +27,10 @@ public static class Conversions
                 }
             }
 
-            // Godot uses CCW winding; VAudio expects CW — swap v1/v2 to convert
+            // Godot and vaudio both use CW winding for front faces
             vertices.Add(ToVAudio(v0));
-            vertices.Add(ToVAudio(v2));
             vertices.Add(ToVAudio(v1));
+            vertices.Add(ToVAudio(v2));
 
             // Update bounds
             min.X = Math.Min(min.X, Math.Min(v0.X, Math.Min(v1.X, v2.X)));
@@ -151,23 +151,6 @@ public static class Conversions
         }
 
         return vertices;
-    }
-
-    public static List<vaudio.Vector> ConvertConvexPolygonToVector3FList(string name, ConvexPolygonShape3D shape, out vaudio.Vector min, out vaudio.Vector max, VAWorld world)
-    {
-        // Use the debug mesh to triangulate the polygon
-        var debugMesh = shape.GetDebugMesh();
-
-        if (debugMesh == null)
-        {
-            min = new vaudio.Vector(0, 0, 0);
-            max = new vaudio.Vector(0, 0, 0);
-
-            LogWarning($"ConvexPolygonShape3D {name} will not affect raytracing as it cannot be triangulated");
-            return [];
-        }
-
-        return ConvertMeshToVector3FList(name, debugMesh, out min, out max, world);
     }
 
     public static List<vaudio.Vector> ConvertHeightMapToVector3FList(string name, HeightMapShape3D shape, out vaudio.Vector min, out vaudio.Vector max, VAWorld world)

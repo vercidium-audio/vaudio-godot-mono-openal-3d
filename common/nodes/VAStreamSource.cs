@@ -9,6 +9,9 @@ public partial class VAStreamSource : VARaytracedSource
 {
     OpenALStreamSource streamSource;
 
+    // Latched once the emitter is first ready to play, so a RaytraceOnce stream keeps accepting data after its emitter leaves the world
+    bool streamReady;
+
     public bool IsStreamOpen => streamSource != null;
 
     public bool OpenStream(int format, int frequency)
@@ -35,6 +38,7 @@ public partial class VAStreamSource : VARaytracedSource
 
         sources.Add(source);
         streamSource = source;
+        streamReady = false;
         return true;
     }
 
@@ -46,9 +50,18 @@ public partial class VAStreamSource : VARaytracedSource
             return;
         }
 
-        // Stop() or finishing releases the source without going through CloseStream
+        // A destroyed device releases the source without going through CloseStream
         if (data == null || data.Length == 0 || streamSource.IsDisposed())
             return;
+
+        // Data that arrives before the muffling and reverb results is dropped, so the stream never plays unmuffled or without reverb
+        if (!streamReady)
+        {
+            if (!IsReadyToPlay)
+                return;
+
+            streamReady = true;
+        }
 
         streamSource.EnqueueData(data, 0, data.Length);
     }
@@ -66,9 +79,20 @@ public partial class VAStreamSource : VARaytracedSource
         streamSource = null;
     }
 
+    // Closes the stream too, else IsStreamOpen stays true with no source playing it
+    public override void Stop()
+    {
+        CloseStream();
+        base.Stop();
+    }
+
     public override void _Process(double delta)
     {
         base._Process(delta);
+
+        // Latched here too, since a RaytraceOnce emitter leaves the world later this frame
+        if (streamSource != null && !streamReady && IsReadyToPlay)
+            streamReady = true;
 
         DrainUsedChunks();
     }

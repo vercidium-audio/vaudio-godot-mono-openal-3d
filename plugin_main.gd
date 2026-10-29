@@ -28,6 +28,7 @@ const VADebuggerPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/commo
 const VADebuggerSingleton = preload("res://addons/vaudio-godot-mono-openal-3d/common/editor/VADebuggerSingleton.gd")
 const VADeviceRefreshInspectorPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/common/editor/VADeviceRefreshInspectorPlugin.gd")
 const VAInspectorTooltipPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/common/editor/VAInspectorTooltipPlugin.gd")
+const VAHRTFExportPlugin = preload("res://addons/vaudio-godot-mono-openal-3d/common/editor/VAHRTFExportPlugin.gd")
 
 var world_gizmo_plugin
 var node_gizmo_plugin
@@ -38,11 +39,13 @@ var debugger_plugin
 var debugger_singleton
 var device_refresh_inspector_plugin
 var inspector_tooltip_plugin
+var hrtf_export_plugin
 
 const DEBUGGER_PLUGIN_SINGLETON_NAME = "VADebuggerPlugin"
 
 # "audio/vaudio/*" Project Settings
 const DEFAULT_DEVICE_LABEL = "System Default"
+const DEFAULT_HRTF_LABEL = "Default"
 
 func _enter_tree():
 	var icon = preload("res://addons/vaudio-godot-mono-openal-3d/icons/vercidium.svg")
@@ -93,6 +96,9 @@ func _enter_tree():
 
 	inspector_tooltip_plugin = VAInspectorTooltipPlugin.new()
 	add_inspector_plugin(inspector_tooltip_plugin)
+
+	hrtf_export_plugin = VAHRTFExportPlugin.new()
+	add_export_plugin(hrtf_export_plugin)
 
 	conversion_context_menu_plugin = VAConversionContextMenuPlugin.new()
 	add_context_menu_plugin(EditorContextMenuPlugin.CONTEXT_SLOT_SCENE_TREE, conversion_context_menu_plugin)
@@ -146,6 +152,10 @@ func _exit_tree():
 	if inspector_tooltip_plugin:
 		remove_inspector_plugin(inspector_tooltip_plugin)
 		inspector_tooltip_plugin = null
+
+	if hrtf_export_plugin:
+		remove_export_plugin(hrtf_export_plugin)
+		hrtf_export_plugin = null
 
 	if Engine.has_singleton(DEBUGGER_PLUGIN_SINGLETON_NAME):
 		Engine.unregister_singleton(DEBUGGER_PLUGIN_SINGLETON_NAME)
@@ -209,6 +219,31 @@ func _register_project_settings():
 		ProjectSettings.set_setting("audio/vaudio/hrtf_enabled", true)
 
 	ProjectSettings.set_initial_value("audio/vaudio/hrtf_enabled", true)
+
+	# hrtf: same DEFAULT_*_LABEL storage as output_device. The dropdown is filled by VAWorld.RefreshOutputDeviceList()
+	if not ProjectSettings.has_setting("audio/vaudio/hrtf"):
+		ProjectSettings.set_setting("audio/vaudio/hrtf", DEFAULT_HRTF_LABEL)
+
+	ProjectSettings.set_initial_value("audio/vaudio/hrtf", DEFAULT_HRTF_LABEL)
+
+	ProjectSettings.add_property_info({
+		"name": "audio/vaudio/hrtf",
+		"type": TYPE_STRING,
+		"hint": PROPERTY_HINT_ENUM,
+		"hint_string": DEFAULT_HRTF_LABEL,
+	})
+
+	# hrtf_folder: .mhr files in here are listed alongside OpenAL Soft's built-in HRTF, and are bundled into exports by VAHRTFExportPlugin
+	if not ProjectSettings.has_setting("audio/vaudio/hrtf_folder"):
+		ProjectSettings.set_setting("audio/vaudio/hrtf_folder", "res://hrtf")
+
+	ProjectSettings.set_initial_value("audio/vaudio/hrtf_folder", "res://hrtf")
+
+	ProjectSettings.add_property_info({
+		"name": "audio/vaudio/hrtf_folder",
+		"type": TYPE_STRING,
+		"hint": PROPERTY_HINT_DIR,
+	})
 
 	# max_mono_sources/max_stereo_sources: project-level settings set by the developer, matching the native Godot plugin's register_types.cpp
 	# read once at device-open time, can't be changed at runtime.

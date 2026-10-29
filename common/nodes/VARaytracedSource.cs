@@ -9,6 +9,9 @@ public partial class VARaytracedSource
 
     public bool Raytraced => emitter != null && emitter.Raytraced;
 
+    // See VAEmitter.IsReadyToPlay
+    public bool IsReadyToPlay => emitter != null && emitter.IsReadyToPlay;
+
     // True once the world's listener has actually raytraced this source, i.e. GainLF/GainHF reflect a real listener->source occlusion result rather than the unmuffled default. Stricter than Raytraced.
     public bool IsRaytracedByListener
     {
@@ -56,7 +59,7 @@ public partial class VARaytracedSource
         cancelWaitForVAWorld = null;
         vercidiumAudio = world;
 
-        // After a reparent the child VAEmitter is still here and re-attaches itself to the world
+        // After a reparent the child VAEmitter is still here, and keeps its emitter or re-attaches itself to the new world
         if (emitter == null)
             CreateEmitter();
     }
@@ -115,6 +118,10 @@ public partial class VARaytracedSource
             AmbientPermeationEnergyCap = AmbientPermeationEnergyCap,
             MinimumAmbientOcclusionEnergy = MinimumAmbientOcclusionEnergy,
             MinimumAmbientPermeationEnergy = MinimumAmbientPermeationEnergy,
+
+            // Clustering
+            ClusteringEnabled = ClusteringEnabled,
+            ClusteringDistance = ClusteringDistance,
 
             // Advanced
             TrailRefreshCount = TrailRefreshCount,

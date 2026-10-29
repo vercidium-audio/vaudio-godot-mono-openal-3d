@@ -25,4 +25,18 @@ internal static partial class Logger
         Console.Error.WriteLine(prefixed);
         GD.PushError(prefixed);
     }
+
+    const string SDKErrorPrefix = "[Error] ";
+    const string SDKWarningPrefix = "[Warning] ";
+
+    // The SDK prefixes its log lines with their severity, so route them to push_error / push_warning and they show in Godot's Errors tab
+    internal static void LogSDK(string message)
+    {
+        if (message.StartsWith(SDKErrorPrefix, StringComparison.Ordinal))
+            LogError(message[SDKErrorPrefix.Length..]);
+        else if (message.StartsWith(SDKWarningPrefix, StringComparison.Ordinal))
+            LogWarning(message[SDKWarningPrefix.Length..]);
+        else
+            Log(message);
+    }
 }

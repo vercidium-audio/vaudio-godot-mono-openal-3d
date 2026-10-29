@@ -93,3 +93,37 @@ static func is_playing(source: Node) -> bool:
 
 static func make_current(listener: Node) -> void:
 	listener.MakeCurrent()
+
+static func open_stream(source: Node, format: int, frequency: int) -> bool:
+	return source.OpenStream(format, frequency)
+
+static func push_audio_data(source: Node, data: PackedByteArray) -> void:
+	source.PushAudioData(data)
+
+static func close_stream(source: Node) -> void:
+	source.CloseStream()
+
+static func is_stream_open(source: Node) -> bool:
+	return source.IsStreamOpen
+
+static func play(source: Node) -> bool:
+	return source.Play()
+
+static func stop(source: Node) -> void:
+	source.Stop()
+
+# The C# ALManager isn't a Godot object, so its HRTF functions are reached through VAWorld's static passthroughs
+static func available_hrtfs(world: Node) -> PackedStringArray:
+	return PackedStringArray(world.get_script().GetAvailableHrtfs())
+
+static func set_hrtf(world: Node, hrtf_name: String) -> bool:
+	return world.get_script().SetHrtf(hrtf_name)
+
+static func get_hrtf(world: Node) -> String:
+	return world.get_script().GetHrtf()
+
+static func active_hrtf(world: Node) -> String:
+	return world.get_script().GetActiveHrtf()
+
+static func set_hrtf_enabled(world: Node, value: bool) -> bool:
+	return world.get_script().SetHrtfEnabled(value)

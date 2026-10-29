@@ -10,16 +10,28 @@ public static unsafe partial class ALManager
     static int _maximumMonoSources;
     static int _maximumStereoSources;
 
-    static void ReadSettingsFromProjectSettings()
+    static bool _settingsRead;
+
+    // Read once, so runtime changes (SetOutputDevice, SetHrtf etc.) aren't overwritten when the device is recreated
+    static void EnsureSettingsRead()
     {
-        var deviceNameSetting = ProjectSettings.GetSetting("audio/vaudio/output_device").AsString();
+        if (_settingsRead)
+            return;
+
+        _settingsRead = true;
+
+        // plugin_main.gd only registers these settings in the editor, and project.godot doesn't store settings left at their default, so a running game must supply the same defaults itself
+        var deviceNameSetting = ProjectSettings.GetSetting("audio/vaudio/output_device", DefaultDeviceLabel).AsString();
         _outputDeviceName = deviceNameSetting == DefaultDeviceLabel ? "" : deviceNameSetting;
 
-        _maximumAuxiliarySends = Math.Max(1, ProjectSettings.GetSetting("audio/vaudio/max_reverb_sends").AsInt32());
-        _sampleRate = ProjectSettings.GetSetting("audio/vaudio/sample_rate").AsInt32();
-        _hrtfEnabled = ProjectSettings.GetSetting("audio/vaudio/hrtf_enabled").AsBool();
-        _maximumMonoSources = ProjectSettings.GetSetting("audio/vaudio/max_mono_sources").AsInt32();
-        _maximumStereoSources = ProjectSettings.GetSetting("audio/vaudio/max_stereo_sources").AsInt32();
+        _maximumAuxiliarySends = Math.Max(1, ProjectSettings.GetSetting("audio/vaudio/max_reverb_sends", 1).AsInt32());
+        _sampleRate = ProjectSettings.GetSetting("audio/vaudio/sample_rate", 0).AsInt32();
+        _hrtfEnabled = ProjectSettings.GetSetting("audio/vaudio/hrtf_enabled", true).AsBool();
+        _maximumMonoSources = ProjectSettings.GetSetting("audio/vaudio/max_mono_sources", 16).AsInt32();
+        _maximumStereoSources = ProjectSettings.GetSetting("audio/vaudio/max_stereo_sources", 240).AsInt32();
+
+        var hrtfSetting = ProjectSettings.GetSetting("audio/vaudio/hrtf", DefaultHrtfLabel).AsString();
+        _hrtfName = hrtfSetting == DefaultHrtfLabel ? "" : hrtfSetting;
     }
 
     static void CreateDeviceAndContext()
@@ -30,7 +42,8 @@ public static unsafe partial class ALManager
         Debug.Assert(ALContext == null);
         Debug.Assert(ALDevice == null);
 
-        ReadSettingsFromProjectSettings();
+        EnsureSettingsRead();
+        PrepareHrtfFolder();
 
         ALDevice = new(string.IsNullOrEmpty(_outputDeviceName) ? null : _outputDeviceName);
 
@@ -38,7 +51,7 @@ public static unsafe partial class ALManager
         var settings = new ALContextSettings()
         {
             HRTFEnabled = _hrtfEnabled,
-            HRTFID = 0,
+            HRTFID = FindHrtfIndex(),
             SampleRate = _sampleRate,
             MaximumAuxiliarySends = _maximumAuxiliarySends,
             MaximumMonoSources = _maximumMonoSources,
@@ -47,6 +60,10 @@ public static unsafe partial class ALManager
         };
 
         ALContext = new(ALDevice, settings);
+
+        // ALContextSettings leaves HRTF up to OpenAL Soft's headphone detection when it's disabled, so explicitly turn it off
+        if (!_hrtfEnabled && ALDevice.HasExtension(HrtfExtension))
+            AL.ResetDeviceSOFT(ALDevice.handle, BuildAttribs());
 
         // Set initial properties
         SetMetersPerUnit(MetersPerUnit);
@@ -60,23 +77,16 @@ public static unsafe partial class ALManager
         // Don't create OpenAL devices when changing properties in the editor
         if (!Initialised)
             return;
-        
-        ReadSettingsFromProjectSettings();
-
-        var attribs = ALContext.GetAttribs(new()
-        {
-            HRTFEnabled = _hrtfEnabled,
-            HRTFID = 0,
-            SampleRate = _sampleRate,
-            MaximumAuxiliarySends = _maximumAuxiliarySends,
-            MaximumMonoSources = _maximumMonoSources,
-            MaximumStereoSources = _maximumStereoSources,
-        });
 
         // Try a reopen first. If it fails, destroy and recreate the device
-        if (ALDevice.Reopen(string.IsNullOrEmpty(_outputDeviceName) ? null : _outputDeviceName, attribs))
+        if (ALDevice.Reopen(string.IsNullOrEmpty(_outputDeviceName) ? null : _outputDeviceName, BuildAttribs()))
             return;
 
+        RecreateDeviceFully();
+    }
+
+    static void RecreateDeviceFully()
+    {
         CancelLoadingAndDestroy();
         CreateDeviceAndContext();
 
@@ -99,5 +109,7 @@ public static unsafe partial class ALManager
             { "hint", (int)PropertyHint.Enum },
             { "hint_string", string.Join(",", devices) }
         });
+
+        RefreshHrtfList();
     }
 }

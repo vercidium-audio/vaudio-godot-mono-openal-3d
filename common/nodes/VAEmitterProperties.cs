@@ -479,6 +479,68 @@ public partial class VAEmitter
         }
     }
 
+    [ExportGroup("Clustering")]
+
+    bool _ClusteringEnabled = false;
+    /// <summary>Whether this emitter can share its rays with other nearby emitters that also have clustering enabled. Emitters in a cluster share the same reverb, EAX and ambience results</summary>
+    [Export]
+    public bool ClusteringEnabled
+    {
+        get => _ClusteringEnabled;
+        set
+        {
+            _ClusteringEnabled = value;
+
+            if (emitter != null)
+                emitter.ClusteringEnabled = value;
+        }
+    }
+
+    float _ClusteringDistance = 5.0f;
+    /// <summary>The maximum distance between this emitter and the centre of a cluster, for it to share that cluster's rays. If two emitters have different distances, the smaller one is used</summary>
+    [Export(PropertyHint.Range, "0.01,100.0,0.01,or_greater")]
+    public float ClusteringDistance
+    {
+        get => _ClusteringDistance;
+        set
+        {
+            _ClusteringDistance = Math.Max(0.01f, value);
+
+            if (emitter != null)
+                emitter.ClusteringDistance = _ClusteringDistance;
+        }
+    }
+
+    bool _TargetClusteringEnabled = false;
+    /// <summary>Whether the listener groups nearby sources into clusters, and casts occlusion and permeation rays towards each cluster's sources in round robin. Sources in a cluster get the same low pass filter</summary>
+    [Export]
+    public bool TargetClusteringEnabled
+    {
+        get => _TargetClusteringEnabled;
+        set
+        {
+            _TargetClusteringEnabled = value;
+
+            if (emitter != null)
+                emitter.TargetClusteringEnabled = value;
+        }
+    }
+
+    float _TargetClusteringDistance = 5.0f;
+    /// <summary>The maximum distance between two sources for them to be in the same target cluster</summary>
+    [Export(PropertyHint.Range, "0.01,100.0,0.01,or_greater")]
+    public float TargetClusteringDistance
+    {
+        get => _TargetClusteringDistance;
+        set
+        {
+            _TargetClusteringDistance = Math.Max(0.01f, value);
+
+            if (emitter != null)
+                emitter.TargetClusteringDistance = _TargetClusteringDistance;
+        }
+    }
+
     [ExportGroup("Debug Rendering")]
 
     bool _RandomTrailColor = false;
@@ -633,7 +695,7 @@ public partial class VAEmitter
     }
 
     bool _ClampPosition = true;
-    /// <summary>Whether to clamp this emitter's position to the world bounds, to prevent it from going out of bounds</summary>
+    /// <summary>Whether to clamp this emitter's position to the world bounds, to prevent it from going out of bounds. Defaults to true</summary>
     [Export]
     public bool ClampPosition
     {

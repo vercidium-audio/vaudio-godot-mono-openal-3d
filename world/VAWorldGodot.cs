@@ -24,7 +24,8 @@ public partial class VAWorld
         world = new();
         world.CoordinateSystem = vaudio.CoordinateSystem.Godot;
 
-        world.LogCallback = Log;
+        world.Name = ResolvedWorldName;
+        world.LogCallback = LogSDK;
         world.Position = ToVAudio(Position);
         world.Size = ToVAudio(Size);
         world.Epsilon = Epsilon;
@@ -49,7 +50,8 @@ public partial class VAWorld
         world.WorkItemCount = WorkItemCount;
 
         // Re-run the setter now that the world exists. Handles gl_compatibility and Mac restrictions
-        RenderingEnabled = _RenderingEnabled;        
+        RenderingEnabled = _RenderingEnabled;
+        world.VisualisationScale = _VisualisationScale;
 
         world.AirAbsorption.Humidity = Humidity;
         world.AirAbsorption.Temperature = Temperature;

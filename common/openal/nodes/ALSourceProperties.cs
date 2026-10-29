@@ -58,6 +58,8 @@ public partial class ALSource
         get => _streams;
         set
         {
+            // Matches AudioStreamPlayer.set_stream(), which stops whatever was playing
+            Stop();
             _streams = value ?? [];
             UpdateConfigurationWarnings();
         }

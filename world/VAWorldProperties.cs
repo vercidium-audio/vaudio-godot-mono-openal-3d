@@ -27,6 +27,25 @@ public partial class VAWorld
 
     [ExportGroup("World")]
 
+    string _WorldName = string.Empty;
+    /// <summary>
+    /// The name displayed in the debug window and log messages. Uses the node's name when empty
+    /// </summary>
+    [Export]
+    public string WorldName
+    {
+        get => _WorldName;
+        set
+        {
+            _WorldName = value ?? string.Empty;
+
+            if (world != null)
+                world.Name = ResolvedWorldName;
+        }
+    }
+
+    string ResolvedWorldName => string.IsNullOrEmpty(_WorldName) ? Name.ToString() : _WorldName;
+
     Vector3 _Size = new(200, 100, 200);
     /// <summary>
     /// The size of the world.<br/>
@@ -435,8 +454,33 @@ public partial class VAWorld
         {
             _RenderingEnabled = value;
 
-            if (world != null)
+            if (world == null)
+                return;
+
+            // Throws with the reason when the debug window failed to open - it opens in the World ctor, before LogCallback is set, so this is the only place that reason reaches Godot
+            try
+            {
                 world.RenderingEnabled = _RenderingEnabled;
+            }
+            catch (InvalidOperationException e)
+            {
+                LogError(e.Message);
+            }
+        }
+    }
+
+    float _VisualisationScale = 1.0f;
+    /// <summary>The size of visualisation rays in the debug window.</summary>
+    [Export(PropertyHint.Range, "0.0,10.0,0.01,or_greater")]
+    public float VisualisationScale
+    {
+        get => _VisualisationScale;
+        set
+        {
+            _VisualisationScale = Math.Max(0, value);
+
+            if (world != null)
+                world.VisualisationScale = _VisualisationScale;
         }
     }
 

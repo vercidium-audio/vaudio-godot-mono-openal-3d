@@ -30,7 +30,7 @@ func run() -> void:
 	var blocked := await measure_muffling("under root, behind wall", "rider behind the wall - expect muffled speech", rider)
 
 	rider.reparent(pivot)
-	check_attached("after reparenting under the pivot", pivot, false)
+	check_attached("after reparenting under the pivot", pivot)
 	await wait_raytraced_by_listener(rider)
 	var reparented := await measure_muffling("under pivot, behind wall", "rider reparented in place - expect no change", rider)
 	check_attached("after settling under the pivot", pivot)
@@ -43,7 +43,7 @@ func run() -> void:
 	var back := await measure_muffling("under pivot, behind wall again", "rider behind the wall again - expect muffled speech", rider)
 
 	rider.reparent(root)
-	check_attached("after reparenting back under the root", root, false)
+	check_attached("after reparenting back under the root", root)
 	await wait_raytraced_by_listener(rider)
 	var restored := await measure_muffling("under root again", "rider back under the root - expect no change", rider)
 	check_attached("after settling under the root again", root)
@@ -62,12 +62,11 @@ func run() -> void:
 	check(back.y < clear.y * 0.5, "muffling HF %.4f after moving the pivot back isn't below half the clear gain %.4f" % [back.y, clear.y])
 	check(absf(restored.y - blocked.y) < 0.05, "muffling HF %.4f after reparenting back under the root differs from %.4f at the start" % [restored.y, blocked.y])
 
-# The emitter is recreated on re-entering the tree, so it isn't raytraced again until the next pass
-func check_attached(label: String, parent: Node, raytraced := true) -> void:
+# Reparenting within the same VAWorld keeps the emitter, so it stays raytraced straight away
+func check_attached(label: String, parent: Node) -> void:
 	check(rider.get_parent() == parent, "rider's parent is %s %s, expected %s" % [rider.get_parent(), label, parent])
 	check(VA.is_playing(rider), "rider stopped playing %s" % label)
-	if raytraced:
-		check(VA.is_raytraced(rider), "rider isn't raytraced %s" % label)
+	check(VA.is_raytraced(rider), "rider isn't raytraced %s" % label)
 
 func slide(target, banner: String) -> void:
 	if listen:

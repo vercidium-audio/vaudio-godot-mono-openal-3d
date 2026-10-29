@@ -56,10 +56,15 @@ public partial class VAListener : VAEmitter
 
         emitter = sharedEmitter;
         ConfigureEmitter(emitter);
+
+        InitializeVisualisation();
     }
 
     internal void Deactivate()
     {
+        // The next current listener takes the emitter, so its visualisation callback and ray count are cleared first
+        TeardownVisualisation();
+
         _Current = false;
         emitter = null;
     }
@@ -80,7 +85,7 @@ public partial class VAListener : VAEmitter
         string name = property["name"].AsStringName();
 
         // Hide irrelevant fields
-        if (name == "HasRelativeReverb" || name == "AffectsGroupedEAX" || name == "KeepReverbTailAlive" ||name == "OcclusionEnergyCap" || name == "PermeationEnergyCap" || name == "RaytraceOnce")
+        if (name == "HasRelativeReverb" || name == "AffectsGroupedEAX" || name == "KeepReverbTailAlive" ||name == "OcclusionEnergyCap" || name == "PermeationEnergyCap" || name == "RaytraceOnce" || name == "ClusteringEnabled" || name == "ClusteringDistance")
         {
             var usage = property["usage"].As<PropertyUsageFlags>();
             usage &= ~PropertyUsageFlags.Editor;

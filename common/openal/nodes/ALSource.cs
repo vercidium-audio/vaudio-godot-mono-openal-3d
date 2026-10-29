@@ -145,7 +145,7 @@ public partial class ALSource
         return true;
     }
 
-    public void Stop()
+    public virtual void Stop()
     {
         playRequested = false;
 
