@@ -3,15 +3,6 @@ using OpenAL;
 
 namespace vaudio_godot_mono_openal;
 
-public enum VABoundsFollow
-{
-    // This node's position is the bounds' minimum corner
-    None,
-
-    // The bounds are centred on the current listener during play
-    Listener,
-}
-
 public partial class VAWorld
 {
     public Node3D SceneRoot;
@@ -67,15 +58,13 @@ public partial class VAWorld
         get => _Size;
         set
         {
-            _Size = value;
+            _Size = ClampBoundsSize(value);
             UpdateGizmos();
-
-            WarnIfBoundsTooSmall();
 
             if (world == null)
                 return;
 
-            world.Size = ToVAudio(value);
+            world.Size = ToVAudio(_Size);
 
             // Stay centred on the listener, where a fixed box keeps its minimum corner
             if (_BoundsFollow == VABoundsFollow.Listener)
@@ -95,7 +84,7 @@ public partial class VAWorld
         set
         {
             _BoundsFollow = value;
-            WarnIfBoundsTooSmall();
+            ReclampBoundsSize();
 
             if (world != null)
                 PlaceBounds();
@@ -105,7 +94,7 @@ public partial class VAWorld
     float _BoundsUpdateDistance = 25.0f;
     /// <summary>
     /// How far the current listener must move during play, in world units, before the bounds follow it, with <see cref="BoundsFollow"/> set to <see cref="VABoundsFollow.Listener"/>.<br/>
-    /// Every move of the bounds re-checks all raytraced trails, so they should move in steps. Keep <see cref="Size"/> well over twice this value on every axis, or the listener can walk out of the bounds before they recentre. 0 follows every move
+    /// Every move of the bounds re-checks all raytraced trails, so they should move in steps. While following the listener, <see cref="Size"/> is clamped to at least twice this value on every axis, so the listener can't walk out of the bounds before they recentre. 0 follows every move
     /// </summary>
     [Export(PropertyHint.Range, "0,1000,0.1,or_greater")]
     public float BoundsUpdateDistance
@@ -114,7 +103,7 @@ public partial class VAWorld
         set
         {
             _BoundsUpdateDistance = Mathf.Max(0.0f, value);
-            WarnIfBoundsTooSmall();
+            ReclampBoundsSize();
         }
     }
 
@@ -168,18 +157,21 @@ public partial class VAWorld
             PlaceBounds();
     }
 
-    // With BoundsFollow Listener, warns when the listener can walk out of the bounds before they recentre
-    void WarnIfBoundsTooSmall()
+    // With BoundsFollow Listener, the listener can move just under BoundsUpdateDistance along one axis before the bounds recentre, so each half of the box must be at least that wide
+    Vector3 ClampBoundsSize(Vector3 size)
     {
-        // Properties load in any order, so _EnterTree checks the final values
-        if (!IsInsideTree() || _BoundsFollow != VABoundsFollow.Listener || _BoundsUpdateDistance <= 0.0f)
-            return;
+        // Properties load in any order, so _EnterTree clamps the final values
+        if (!IsInsideTree() || _BoundsFollow != VABoundsFollow.Listener)
+            return size;
 
-        // The listener can move just under BoundsUpdateDistance along one axis before the bounds recentre, so each half of the box must be wider than that
-        float smallest = Mathf.Min(_Size.X, Mathf.Min(_Size.Y, _Size.Z));
+        float minimum = _BoundsUpdateDistance * 2.0f;
+        return new(Mathf.Max(size.X, minimum), Mathf.Max(size.Y, minimum), Mathf.Max(size.Z, minimum));
+    }
 
-        if (smallest <= _BoundsUpdateDistance * 2.0f)
-            LogWarning($"Node {Name}: Size's smallest side ({smallest}) is not more than twice BoundsUpdateDistance ({_BoundsUpdateDistance}), so the listener can walk out of the bounds before they follow it. Make Size well over {_BoundsUpdateDistance * 2.0f} on every axis, or lower BoundsUpdateDistance.");
+    void ReclampBoundsSize()
+    {
+        if (ClampBoundsSize(_Size) != _Size)
+            Size = _Size;
     }
 
     Color _BoundsColor = new(0.0f, 0.0f, 0.0f, 0.25f);

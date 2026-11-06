@@ -11,7 +11,7 @@ public partial class VAWorld
         // A VAWorld can only have a position, however it may inherit rotation/scale when being unparented from another node.
         // Reset rotation/scale here so the editor and debug window always match
         NormalizeTransform();
-        WarnIfBoundsTooSmall();
+        ReclampBoundsSize();
 
         if (Engine.IsEditorHint())
             return;

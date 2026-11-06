@@ -114,3 +114,10 @@ static func sealing_shape_edits() -> Array:
 		{"name": "box", "shape": box, "narrow": func(): box.size = NARROW_SIZE, "seal": func(): box.size = SEALING_SIZE},
 		{"name": "concave polygon", "shape": concave, "narrow": func(): concave.set_faces(box_faces(NARROW_SIZE)), "seal": func(): concave.set_faces(box_faces(SEALING_SIZE))},
 	]
+
+# How far the listener must move before world_bounds_follow_listener.gd's bounds follow it - small, so a few steps cross it inside reverb_room.tscn
+const BOUNDS_UPDATE_DISTANCE := 1.0
+
+# Vector along the horizontal and vertical axes, the two axes 2D and 3D share
+static func planar(x: float, y: float) -> Vector3:
+	return Vector3(x, y, 0)
