@@ -60,6 +60,9 @@ static func grouped_eax_index(source: Node) -> int:
 static func raytrace_count(world: Node) -> int:
 	return world.GetRaytraceCount()
 
+static func bounds_position(world: Node) -> Variant:
+	return world.GetBoundsPosition()
+
 static func raytracing_time(world: Node) -> float:
 	return world.GetRaytracingTime()
 
