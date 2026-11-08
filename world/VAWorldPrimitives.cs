@@ -439,10 +439,12 @@ public partial class VAWorld
                 material = material
             });
         }
-        else if (shape is ConvexPolygonShape3D)
+        else if (shape is ConvexPolygonShape3D convexPolygon)
         {
-            // Godot doesn't expose a convex shape's hull triangles, only a wireframe debug mesh
-            LogWarning($"ConvexPolygonShape3D {collisionShape.Name} will not affect raytracing as convex polygon shapes are not supported. Use a ConcavePolygonShape3D or MeshInstance3D instead");
+            prim = CreateSharedMeshPrimitive(convexPolygon, (out vaudio.Vector min, out vaudio.Vector max) => Conversions.ConvertConvexPolygonToVector3FList(collisionShape.Name, convexPolygon, out min, out max, this), material, ToVAudio(globalTransform), out sharedMesh);
+
+            if (prim != null)
+                world.AddPrimitive(prim);
         }
         else if (shape is HeightMapShape3D heightMap)
         {

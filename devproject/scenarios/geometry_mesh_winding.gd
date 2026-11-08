@@ -23,8 +23,13 @@ func run() -> void:
 	VA.sync_primitive(root.world, box)
 	var without_normals := await measure_decay("box without normals", "same box without a normal array - expect the same tail")
 
+	box.mesh = box_mesh(true, true)
+	VA.sync_primitive(root.world, box)
+	var with_lines := await measure_decay("box with a lines surface", "same box plus a wireframe lines surface - expect the same tail")
+
 	check(with_normals > 0.0, "source isn't in a grouped reverb with the box")
 	check(absf(without_normals - with_normals) < with_normals * 0.1, "decay time %.3f with the box without normals differs from %.3f with normals, so its faces are wound inside out" % [without_normals, with_normals])
+	check(absf(with_lines - with_normals) < with_normals * 0.01,"decay time %.3f with an extra lines surface differs from %.3f without it, so the lines were read as triangles" % [with_lines, with_normals])
 
 func measure_decay(label: String, banner: String) -> float:
 	await wait_raytraced(SETTLE_PASSES)
@@ -33,8 +38,8 @@ func measure_decay(label: String, banner: String) -> float:
 	print("[devproject] %s -> decay time %.3f" % [label, decay])
 	return decay
 
-# BoxMesh's vertices and indices, optionally without its normal array
-func box_mesh(with_normals: bool) -> ArrayMesh:
+# BoxMesh's vertices and indices, optionally without its normal array, and optionally with a second PRIMITIVE_LINES surface of its 12 edges
+func box_mesh(with_normals: bool, with_lines := false) -> ArrayMesh:
 	var source := BoxMesh.new()
 	source.size = BOX_SIZE
 	var source_arrays := source.get_mesh_arrays()
@@ -49,7 +54,26 @@ func box_mesh(with_normals: bool) -> ArrayMesh:
 
 	var mesh := ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+
+	if with_lines:
+		var lines := []
+		lines.resize(Mesh.ARRAY_MAX)
+		lines[Mesh.ARRAY_VERTEX] = box_edges()
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_LINES, lines)
+
 	return mesh
+
+# Pairs of corners for each of the box's 12 edges, i.e. every pair of corners that differs along exactly one axis
+func box_edges() -> PackedVector3Array:
+	var corners := DIM.box_points(BOX_SIZE)
+	var edges := PackedVector3Array()
+	for i in corners.size():
+		for j in range(i + 1, corners.size()):
+			var diff := corners[j] - corners[i]
+			if int(diff.x != 0) + int(diff.y != 0) + int(diff.z != 0) == 1:
+				edges.append(corners[i])
+				edges.append(corners[j])
+	return edges
 
 func teardown() -> void:
 	if box != null:

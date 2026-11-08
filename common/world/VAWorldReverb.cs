@@ -8,7 +8,7 @@ public partial class VAWorld
         {
             if (emitter.GroupedEAXIndex >= groupedReverbEffects.Count)
             {
-                LogWarning($"Emitter {emitter.Name} has a grouped EAX index of {emitter.GroupedEAXIndex} but only {groupedReverbEffects.Count} EAX presets are available.");
+                LogWarning($"Emitter {emitter.Name} has a grouped EAX index of {emitter.GroupedEAXIndex} but only {groupedReverbEffects.Count} EAX presets are available. Increase the 'Maximum Grouped EAX Count' setting on the VAWorld node.");
                 return listenerReverbEffect;
             }
 
@@ -24,7 +24,7 @@ public partial class VAWorld
         {
             if (emitter.GroupedEAXIndex >= groupedReverbEffects.Count)
             {
-                LogWarning($"Emitter {emitter.Name} has a grouped EAX index of {emitter.GroupedEAXIndex} but only {groupedReverbEffects.Count} EAX presets are available.");
+                LogWarning($"Emitter {emitter.Name} has a grouped EAX index of {emitter.GroupedEAXIndex} but only {groupedReverbEffects.Count} EAX presets are available. Increase the 'Maximum Grouped EAX Count' setting on the VAWorld node.");
                 return listenerReverbEffect;
             }
 
