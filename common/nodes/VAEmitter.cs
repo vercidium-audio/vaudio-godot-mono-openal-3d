@@ -293,7 +293,7 @@ public partial class VAEmitter
         }
     }
 
-    public bool HasRaytracedTarget(VAEmitter target) => emitter.HasRaytracedTarget(target.emitter);
+    public bool HasRaytracedTarget(VAEmitter target) => emitter.HasTarget(target.emitter) && emitter.HasRaytracedTarget(target.emitter);
     public vaudio.LowPassFilter GetTargetFilter(VAEmitter target) => emitter.GetTargetFilter(target.emitter);
     public vaudio.LowPassFilter GetTargetFilter(vaudio.Emitter target) => emitter.GetTargetFilter(target);
 
@@ -323,7 +323,7 @@ public partial class VAEmitter
     {
         if (!emitter.OcclusionEnabled && !emitter.PermeationEnabled)
         {
-            LogWarning($"VAListener '{Name}' cannot determine how muffled other sounds are. Please increase its occlusion or permeation ray counts and try again.");
+            LogError($"VAListener '{Name}' cannot determine how muffled other sounds are. Increase its occlusion or permeation ray counts and try again.");
             return;
         }
         
