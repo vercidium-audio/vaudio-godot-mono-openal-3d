@@ -145,7 +145,10 @@ public partial class ALSource
         return true;
     }
 
-    public virtual void Stop()
+    public virtual void Stop() => StopPlayback();
+
+    // Stops the sound without going through the overrides, which also cancel a waiting play
+    internal void StopPlayback()
     {
         playRequested = false;
 
@@ -167,6 +170,14 @@ public partial class ALSource
 
         return false;
     }
+
+    // A Play() waiting for its streams to decode, which isn't playing yet
+    internal bool IsPlayRequested => playRequested;
+
+    /// <summary>
+    /// Whether the sound is sent to a reverb effect (grouped or the listener's). A raytraced source outside the bounds has none
+    /// </summary>
+    public bool HasReverb() => effect != null;
 
     // GDScript aliases so existing AudioStreamPlayer scripts don't break
     public bool play() => Play();

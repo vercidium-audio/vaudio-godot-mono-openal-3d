@@ -58,8 +58,8 @@ public partial class ALSource
         get => _streams;
         set
         {
-            // Matches AudioStreamPlayer.set_stream(), which stops whatever was playing
-            Stop();
+            // Matches AudioStreamPlayer.set_stream(), which stops whatever was playing. Not the virtual Stop(), so it runs while a scene loads without cancelling autoplay
+            StopPlayback();
             _streams = value ?? [];
             UpdateConfigurationWarnings();
         }

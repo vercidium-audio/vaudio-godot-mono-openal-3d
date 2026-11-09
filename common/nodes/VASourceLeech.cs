@@ -7,10 +7,17 @@ public partial class VASourceLeech
 
     public bool Raytraced => emitter != null && emitter.Raytraced;
 
-    // See VAEmitter.IsReadyToPlay
+    /// <summary>
+    /// See <see cref="VAEmitter.IsReadyToPlay"/>
+    /// </summary>
     public bool IsReadyToPlay => emitter != null && emitter.IsReadyToPlay;
 
-    bool played = false;
+    /// <summary>
+    /// The parent emitter's <see cref="VAEmitter.IsSilencedByBounds"/>, using its <see cref="VAEmitter.ClampPosition"/>
+    /// </summary>
+    public bool IsSilencedByBounds() => emitter != null && emitter.IsSilencedByBounds();
+
+    readonly VABoundsPlayback playback = new();
 
     Action cancelWaitForVAWorld;
 
@@ -49,13 +56,34 @@ public partial class VASourceLeech
         }
     }
 
+    // Autoplay waits for _Process, once the parent emitter is ready to play and inside the bounds
+    public override void _Ready()
+    {
+    }
+
+    // Matches VASource's Play() override: returns false without playing until the parent emitter is ready to play, and follows the same bounds rules
     public override bool Play()
     {
+        if (playback.ApplyOnPlay(this, IsSilencedByBounds()))
+            return false;
+
         // Wait for the parent emitter's muffling and reverb results, so the sound never starts unmuffled or without reverb
         if (!IsReadyToPlay)
             return false;
 
-        return played = base.Play();
+        var played = base.Play();
+
+        if (played)
+            playback.OnPlayed();
+
+        return played;
+    }
+
+    // Also cancels a play that's waiting, e.g. a loop waiting outside the bounds
+    public override void Stop()
+    {
+        playback.Cancel();
+        base.Stop();
     }
 
     public override void _Process(double delta)
@@ -65,10 +93,12 @@ public partial class VASourceLeech
         if (Engine.IsEditorHint())
             return;
 
+        var silenced = playback.Apply(this, IsSilencedByBounds());
+
         if (!Raytraced)
             return;
 
-        if (!played && Autoplay && IsReadyToPlay)
+        if (!silenced && playback.IsPending(Autoplay) && IsReadyToPlay)
             Play();
 
         if (vercidiumAudio?.listener == null)
@@ -93,10 +123,10 @@ public partial class VASourceLeech
     public override void OnDeviceDestroyed()
     {
         // Track if we were playing so we can re-play after device recreation
-        _wasPlayingBeforeDeviceDestroyed = played && Looping;
+        _wasPlayingBeforeDeviceDestroyed = playback.AutoplayDone && Looping;
 
         // Reset played state since sources are being destroyed
-        played = false;
+        playback.AutoplayDone = false;
 
         base.OnDeviceDestroyed();
     }

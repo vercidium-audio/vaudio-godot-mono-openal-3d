@@ -116,6 +116,16 @@ public partial class VAWorld
     /// </summary>
     public Vector3 GetBoundsPosition() => world != null ? FromVAudio(world.Position) : Position;
 
+    /// <summary>
+    /// Whether a position is within the bounds, edges included like the SDK's own test. See <see cref="VAEmitter.IsOutsideBounds"/> for the clamp and <see cref="EmittersOutsideTheWorldAreMuffled"/> rules
+    /// </summary>
+    public bool IsWithinBounds(Vector3 position)
+    {
+        var min = GetBoundsPosition();
+        var max = min + _Size;
+        return position.X >= min.X && position.Y >= min.Y && position.Z >= min.Z && position.X <= max.X && position.Y <= max.Y && position.Z <= max.Z;
+    }
+
     // Where BoundsFollow wants the bounds' minimum corner. Following a listener while there is none leaves the bounds where they are
     Vector3 GetBoundsTarget()
     {
@@ -459,7 +469,7 @@ public partial class VAWorld
 
     bool _EmittersOutsideTheWorldAreMuffled = true;
     /// <summary>
-    /// Whether <see cref="VASource"/>s outside the world have 0 occlusion/permeation energy (true) or maximum energy (false).
+    /// If true, unclamped sources outside the bounds are fully muffled and stopped: one that doesn't loop isn't started there, and loops and streams play again once back inside. If false, they play unmuffled with no reverb.
     /// </summary>
     [Export]
     public bool EmittersOutsideTheWorldAreMuffled

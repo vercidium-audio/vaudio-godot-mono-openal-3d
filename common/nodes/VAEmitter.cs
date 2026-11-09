@@ -248,31 +248,48 @@ public partial class VAEmitter
         if (Raytraced)
             ApplyRaytracingResults();
 
-        // Once ready, cast rays no more. A parent VARaytracedSource processes before this node, so it has already played
-        if (RaytraceOnce && !raytraceOnceRemoved && IsReadyToPlay)
+        // Once ready, cast rays no more. A parent VARaytracedSource processes before this node, so it has already played. A sound started outside the bounds keeps going until it's raytraced inside and has reverb
+        if (RaytraceOnce && !raytraceOnceRemoved && HasResults())
         {
             raytraceOnceRemoved = true;
             RemoveEmitter();
         }
     }
 
-    // True once the listener has raytraced this emitter and, if it casts reverb rays and affects grouped EAX, it has cast its own reverb rays too. Sources don't play until then
-    public bool IsReadyToPlay
+    // The listener has raytraced it and, if waitForOwnEAX, it has cast its own reverb rays for grouped EAX
+    bool HasListenerResults(bool waitForOwnEAX)
     {
-        get
-        {
-            var listener = vercidiumAudio?.listener;
+        var listener = vercidiumAudio?.listener;
 
-            if (emitter == null || listener == null || listener == this || !listener.HasRaytracedTarget(this))
-                return false;
+        if (emitter == null || listener == null || listener == this || !listener.HasRaytracedTarget(this))
+            return false;
 
-            // Its grouped EAX slot, and so its reverb effect, isn't known until it casts its own reverb rays
-            if (emitter.AffectsGroupedEAX && emitter.ReverbEnabled)
-                return emitter.EAX != null;
+        // Its grouped EAX slot, and so its reverb effect, isn't known until it casts its own reverb rays
+        if (waitForOwnEAX && emitter.AffectsGroupedEAX && emitter.ReverbEnabled)
+            return emitter.EAX != null;
 
-            return true;
-        }
+        return true;
     }
+
+    /// <summary>
+    /// True once the listener has raytraced this emitter and, if it casts reverb rays and affects grouped EAX, it has cast its own reverb rays too. Sources don't play until then. Outside the bounds it doesn't wait for its own reverb rays, as it isn't raytraced there
+    /// </summary>
+    public bool IsReadyToPlay => HasListenerResults(!IsOutsideBounds());
+
+    /// <summary>
+    /// <see cref="IsReadyToPlay"/>, but always waiting for its own reverb rays. <see cref="RaytraceOnce"/> waits for this, so a sound started outside the bounds still gets reverb once inside
+    /// </summary>
+    public bool HasResults() => HasListenerResults(true);
+
+    /// <summary>
+    /// Unclamped and outside the VAWorld's bounds, so the SDK doesn't raytrace it and it has no reverb
+    /// </summary>
+    public bool IsOutsideBounds() => vercidiumAudio != null && !ClampPosition && !vercidiumAudio.IsWithinBounds(GlobalPosition);
+
+    /// <summary>
+    /// Outside the bounds while <see cref="VAWorld.EmittersOutsideTheWorldAreMuffled"/> is on. Sources don't start, and stop, while this is true
+    /// </summary>
+    public bool IsSilencedByBounds() => vercidiumAudio != null && vercidiumAudio.EmittersOutsideTheWorldAreMuffled && IsOutsideBounds();
 
     void ApplyRaytracingResults()
     {

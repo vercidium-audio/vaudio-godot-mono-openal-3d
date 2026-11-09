@@ -43,36 +43,61 @@ public partial class VASource
         base.OnRaytracedByAnotherEmitter(other);
 
         // Only autoplay once - moving to a different VAWorld creates a fresh emitter that gets raytraced again, while the sound is still playing
-        if (Autoplay && !played)
-            Play();
+        PlayIfPending();
     }
 
-    bool played = false;
+    readonly VABoundsPlayback playback = new();
+
+    // Autoplay waits for _Process, once the source is ready to play and inside the bounds
+    public override void _Ready()
+    {
+    }
 
     public override bool Play()
     {
+        if (playback.ApplyOnPlay(this, IsSilencedByBounds()))
+            return false;
+
         // Wait for the muffling and reverb results, so the sound never starts unmuffled or without reverb
         if (!IsReadyToPlay)
             return false;
 
-        return played = base.Play();
+        var played = base.Play();
+
+        if (played)
+            playback.OnPlayed();
+
+        return played;
+    }
+
+    // Also cancels a play that's waiting, e.g. a loop waiting outside the bounds
+    public override void Stop()
+    {
+        playback.Cancel();
+        base.Stop();
+    }
+
+    void PlayIfPending()
+    {
+        if (!playback.Apply(this, IsSilencedByBounds()) && playback.IsPending(Autoplay) && IsReadyToPlay)
+            Play();
     }
 
     public override void _Process(double delta)
     {
         base._Process(delta);
 
-        if (!played && Autoplay && IsReadyToPlay)
-            Play();
+        if (!Engine.IsEditorHint())
+            PlayIfPending();
     }
 
     public override void OnDeviceDestroyed()
     {
         // Track if we were playing so we can re-play after device recreation
-        _wasPlayingBeforeDeviceDestroyed = played && Looping;
+        _wasPlayingBeforeDeviceDestroyed = playback.AutoplayDone && Looping;
 
         // Reset played state since sources are being destroyed
-        played = false;
+        playback.AutoplayDone = false;
 
         base.OnDeviceDestroyed();
     }

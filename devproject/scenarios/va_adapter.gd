@@ -57,6 +57,11 @@ func run() -> void:
 	await wait_raytraced()
 	check(VA.is_raytraced(root.source), "not raytraced after changing reverb_ray_count")
 
+	check(VA.is_ready_to_play(root.source), "raytraced source isn't ready to play")
+	check(VA.is_within_bounds(root.world, root.source.position), "the scene's source isn't within the world's bounds")
+	check(not VA.is_silenced_by_bounds(root.source), "the scene's source is silenced by the bounds")
+	check(VA.has_reverb(root.source), "raytraced source has no reverb effect")
+
 	print("[devproject] raytrace count %d, muffling LF %.3f HF %.3f, grouped EAX %d/%d, decay time %.3f" % [VA.raytrace_count(root.world), lf, hf, index, groups, VA.decay_time(root.world, root.source)])
 
 func teardown() -> void:
