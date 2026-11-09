@@ -249,7 +249,7 @@ public partial class VAEmitter
             ApplyRaytracingResults();
 
         // Once ready, cast rays no more. A parent VARaytracedSource processes before this node, so it has already played. A sound started outside the bounds keeps going until it's raytraced inside and has reverb
-        if (RaytraceOnce && !raytraceOnceRemoved && HasResults())
+        if (RaytraceOnce && !raytraceOnceRemoved && HasListenerResults())
         {
             raytraceOnceRemoved = true;
             RemoveEmitter();
@@ -281,7 +281,7 @@ public partial class VAEmitter
     /// <summary>
     /// <see cref="IsReadyToPlay"/>, but always waiting for its own reverb rays. <see cref="RaytraceOnce"/> waits for this, so a sound started outside the bounds still gets reverb once inside
     /// </summary>
-    public bool HasResults() => HasListenerResults(true);
+    public bool HasListenerResults() => HasListenerResults(true);
 
     /// <summary>
     /// Unclamped and outside the VAWorld's bounds, so the SDK doesn't raytrace it and it has no reverb
