@@ -21,7 +21,7 @@ public partial class VAStreamSource : VARaytracedSource
 
     public bool IsStreamOpen => streamOpen;
 
-    // Outside the bounds (while they silence it) the stream opens without a sound, which starts once inside
+    // If outside the world bounds the stream opens without a sound, then starts once inside
     public bool OpenStream(int format, int frequency)
     {
         ALManager.Ensure();

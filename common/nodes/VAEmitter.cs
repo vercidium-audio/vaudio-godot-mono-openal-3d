@@ -272,7 +272,9 @@ public partial class VAEmitter
     }
 
     /// <summary>
-    /// True once the listener has raytraced this emitter and, if it casts reverb rays and affects grouped EAX, it has cast its own reverb rays too. Sources don't play until then. Outside the bounds it doesn't wait for its own reverb rays, as it isn't raytraced there
+	/// True once the listener has raytraced this emitter, and this emitter has cast its own reverb rays.
+	/// If this emitter is outside the world bounds, it does not cast reverb rays and this field does not wait for the reverb rays to be cast.
+	/// Sources don't play until this field is true
     /// </summary>
     public bool IsReadyToPlay => HasListenerResults(!IsOutsideBounds());
 
@@ -287,7 +289,7 @@ public partial class VAEmitter
     public bool IsOutsideBounds() => vercidiumAudio != null && !ClampPosition && !vercidiumAudio.IsWithinBounds(GlobalPosition);
 
     /// <summary>
-    /// Outside the bounds while <see cref="VAWorld.EmittersOutsideTheWorldAreMuffled"/> is on. Sources don't start, and stop, while this is true
+    /// Outside the bounds while <see cref="VAWorld.EmittersOutsideTheWorldAreMuffled"/> is on. Sources don't start or stop while this is true
     /// </summary>
     public bool IsSilencedByBounds() => vercidiumAudio != null && vercidiumAudio.EmittersOutsideTheWorldAreMuffled && IsOutsideBounds();
 

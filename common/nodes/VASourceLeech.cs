@@ -56,7 +56,7 @@ public partial class VASourceLeech
         }
     }
 
-    // Autoplay waits for _Process, once the parent emitter is ready to play and inside the bounds
+    // Autoplay waits for the parent emitter to be ready to play and inside the bounds
     public override void _Ready()
     {
     }
