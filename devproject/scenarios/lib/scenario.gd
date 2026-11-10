@@ -87,13 +87,13 @@ func measure_muffling(label: String, banner: String, source: Node = null) -> Vec
 	return muffling
 
 # Adds a looping, autoplaying VASource that plays the scene source's streams. Freed emitters linger until their reverb tails finish - see wait_grouped_eax_count()
-func spawn_source(source_name: String, position, scattering_seed: int) -> Node:
+func spawn_source(source_name: String, position, scattering_seed: int, looping := true, autoplay := true) -> Node:
 	var source := VA.create_node(root.world, "VASource")
 	source.name = source_name
 	source.position = position
 	VA.set_value(source, "streams", VA.get_value(root.source, "streams"))
-	VA.set_value(source, "looping", true)
-	VA.set_value(source, "autoplay", true)
+	VA.set_value(source, "looping", looping)
+	VA.set_value(source, "autoplay", autoplay)
 	VA.set_value(source, "reverb_ray_count", 64)
 	VA.set_value(source, "reverb_bounce_count", 64)
 	VA.set_value(source, "scattering_seed", scattering_seed)
@@ -116,7 +116,11 @@ func wait_raytraced_by_listener(source: Node) -> void:
 
 # The Standard plugin autoplays once the source is raytraced, but only starts once its streams finish decoding on a worker thread, so is_playing() can lag a few frames behind. Returns whether it started before the timeout
 func wait_playing(source: Node, timeout_ms := 5000) -> bool:
+	return await wait_until(func(): return VA.is_playing(source), timeout_ms)
+
+# Polls condition once per frame. Returns whether it became true before the timeout
+func wait_until(condition: Callable, timeout_ms := 5000) -> bool:
 	var started := Time.get_ticks_msec()
-	while not VA.is_playing(source) and Time.get_ticks_msec() - started < timeout_ms:
+	while not condition.call() and Time.get_ticks_msec() - started < timeout_ms:
 		await root.get_tree().process_frame
-	return VA.is_playing(source)
+	return condition.call()

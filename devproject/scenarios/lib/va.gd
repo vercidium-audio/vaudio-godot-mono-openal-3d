@@ -60,6 +60,22 @@ static func grouped_eax_index(source: Node) -> int:
 static func raytrace_count(world: Node) -> int:
 	return world.GetRaytraceCount()
 
+static func bounds_position(world: Node) -> Variant:
+	return world.GetBoundsPosition()
+
+static func is_ready_to_play(source: Node) -> bool:
+	return source.IsReadyToPlay
+
+static func is_within_bounds(world: Node, position) -> bool:
+	return world.IsWithinBounds(position)
+
+static func is_silenced_by_bounds(source: Node) -> bool:
+	return source.IsSilencedByBounds()
+
+# Whether the source's sound is sent to a reverb effect (grouped or the listener's)
+static func has_reverb(source: Node) -> bool:
+	return source.HasReverb()
+
 static func raytracing_time(world: Node) -> float:
 	return world.GetRaytracingTime()
 

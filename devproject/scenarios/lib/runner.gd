@@ -7,6 +7,7 @@ extends Node
 #   --mute            set VAWorld.master_volume (the OpenAL listener gain) to 0 so headless runs are silent. Also applied by test_controller.gd's _enter_tree
 
 const TEST_PASSED_MARKER := "[devproject] Test passed"
+const ARCH_MARKER := "[devproject] arch"
 const SCENARIOS_DIR := "res://scenarios"
 
 var current_scenario := ""
@@ -17,6 +18,8 @@ func _ready() -> void:
 	# Keep running (and keep the watchdog ticking) if a scenario pauses the tree
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	OS.add_logger(error_capture)
+	# godottest checks this, so a Mac --x86_64 run can't silently fall back to arm64
+	print("%s %s" % [ARCH_MARKER, Engine.get_architecture_name()])
 	_run_scenarios()
 
 func _exit_tree() -> void:

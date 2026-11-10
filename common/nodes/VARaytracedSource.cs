@@ -9,8 +9,15 @@ public partial class VARaytracedSource
 
     public bool Raytraced => emitter != null && emitter.Raytraced;
 
-    // See VAEmitter.IsReadyToPlay
+    /// <summary>
+    /// See <see cref="VAEmitter.IsReadyToPlay"/>
+    /// </summary>
     public bool IsReadyToPlay => emitter != null && emitter.IsReadyToPlay;
+
+    /// <summary>
+    /// See <see cref="VAEmitter.IsSilencedByBounds"/>
+    /// </summary>
+    public bool IsSilencedByBounds() => emitter != null && emitter.IsSilencedByBounds();
 
     // True once the world's listener has actually raytraced this source, i.e. GainLF/GainHF reflect a real listener->source occlusion result rather than the unmuffled default. Stricter than Raytraced.
     public bool IsRaytracedByListener

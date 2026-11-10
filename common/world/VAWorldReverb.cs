@@ -8,7 +8,7 @@ public partial class VAWorld
         {
             if (emitter.GroupedEAXIndex >= groupedReverbEffects.Count)
             {
-                LogWarning($"Emitter {emitter.Name} has a grouped EAX index of {emitter.GroupedEAXIndex} but only {groupedReverbEffects.Count} EAX presets are available.");
+                WarnMissingGroupedEAX(emitter.Name, emitter.GroupedEAXIndex);
                 return listenerReverbEffect;
             }
 
@@ -18,13 +18,26 @@ public partial class VAWorld
         return listenerReverbEffect;
     }
 
+    // Grouped reverb effects are only created once reverb updates with a listener
+    void WarnMissingGroupedEAX(string emitterName, int groupedEAXIndex)
+    {
+        if (listener == null)
+            LogWarning($"Emitter {emitterName} has a grouped EAX index of {groupedEAXIndex} but the VAWorld has no VAListener, so no EAX presets are available. Ensure the VAListener node is created and is a sibling or child node of VAWorld.");
+        else
+            LogWarning($"Emitter {emitterName} has a grouped EAX index of {groupedEAXIndex} but only {groupedReverbEffects.Count} EAX presets are available. Increase the 'Maximum Grouped EAX Count' setting on the VAWorld node.");
+    }
+
     public ALReverbEffect GetReverbEffect(VAEmitter emitter)
     {
+        // Not raytraced outside the bounds, so any grouped EAX it has is stale, and the listener's reverb doesn't describe where it is either
+        if (emitter.IsOutsideBounds())
+            return null;
+
         if (emitter.AffectsGroupedEAX && emitter.GroupedEAXIndex >= 0)
         {
             if (emitter.GroupedEAXIndex >= groupedReverbEffects.Count)
             {
-                LogWarning($"Emitter {emitter.Name} has a grouped EAX index of {emitter.GroupedEAXIndex} but only {groupedReverbEffects.Count} EAX presets are available.");
+                WarnMissingGroupedEAX(emitter.Name, emitter.GroupedEAXIndex);
                 return listenerReverbEffect;
             }
 

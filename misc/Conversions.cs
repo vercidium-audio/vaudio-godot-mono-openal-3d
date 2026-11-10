@@ -2,7 +2,35 @@ namespace vaudio_godot_mono_openal;
 
 public static class Conversions
 {
-    public static List<vaudio.Vector> ConvertMeshToVector3FList(string name, Mesh mesh, out vaudio.Vector minOut, out vaudio.Vector maxOut, VAWorld world)
+    public static List<vaudio.Vector> ConvertMeshToVector3FList(string name, Mesh mesh, out vaudio.Vector min, out vaudio.Vector max, VAWorld world)
+    {
+        var vertices = ReadMeshTriangles(mesh, out min, out max);
+
+        if (vertices.Count == 0)
+            LogWarning($"Mesh {name} will not affect raytracing as it has no vertices");
+
+        return vertices;
+    }
+
+    public static List<vaudio.Vector> ConvertConvexPolygonToVector3FList(string name, ConvexPolygonShape3D shape, out vaudio.Vector min, out vaudio.Vector max, VAWorld world)
+    {
+        // The debug mesh has a lines surface (skipped) and a triangle surface of the hull Godot computed
+        var debugMesh = shape.GetDebugMesh();
+        List<vaudio.Vector> vertices = [];
+        min = vaudio.Vector.Zero;
+        max = vaudio.Vector.Zero;
+
+        if (debugMesh != null)
+            vertices = ReadMeshTriangles(debugMesh, out min, out max);
+
+        if (vertices.Count == 0)
+            LogWarning($"ConvexPolygonShape3D {name} will not affect raytracing as Godot returned no hull triangles for it");
+
+        return vertices;
+    }
+
+    // Flattens every triangle surface of a mesh into a CW-wound triangle vertex list, with its local-space bounds
+    static List<vaudio.Vector> ReadMeshTriangles(Mesh mesh, out vaudio.Vector minOut, out vaudio.Vector maxOut)
     {
         List<vaudio.Vector> vertices = [];
 
@@ -41,8 +69,14 @@ public static class Conversions
             max.Z = Math.Max(max.Z, Math.Max(v0.Z, Math.Max(v1.Z, v2.Z)));
         }
 
+        // Only ArrayMesh exposes surface primitive types, matching the native plugin. Line and point surfaces (e.g. a debug mesh's wireframe) aren't triangles
+        var arrayMesh = mesh as ArrayMesh;
+
         for (var surfaceIndex = 0; surfaceIndex < surfaceCount; surfaceIndex++)
         {
+            if (arrayMesh != null && arrayMesh.SurfaceGetPrimitiveType(surfaceIndex) != Mesh.PrimitiveType.Triangles)
+                continue;
+
             var arrays = mesh.SurfaceGetArrays(surfaceIndex);
             if (arrays == null || arrays.Count == 0)
                 continue;
@@ -106,8 +140,6 @@ public static class Conversions
         {
             min = vaudio.Vector.Zero;
             max = vaudio.Vector.Zero;
-
-            LogWarning($"Mesh {name} will not affect raytracing as it has no vertices");
         }
 
         minOut = min;

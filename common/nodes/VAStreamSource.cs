@@ -12,14 +12,37 @@ public partial class VAStreamSource : VARaytracedSource
     // Latched once the emitter is first ready to play, so a RaytraceOnce stream keeps accepting data after its emitter leaves the world
     bool streamReady;
 
-    public bool IsStreamOpen => streamSource != null;
+    bool streamOpen;
+    int streamFormat;
+    int streamFrequency;
 
+    // Set when the bounds stopped the sound, or the stream was opened outside them, so it only restarts once inside if the bounds were the reason
+    bool stoppedByBounds;
+
+    public bool IsStreamOpen => streamOpen;
+
+    // If outside the world bounds the stream opens without a sound, then starts once inside
     public bool OpenStream(int format, int frequency)
     {
         ALManager.Ensure();
-        
+
         CloseStream();
 
+        streamFormat = format;
+        streamFrequency = frequency;
+        stoppedByBounds = IsSilencedByBounds();
+
+        if (!stoppedByBounds && !StartSound())
+            return false;
+
+        streamOpen = true;
+        streamReady = false;
+        return true;
+    }
+
+    // The stream's queued audio lives in its source, so a fresh one starts from the next push
+    bool StartSound()
+    {
         var sourceID = AL.GenSource();
 
         if (sourceID == 0)
@@ -28,7 +51,7 @@ public partial class VAStreamSource : VARaytracedSource
             return false;
         }
 
-        var source = new OpenALStreamSource(sourceID, format, frequency);
+        var source = new OpenALStreamSource(sourceID, streamFormat, streamFrequency);
         source.SetGain(Volume);
         source.SetPitch(Pitch);
         ConfigureSource(source);
@@ -38,20 +61,60 @@ public partial class VAStreamSource : VARaytracedSource
 
         sources.Add(source);
         streamSource = source;
-        streamReady = false;
         return true;
+    }
+
+    void StopSound()
+    {
+        if (streamSource == null)
+            return;
+
+        sources.Remove(streamSource);
+
+        if (!streamSource.IsDisposed())
+            streamSource.Dispose();
+
+        streamSource = null;
+    }
+
+    void ApplyBoundsRules()
+    {
+        if (!streamOpen)
+            return;
+
+        if (IsSilencedByBounds())
+        {
+            if (streamSource == null)
+                return;
+
+            StopSound();
+            stoppedByBounds = true;
+            return;
+        }
+
+        if (!stoppedByBounds)
+            return;
+
+        // Audio queued before it left would play late, so the new sound starts from the next push
+        stoppedByBounds = false;
+
+        if (!StartSound())
+        {
+            LogWarning($"{Name}: The stream failed to create its sound, so it was closed");
+            CloseStream();
+        }
     }
 
     public void PushAudioData(byte[] data)
     {
-        if (streamSource == null)
+        if (!streamOpen)
         {
             LogWarning($"PushAudioData called on {Name} before OpenStream (or after CloseStream)");
             return;
         }
 
-        // A destroyed device releases the source without going through CloseStream
-        if (data == null || data.Length == 0 || streamSource.IsDisposed())
+        // Nothing plays it while the bounds have stopped it. A destroyed device releases the source without going through CloseStream
+        if (data == null || data.Length == 0 || stoppedByBounds || streamSource == null || streamSource.IsDisposed())
             return;
 
         // Data that arrives before the muffling and reverb results is dropped, so the stream never plays unmuffled or without reverb
@@ -68,15 +131,9 @@ public partial class VAStreamSource : VARaytracedSource
 
     public void CloseStream()
     {
-        if (streamSource == null)
-            return;
-
-        sources.Remove(streamSource);
-
-        if (!streamSource.IsDisposed())
-            streamSource.Dispose();
-
-        streamSource = null;
+        StopSound();
+        streamOpen = false;
+        stoppedByBounds = false;
     }
 
     // Closes the stream too, else IsStreamOpen stays true with no source playing it
@@ -90,8 +147,13 @@ public partial class VAStreamSource : VARaytracedSource
     {
         base._Process(delta);
 
+        if (Engine.IsEditorHint())
+            return;
+
+        ApplyBoundsRules();
+
         // Latched here too, since a RaytraceOnce emitter leaves the world later this frame
-        if (streamSource != null && !streamReady && IsReadyToPlay)
+        if (streamOpen && !streamReady && IsReadyToPlay)
             streamReady = true;
 
         DrainUsedChunks();
@@ -106,9 +168,11 @@ public partial class VAStreamSource : VARaytracedSource
 
     public override void OnDeviceDestroyed()
     {
-        // base already disposes streamSource via `sources`
+        // base already disposes streamSource via `sources`, which closes the stream
         base.OnDeviceDestroyed();
         streamSource = null;
+        streamOpen = false;
+        stoppedByBounds = false;
     }
 
     static readonly StringName[] hiddenProperties =

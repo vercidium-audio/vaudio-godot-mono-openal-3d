@@ -145,8 +145,8 @@ func _copy_dll():
 	else:
 		return
 
-	# Check if library already exists at destination
-	if FileAccess.file_exists(dest_path):
+	# Replace an existing copy that differs from the addon's, so upgrading the plugin also upgrades OpenAL (e.g. the universal macOS build)
+	if FileAccess.file_exists(dest_path) and (not FileAccess.file_exists(source_path) or FileAccess.get_md5(dest_path) == FileAccess.get_md5(source_path)):
 		return
 
 	# Copy the library
@@ -155,6 +155,6 @@ func _copy_dll():
 		if result == OK:
 			print("[vaudio-godot-mono-openal-3d] Copied %s to project root" % lib_name)
 		else:
-			push_error("[vaudio-godot-mono-openal-3d] Failed to copy %s: %s" % [lib_name, result])
+			push_error("[vaudio-godot-mono-openal-3d] Failed to copy %s: %s. If OpenAL is already loaded, restart the editor to finish updating it" % [lib_name, result])
 	else:
 		push_error("[vaudio-godot-mono-openal-3d] Source library not found at ", source_path)

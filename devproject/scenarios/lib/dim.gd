@@ -102,6 +102,16 @@ static func box_faces(size: Vector3) -> PackedVector3Array:
 	mesh.size = size
 	return mesh.get_faces()
 
+# The 8 corners of a box centred on the origin
+static func box_points(size: Vector3) -> PackedVector3Array:
+	var points := PackedVector3Array()
+	var half := size * 0.5
+	for x in [-1, 1]:
+		for y in [-1, 1]:
+			for z in [-1, 1]:
+				points.append(half * Vector3(x, y, z))
+	return points
+
 # Shapes that seal reverb_room.tscn for add_reverb_room_shape_partition, each with edits to the shape resource itself that narrow it to a 0.9 m column sound goes around, and seal it again
 static func sealing_shape_edits() -> Array:
 	var box := BoxShape3D.new()
@@ -110,7 +120,18 @@ static func sealing_shape_edits() -> Array:
 	var concave := ConcavePolygonShape3D.new()
 	concave.set_faces(box_faces(SEALING_SIZE))
 
+	var convex := ConvexPolygonShape3D.new()
+	convex.points = box_points(SEALING_SIZE)
+
 	return [
 		{"name": "box", "shape": box, "narrow": func(): box.size = NARROW_SIZE, "seal": func(): box.size = SEALING_SIZE},
 		{"name": "concave polygon", "shape": concave, "narrow": func(): concave.set_faces(box_faces(NARROW_SIZE)), "seal": func(): concave.set_faces(box_faces(SEALING_SIZE))},
+		{"name": "convex polygon", "shape": convex, "narrow": func(): convex.points = box_points(NARROW_SIZE), "seal": func(): convex.points = box_points(SEALING_SIZE)},
 	]
+
+# How far the listener must move before world_bounds_follow_listener.gd's bounds follow it - small, so a few steps cross it inside reverb_room.tscn
+const BOUNDS_UPDATE_DISTANCE := 1.0
+
+# Vector along the horizontal and vertical axes, the two axes 2D and 3D share
+static func planar(x: float, y: float) -> Vector3:
+	return Vector3(x, y, 0)

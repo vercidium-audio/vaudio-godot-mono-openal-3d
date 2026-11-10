@@ -8,6 +8,15 @@ public enum PropagateMode
     Visuals
 }
 
+public enum VABoundsFollow
+{
+    // This node's position is the bounds' minimum corner
+    None,
+
+    // The bounds are centred on the current listener during play
+    Listener,
+}
+
 public partial class VAWorld
 {
     public const string PRIMITIVE_META_KEY = "vercidium_audio_primitive";
