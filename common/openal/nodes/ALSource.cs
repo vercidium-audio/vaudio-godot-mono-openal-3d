@@ -34,6 +34,35 @@ public partial class ALSource
         }
     }
 
+    // The fullReverb last passed to UpdateFilter
+    bool fullReverb = true;
+
+    bool dryOutputEnabled = true;
+
+    /// <summary>
+    /// Whether this source's direct sound is heard, i.e. neither this source's <see cref="ReverbOnly"/> nor <see cref="VAWorld.ReverbOnly"/> is set. Updated each frame
+    /// </summary>
+    public bool IsDryOutputEnabled() => dryOutputEnabled;
+
+    // Recalculates dryOutputEnabled, returning whether it changed
+    protected bool UpdateDryOutput()
+    {
+        var enabled = !ReverbOnly && !ALManager.ReverbOnly;
+        var changed = enabled != dryOutputEnabled;
+        dryOutputEnabled = enabled;
+        return changed;
+    }
+
+    // Applies the direct filter (or the silence filter while reverb-only) and the reverb send
+    protected void ApplyFilters(OpenALSource source)
+    {
+        // For reverb in other rooms, we send the sound's clear audio to the reverb effect, then reduce the reverb effect's gain to make it muffled
+        var reverbFilter = fullReverb ? fullFilter : filter;
+        var directFilter = dryOutputEnabled ? filter : silenceFilter;
+
+        source.SetFilter(effect, directFilter, reverbFilter);
+    }
+
     public void UpdateFilter(float gain, float gainHF, bool fullReverb = false)
     {
         ALManager.Ensure();
@@ -43,15 +72,11 @@ public partial class ALSource
         else
             filter.SetGain(gain, gainHF);
 
-
-        // For reverb in other rooms, we send the sound's clear audio to the reverb effect,
-        //  then reduce the reverb effect's gain to make it muffled
-        var reverbFilter = fullReverb ? fullFilter : filter;
-
-        var directFilter = ALManager.ReverbOnly ? silenceFilter : filter;
+        this.fullReverb = fullReverb;
+        UpdateDryOutput();
 
         foreach (var s in sources)
-            s.SetFilter(effect, directFilter, reverbFilter);
+            ApplyFilters(s);
     }
 
     bool streamsErrorLogged = false;
@@ -131,14 +156,8 @@ public partial class ALSource
         source.SetLooping(Looping);
         ConfigureSource(source);
 
-        var directFilter = ALManager.ReverbOnly ? silenceFilter : filter;
-
-        // For reverb in other rooms, we send the sound's clear audio to the reverb effect,
-        //  then reduce the reverb effect's gain to make it muffled
-        var fullReverb = true;
-        var reverbFilter = fullReverb ? fullFilter : filter;
-
-        source.SetFilter(effect, directFilter, reverbFilter);
+        UpdateDryOutput();
+        ApplyFilters(source);
 
         source.Play();
         sources.Add(source);

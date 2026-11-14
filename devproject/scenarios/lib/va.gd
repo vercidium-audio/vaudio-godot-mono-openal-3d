@@ -76,6 +76,9 @@ static func is_silenced_by_bounds(source: Node) -> bool:
 static func has_reverb(source: Node) -> bool:
 	return source.HasReverb()
 
+static func is_dry_output_enabled(source: Node) -> bool:
+	return source.IsDryOutputEnabled()
+
 static func raytracing_time(world: Node) -> float:
 	return world.GetRaytracingTime()
 

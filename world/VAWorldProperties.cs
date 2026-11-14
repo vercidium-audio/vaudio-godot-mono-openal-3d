@@ -298,6 +298,7 @@ public partial class VAWorld
     /// <summary>
     /// When true, you'll only hear reverb - use for debugging.
     /// If multiple VAWorlds exist, the last one to set this wins.
+    /// Each source also has its own <see cref="ALSource.ReverbOnly"/>.
     /// </summary>
     [Export]
     public bool ReverbOnly

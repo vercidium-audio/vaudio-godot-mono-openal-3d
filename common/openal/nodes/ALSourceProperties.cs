@@ -67,6 +67,10 @@ public partial class ALSource
 
     AudioStream StreamAt(int index) => VariantToStream(_streams[index]);
 
+    /// <summary>Silences this source's direct sound so only its reverb is audible, e.g. to hear your own microphone in the room without the dry signal. VASourceAmbient has no reverb, so this silences it entirely. <see cref="VAWorld.ReverbOnly"/> does this for every source. Applied on the next frame</summary>
+    [Export]
+    public bool ReverbOnly { get; set; }
+
     /// <summary>When true and Streams has more than one entry, the same entry is never picked twice in a row</summary>
     [Export]
     public bool PlaybackNoRepeat

@@ -57,6 +57,8 @@ public partial class VASourceAmbient : ALSourceRelative
 
     public override void _Process(double delta)
     {
+        base._Process(delta);
+
         if (Engine.IsEditorHint())
             return;
 
