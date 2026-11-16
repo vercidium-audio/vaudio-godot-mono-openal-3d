@@ -101,6 +101,18 @@ public partial class VAVisualisation : Node3D
         return [];
     }
 
+    public override void _ValidateProperty(Godot.Collections.Dictionary property)
+    {
+        base._ValidateProperty(property);
+
+        // Hidden rather than removed, so the seed is still saved while unused
+        if (property["name"].AsStringName() == PropertyName.VisualisationSeed && _RandomVisualisationSeed)
+        {
+            var usage = property["usage"].As<PropertyUsageFlags>();
+            property["usage"] = (int)(usage & ~PropertyUsageFlags.Editor);
+        }
+    }
+
     void FindEmitter()
     {
         var candidate = GetParent() switch
@@ -143,6 +155,7 @@ public partial class VAVisualisation : Node3D
         {
             emitter.emitter.VisualisationCallback = null;
             emitter.emitter.VisualisationRayCount = 0;
+            emitter.emitter.VisualisationSeed = null;
         }
 
         callbackRegistered = false;
@@ -175,6 +188,13 @@ public partial class VAVisualisation : Node3D
         emitter.emitter.VisualisationRayCount = _RayCount;
         emitter.emitter.VisualisationBounceCount = _BounceCount;
         emitter.emitter.VisualisationUpdateFrequency = _UpdateFrequencyMs;
+        ApplySeedToEmitter();
+    }
+
+    void ApplySeedToEmitter()
+    {
+        if (emitter?.emitter != null)
+            emitter.emitter.VisualisationSeed = _RandomVisualisationSeed ? null : _VisualisationSeed;
     }
 
     int RequiredInstanceCount()
@@ -338,6 +358,33 @@ public partial class VAVisualisation : Node3D
 
             if (emitter?.emitter != null)
                 emitter.emitter.VisualisationUpdateFrequency = _UpdateFrequencyMs;
+        }
+    }
+
+    bool _RandomVisualisationSeed = true;
+    /// <summary>Whether to randomise visualisation rays each time. When false, <see cref="VisualisationSeed"/> is used, so every update casts the same rays</summary>
+    [Export]
+    public bool RandomVisualisationSeed
+    {
+        get => _RandomVisualisationSeed;
+        set
+        {
+            _RandomVisualisationSeed = value;
+            ApplySeedToEmitter();
+            NotifyPropertyListChanged();
+        }
+    }
+
+    int _VisualisationSeed = 0;
+    /// <summary>Seed used to randomise visualisation rays when <see cref="RandomVisualisationSeed"/> is false</summary>
+    [Export]
+    public int VisualisationSeed
+    {
+        get => _VisualisationSeed;
+        set
+        {
+            _VisualisationSeed = value;
+            ApplySeedToEmitter();
         }
     }
 
