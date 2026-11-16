@@ -129,7 +129,7 @@ public partial class VAEmitter
         }
     }
 
-    bool _AffectsGroupedEAX = true;
+    bool _AffectsGroupedEAX = false;
     /// <summary>
     /// Controls whether this Emitter's EAX is blended to produced grouped EAX. Set this to false for listener emitters.
     /// Mutually exclusive with HasRelativeReverb - both can't be true at the same time.
@@ -165,7 +165,7 @@ public partial class VAEmitter
         }
     }
 
-    bool _HasRelativeReverb = true;
+    bool _HasRelativeReverb = false;
     /// <summary>
     /// Whether this emitter is used as a reference point for calculating relative reverb gain and direction.
     /// Mutually exclusive with AffectsGroupedEAX - both can't be true at the same time.

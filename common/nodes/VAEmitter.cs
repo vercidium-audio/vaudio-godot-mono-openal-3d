@@ -13,6 +13,10 @@ public partial class VAEmitter
 
     public float GainLF => filter?.gain ?? 0;
     public float GainHF => filter?.gainHF ?? 0;
+
+    // How muffled this emitter sounds to the listener, as absolute gains (ALFilter stores HF relative to LF). 1/1 until the listener raytraces it
+    internal float MufflingGainLF { get; private set; } = 1;
+    internal float MufflingGainHF { get; private set; } = 1;
     public bool Raytraced => emitter != null && !emitter.Initialising;
 
     // Set while waiting for a VAWorld to appear. _ExitTree cancels the pending retry if this node leaves the tree
@@ -307,6 +311,8 @@ public partial class VAEmitter
             if (vercidiumAudio.listener.HasRaytracedTarget(this))
             {
                 var vaudioFilter = vercidiumAudio.listener.GetTargetFilter(this);
+                MufflingGainLF = vaudioFilter.GainLF;
+                MufflingGainHF = vaudioFilter.GainHF;
                 filter?.SetGain(vaudioFilter.GainLF, vaudioFilter.GainHF);
             }
         }

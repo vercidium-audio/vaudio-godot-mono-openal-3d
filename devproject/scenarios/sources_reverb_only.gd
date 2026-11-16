@@ -21,12 +21,14 @@ func run() -> void:
 
 	var ambient := spawn_unraytraced("VASourceAmbient", "ReverbOnlyAmbient", root)
 	var relative := spawn_unraytraced("VASourceRelative", "ReverbOnlyRelative", root)
-	var leech := spawn_unraytraced("VASourceLeech", "ReverbOnlyLeech", source)
+	var leech_emitter := spawn_raytraced("VAEmitter", "ReverbOnlyLeechEmitter", -5, SEED + 4)
+	var leech := spawn_unraytraced("VASourceLeech", "ReverbOnlyLeech", leech_emitter)
 
 	sources = [source, stream, networked, ambient, relative, leech]
 
 	for s in [source, stream, networked]:
 		await wait_raytraced_by_listener(s)
+	check(await wait_until(func(): return VA.is_ready_to_play(leech)), "leech never became ready to play")
 	await wait_raytraced(SETTLE_PASSES)
 
 	expect_dry("defaults", func(_i): return true)
