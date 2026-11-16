@@ -64,7 +64,17 @@ First, it will add this text to your project's `.csproj` file:
 </ItemGroup>
 ```
 
-Second, it will copy `soft_oal.dll` or `libopenal.so.1` (depending on your operating system) to your project root, which is where Godot searches for `.dll` files when it runs.
+Second, it will copy OpenAL Soft for your platform from `addons/vaudio-godot-mono-openal-3d/bin/{platform}/` to your project root, which is where Godot searches for `.dll` files when it runs. The platform folders match the Vercidium Audio SDK's:
+
+| Folder | Library |
+|---|---|
+| `bin/windows/` | `soft_oal.dll` (Windows x64) |
+| `bin/windows-arm64/` | `soft_oal.dll` (Windows ARM64) |
+| `bin/linux/` | `libopenal.so.1` (Linux x64) |
+| `bin/linux-arm64/` | `libopenal.so.1` (Linux ARM64) |
+| `bin/mac/` | `libopenal.1.dylib` (macOS universal) |
+
+When you export your game, the plugin also copies the export platform's OpenAL Soft library beside the exported executable.
 
 ### 4. Project Settings
 
