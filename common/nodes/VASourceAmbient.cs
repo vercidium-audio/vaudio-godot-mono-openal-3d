@@ -6,6 +6,7 @@ public partial class VASourceAmbient : ALSourceRelative
 {
     private VAWorld vercidiumAudio;
     private bool played = false;
+    private bool warnedNoAmbience = false;
 
     Action cancelWaitForVAWorld;
 
@@ -61,6 +62,14 @@ public partial class VASourceAmbient : ALSourceRelative
 
         if (Engine.IsEditorHint())
             return;
+
+        var listener = vercidiumAudio?.listener;
+
+        if (!warnedNoAmbience && listener != null && listener.Raytraced && !listener.AmbientOcclusionEnabled && !listener.AmbientPermeationEnabled)
+        {
+            Logger.LogWarning($"{Name}: The listener '{listener.Name}' does not have ambience enabled, so this VASourceAmbient will never play. Set the listener's ambient occlusion / permeation ray and bounce counts above 0.");
+            warnedNoAmbience = true;
+        }
 
         // Ensure VAWorld is available
         if (vercidiumAudio?.ambientFilter == null)

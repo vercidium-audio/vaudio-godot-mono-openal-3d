@@ -387,6 +387,9 @@ public partial class VAEmitter
         }
     }
 
+    /// <summary>True if both AmbientOcclusionRayCount and AmbientOcclusionBounceCount are above 0</summary>
+    public bool AmbientOcclusionEnabled => AmbientOcclusionRayCount > 0 && AmbientOcclusionBounceCount > 0;
+
     float _AmbientOcclusionEnergyCap = 0.15f;
     /// <summary>The percentage of occlusion energy required for the emitter to be at full volume.</summary>
     /// <exception cref="ArgumentException">Thrown if NaN, infinity or &lt; 0</exception>
@@ -447,6 +450,9 @@ public partial class VAEmitter
                 emitter.AmbientPermeationBounceCount = _AmbientPermeationBounceCount;
         }
     }
+
+    /// <summary>True if both AmbientPermeationRayCount and AmbientPermeationBounceCount are above 0</summary>
+    public bool AmbientPermeationEnabled => AmbientPermeationRayCount > 0 && AmbientPermeationBounceCount > 0;
 
     float _AmbientPermeationEnergyCap = 0.15f;
     /// <summary>The percentage of permeation energy required for the emitter to be at full volume.</summary>
