@@ -22,7 +22,7 @@ func setup() -> void:
 
 	leech = spawn_leech("Leech", emitter)
 
-	expect_warning("use a VASourceRelative instead")
+	expect_warning("Use a VASourceRelative instead")
 	listener_leech = spawn_leech("ListenerLeech", root.listener)
 
 	await wait_raytraced_by_listener(root.source)
@@ -49,10 +49,3 @@ func teardown() -> void:
 	emitter.queue_free()
 	partition.queue_free()
 	await wait_raytraced()
-
-func spawn_leech(node_name: String, parent: Node) -> Node:
-	var node := VA.create_node(root.world, "VASourceLeech")
-	node.name = node_name
-	VA.set_value(node, "streams", VA.get_value(root.source, "streams"))
-	parent.add_child(node)
-	return node

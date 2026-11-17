@@ -36,6 +36,10 @@ public partial class VAVisualisation : Node3D
         }
         """;
 
+    // The world-space position and surface normal of every visualisation ray bounce, emitted every UpdateFrequencyMs. Includes bounces beyond MaxDistance, which only limits rendering
+    [Signal]
+    public delegate void VisualisationDataReceivedEventHandler(Vector3[] positions, Vector3[] normals);
+
     VAEmitter emitter;
 
     MultiMesh multimesh;
@@ -269,7 +273,12 @@ public partial class VAVisualisation : Node3D
 
     void OnVisualisationData(vaudio.VisualisationData[] data)
     {
-        if (multimesh == null || data.Length == 0)
+        if (data.Length == 0)
+            return;
+
+        EmitVisualisationData(data);
+
+        if (multimesh == null)
             return;
 
         int capacity = multimesh.InstanceCount;
@@ -312,6 +321,20 @@ public partial class VAVisualisation : Node3D
         }
 
         multimesh.VisibleInstanceCount = capacity;
+    }
+
+    void EmitVisualisationData(vaudio.VisualisationData[] data)
+    {
+        var positions = new Vector3[data.Length];
+        var normals = new Vector3[data.Length];
+
+        for (int i = 0; i < data.Length; i++)
+        {
+            positions[i] = FromVAudio(data[i].position);
+            normals[i] = FromVAudio(data[i].normal);
+        }
+
+        EmitSignal(SignalName.VisualisationDataReceived, positions, normals);
     }
 
     [ExportGroup("Ray Casting")]

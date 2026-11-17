@@ -29,6 +29,7 @@ func check_source() -> void:
 	check(VA.play(source), "play() before the source is ready returned false")
 	check(await wait_playing(source, 15000), "a source play()ed before it was ready never started")
 	check(VA.is_ready_to_play(source), "a source play()ed before it was ready started before it was ready")
+	check(VA.is_raytraced(source), "a source started before it cast its own rays")
 
 func check_leech() -> void:
 	var emitter := VA.create_node(root.world, "VAEmitter")
@@ -37,15 +38,13 @@ func check_leech() -> void:
 	root.add_child(emitter)
 	nodes.append(emitter)
 
-	var leech := VA.create_node(root.world, "VASourceLeech")
-	leech.name = "PlayBeforeReadyLeech"
-	VA.set_value(leech, "streams", VA.get_value(root.source, "streams"))
-	emitter.add_child(leech)
+	var leech := spawn_leech("PlayBeforeReadyLeech", emitter)
 
 	check(not VA.is_ready_to_play(leech), "a leech that was just added is already ready to play")
 	check(VA.play(leech), "play() before the leech is ready returned false")
 	check(await wait_playing(leech, 15000), "a leech play()ed before it was ready never started")
 	check(VA.is_ready_to_play(leech), "a leech play()ed before it was ready started before it was ready")
+	check(VA.is_raytraced(leech), "a leech started before its emitter cast its own rays")
 
 func check_stop_cancels() -> void:
 	var source := add_source("StopBeforeReady")

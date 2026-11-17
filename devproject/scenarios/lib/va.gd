@@ -40,6 +40,13 @@ static func set_value(node: Object, property: String, value: Variant) -> void:
 		return
 	node.set(name, value)
 
+static func connect_signal(node: Object, signal_name: String, callable: Callable) -> void:
+	var name := csharp_name(signal_name)
+	if not node.has_signal(name):
+		push_error("[devproject] %s has no signal '%s'" % [node, name])
+		return
+	node.connect(name, callable)
+
 # Creates a plugin node by class name, e.g. "VADefaultMaterial". C# nodes aren't in ClassDB, so find the script next to the world's own script in the addon
 static func create_node(world: Node, type: String) -> Node:
 	var addon: String = world.get_script().resource_path.get_base_dir().get_base_dir()
