@@ -1,3 +1,5 @@
+// Human-created
+
 namespace vaudio_godot_mono_openal;
 
 public partial class VAWorld
@@ -15,6 +17,7 @@ public partial class VAWorld
             return groupedReverbEffects[emitter.GroupedEAXIndex];
         }
 
+        // TODO - a user might purposefully want an emitter to have no reverb. Maybe a new ReverbFallback enum option for 'No reverb' vs 'Listener reverb'?
         return listenerReverbEffect;
     }
 
@@ -22,7 +25,7 @@ public partial class VAWorld
     void WarnMissingGroupedEAX(string emitterName, int groupedEAXIndex)
     {
         if (listener == null)
-            LogWarning($"Emitter {emitterName} has a grouped EAX index of {groupedEAXIndex} but the VAWorld has no VAListener, so no EAX presets are available. Ensure the VAListener node is created and is a sibling or child node of VAWorld.");
+            LogWarning($"Emitter {emitterName} has a grouped EAX index of {groupedEAXIndex} but the VAWorld has no VAListener. Ensure the VAListener node is created and is a sibling or child node of VAWorld.");
         else
             LogWarning($"Emitter {emitterName} has a grouped EAX index of {groupedEAXIndex} but only {groupedReverbEffects.Count} EAX presets are available. Increase the 'Maximum Grouped EAX Count' setting on the VAWorld node.");
     }
@@ -59,7 +62,7 @@ public partial class VAWorld
         if (listener == null)
             return;
 
-        // Update ambient gain (if reverb enabled)
+        // Update ambient gain
         if (listener.AmbientFilter != null)
         {
             var ambientGainLF = listener.AmbientFilter.GainLF;
@@ -69,7 +72,7 @@ public partial class VAWorld
             ambientFilter.SetGain(ambientGainLF, ambientGainHF);
         }
 
-        // Apply raytraced EAX results to ALReverbEffects
+        // Copy raytraced EAX results to ALReverbEffects
         if (listener.EAX != null)
             CopyReverb(listener.EAX, listenerReverbEffect, false);
 
