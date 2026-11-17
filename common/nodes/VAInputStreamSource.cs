@@ -1,3 +1,5 @@
+// Human-created
+
 using System.Runtime.InteropServices;
 
 using Godot.Collections;
@@ -38,8 +40,6 @@ public partial class VAInputStreamSource : VAStreamSource
         set => _sampleRate = value;
     }
 
-    // _deviceName stores "" for the driver's default (what OpenCapture expects); the inspector property maps that to/from DefaultDeviceLabel so the enum dropdown doesn't show a blank entry.
-    /// <summary>Empty for the driver's default input device, or a name from GetAvailableCaptureDevices.</summary>
     [Export]
     public string DeviceName
     {
@@ -62,7 +62,15 @@ public partial class VAInputStreamSource : VAStreamSource
         set => _microphoneThreshold = Math.Max(0, value);
     }
 
+    public bool MicrophoneThresholdEnabled => MicrophoneThreshold > 0;
+
     public static string[] GetAvailableCaptureDevices() => [.. AL.GetStringList(IntPtr.Zero, AL.ALC_CAPTURE_DEVICE_SPECIFIER)];
+
+    // Enumerating capture devices can be slow, and Godot calls _ValidateProperty every time it fetches the property list, so the dropdown reuses this array until RefreshDevices() is called
+    static string[] cachedCaptureDevices;
+
+    // PeakAmplitude only reads 8 and 16-bit PCM, matching the Format dropdown
+    static bool IsSupportedFormat(int format) => format == AL.AL_FORMAT_MONO8 || format == AL.AL_FORMAT_MONO16 || format == AL.AL_FORMAT_STEREO8 || format == AL.AL_FORMAT_STEREO16;
 
     public override void _Ready()
     {
@@ -111,6 +119,12 @@ public partial class VAInputStreamSource : VAStreamSource
     {
         CloseCapture();
 
+        if (!IsSupportedFormat(format))
+        {
+            LogWarning($"{Name}: {format} isn't a supported capture format. Use MONO8, MONO16, STEREO8 or STEREO16 instead");
+            return false;
+        }
+
         try
         {
             captureDevice = new ALCaptureDevice(new()
@@ -125,8 +139,10 @@ public partial class VAInputStreamSource : VAStreamSource
                     var numBytes = sampleCount * AL.GetBytesPerFrame(format);
                     var data = (byte*)samples;
 
-                    if (PeakAmplitude(data, numBytes, format) < MicrophoneThreshold)
-                        return;
+                    // Ignore quiet input
+                    if (MicrophoneThresholdEnabled)
+                        if (PeakAmplitude(data, numBytes, format) < MicrophoneThreshold)
+                            return;
 
                     var packed = new byte[numBytes];
                     Marshal.Copy((nint)data, packed, 0, numBytes);
@@ -149,6 +165,7 @@ public partial class VAInputStreamSource : VAStreamSource
 
     public void StartCapture()
     {
+        // Reachable from scripts, e.g. after a failed OpenCapture or after CloseCapture
         if (captureDevice == null)
         {
             LogWarning($"StartCapture called on {Name} before OpenCapture (or after CloseCapture)");
@@ -186,29 +203,27 @@ public partial class VAInputStreamSource : VAStreamSource
         base._ExitTree();
     }
 
-    // Rebuilds DeviceName as a strict PropertyHint.Enum dropdown of the driver's current capture devices - EnumSuggestion would inject an unsuppressable blank entry.
+    // Rebuilds DeviceName as a strict PropertyHint.Enum dropdown, for nicer display to the user.
+    // Using EnumSuggestion doesn't work, as the default device label is an empty string.
     // An unrecognized saved value shows as-is until RefreshDevices() re-queries.
     public override void _ValidateProperty(Dictionary property)
     {
         base._ValidateProperty(property);
 
-        if (property["name"].AsStringName() != PropertyName.DeviceName)
-            return;
+        if (property["name"].AsStringName() == PropertyName.DeviceName)
+        {
+            cachedCaptureDevices ??= GetAvailableCaptureDevices();
 
-        var devices = GetAvailableCaptureDevices();
-
-        if (devices.Length == 0)
-            return;
-
-        var hintString = DefaultDeviceLabel + "," + string.Join(",", devices);
-
-        property["hint"] = (int)PropertyHint.Enum;
-        property["hint_string"] = hintString;
+            // Still a dropdown with no devices, so it only offers the default rather than becoming a free text field
+            property["hint"] = (int)PropertyHint.Enum;
+            property["hint_string"] = string.Join(",", [DefaultDeviceLabel, .. cachedCaptureDevices]);
+        }
     }
 
-    // Re-queries the driver's capture device list so a newly plugged-in device shows up without reselecting the node - VADeviceRefreshInspectorPlugin.gd calls this.
+    // Called by VADeviceRefreshInspectorPlugin.gd to refresh the input device list
     public void RefreshDevices()
     {
+        cachedCaptureDevices = null;
         NotifyPropertyListChanged();
     }
 }

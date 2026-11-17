@@ -25,13 +25,17 @@ static func get_value(node: Object, property: String) -> Variant:
 		return null
 	return node.get(name)
 
-# Whether the property is shown in the inspector, after the node's _ValidateProperty
-static func is_in_inspector(node: Object, property: String) -> bool:
+# The property's info from get_property_list(), after the node's _ValidateProperty, or empty if it has none
+static func property_info(node: Object, property: String) -> Dictionary:
 	var name := csharp_name(property)
 	for info in node.get_property_list():
 		if info.name == name:
-			return info.usage & PROPERTY_USAGE_EDITOR != 0
-	return false
+			return info
+	return {}
+
+# Whether the property is shown in the inspector, after the node's _ValidateProperty
+static func is_in_inspector(node: Object, property: String) -> bool:
+	return property_info(node, property).get("usage", 0) & PROPERTY_USAGE_EDITOR != 0
 
 static func set_value(node: Object, property: String, value: Variant) -> void:
 	var name := csharp_name(property)
@@ -133,6 +137,12 @@ static func open_stream(source: Node, format: int, frequency: int) -> bool:
 
 static func push_audio_data(source: Node, data: PackedByteArray) -> void:
 	source.PushAudioData(data)
+
+static func open_capture(source: Node, device_name: String, format: int, frequency: int, buffer_size_frames: int) -> bool:
+	return source.OpenCapture(device_name, format, frequency, buffer_size_frames)
+
+static func is_capture_open(source: Node) -> bool:
+	return source.IsCaptureOpen
 
 static func close_stream(source: Node) -> void:
 	source.CloseStream()
