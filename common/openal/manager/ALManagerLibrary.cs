@@ -18,17 +18,10 @@ public static unsafe partial class ALManager
         string libName = OperatingSystem.IsMacOS() ? "libopenal.1.dylib" : "libopenal.so.1";
         string exeDir = Path.GetDirectoryName(System.Environment.ProcessPath) ?? "";
 
-        string projectDir = "";
-        try
-        {
-            projectDir = ProjectSettings.GlobalizePath("res://");
-        }
-        catch (Exception)
-        {
-            // Godot's API isn't usable yet, fall back to the exe's folder
-        }
+        // No Godot API here: in exported games this assembly loads before Godot's interop is initialised, and calling into it segfaults. The editor's --path chdirs into the project, so the current directory is the project root
+        string projectDir = Directory.GetCurrentDirectory();
 
-        List<string> dirs = [projectDir, exeDir, Path.Combine(exeDir, "..", "Frameworks")];
+        List<string> dirs = [exeDir, Path.Combine(exeDir, "..", "Frameworks"), projectDir];
 
         // plugin.gd copies the lib to the project root after this assembly loads, so a fresh project only has the addon's copy
         string addonsDir = Path.Combine(projectDir, "addons");
