@@ -22,7 +22,7 @@ internal class VABoundsPlayback
     internal bool RequestPlay(ALSource source, bool silenced, bool ready)
     {
         if (silenced && !source.Looping)
-            LogWarning($"{source.Name}: Play() was called outside the VAWorld's bounds, so nothing played. A sound that doesn't loop isn't started outside them, and doesn't play once back inside");
+            LogWarning($"{source.Name}: This source did not play because it is outside the world bounds.");
 
         if (!silenced && ready)
             return true;
