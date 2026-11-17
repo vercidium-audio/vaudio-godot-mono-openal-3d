@@ -42,7 +42,7 @@ public partial class VASourceLeech
         if (emitter.IsMainListener)
         {
             emitter = null;
-            LogWarning($"{Name}: This source will never play. VASourceLeech nodes can't be a child of a VAListener, use a VASourceRelative instead.");
+            LogWarning($"{Name}: This source will never play. VASourceLeech nodes can't be a child of a VAListener node. Use a VASourceRelative instead.");
             return;
         }
 
@@ -65,15 +65,14 @@ public partial class VASourceLeech
     {
     }
 
-    // Matches VASource's Play() override: returns false without playing until the parent emitter is ready to play, and follows the same bounds rules
+    // Matches VASource's Play() override: waits until the parent emitter is ready to play, and follows the same bounds rules
     public override bool Play()
     {
-        if (playback.ApplyOnPlay(this, IsSilencedByBounds()))
-            return false;
+        var silenced = IsSilencedByBounds();
 
-        // Wait for the parent emitter's muffling and reverb results, so the sound never starts unmuffled or without reverb
-        if (!IsReadyToPlay)
-            return false;
+        // Returns true while waiting for the parent emitter to be ready, and false while silenced by the bounds, even for a loop that will play once inside
+        if (!playback.RequestPlay(this, silenced, IsReadyToPlay))
+            return !silenced;
 
         var played = base.Play();
 
@@ -97,24 +96,16 @@ public partial class VASourceLeech
         if (Engine.IsEditorHint())
             return;
 
-        var silenced = playback.Apply(this, IsSilencedByBounds());
-
-        if (!Raytraced)
-            return;
-
-        if (!silenced && playback.IsPending(Autoplay) && IsReadyToPlay)
+        // Stops the sound while the parent emitter is outside the bounds, and starts a queued play or autoplay once it's ready
+        if (playback.Process(this, IsSilencedByBounds(), IsReadyToPlay, Autoplay))
             Play();
 
-        ApplyRaytracingResults();
-    }
+        if (!IsReadyToPlay)
+            return;
 
-    // Copies the parent VAEmitter's muffling and reverb, which it updates in its own _Process before this child's
-    void ApplyRaytracingResults()
-    {
+        // Copies the parent VAEmitter's muffling and reverb, which it updates in its own _Process before this child's. The effect is null if it casts no reverb rays
         effect = emitter.effect;
-
-        if (emitter.IsReadyToPlay)
-            UpdateFilter(emitter.MufflingGainLF, emitter.MufflingGainHF, true);
+        UpdateFilter(emitter.MufflingGainLF, emitter.MufflingGainHF, true);
     }
 
     bool _wasPlayingBeforeDeviceDestroyed = false;

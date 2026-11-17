@@ -25,6 +25,14 @@ static func get_value(node: Object, property: String) -> Variant:
 		return null
 	return node.get(name)
 
+# Whether the property is shown in the inspector, after the node's _ValidateProperty
+static func is_in_inspector(node: Object, property: String) -> bool:
+	var name := csharp_name(property)
+	for info in node.get_property_list():
+		if info.name == name:
+			return info.usage & PROPERTY_USAGE_EDITOR != 0
+	return false
+
 static func set_value(node: Object, property: String, value: Variant) -> void:
 	var name := csharp_name(property)
 	if not name in node:
