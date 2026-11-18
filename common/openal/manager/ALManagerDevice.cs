@@ -72,6 +72,36 @@ public static unsafe partial class ALManager
         SetDistanceModel(DistanceModel);
     }
 
+    const string DisconnectExtension = "ALC_EXT_disconnect";
+    const ulong ConnectionCheckIntervalMs = 1000;
+    static ulong _nextConnectionCheckMs;
+
+    // Once the output device is lost (e.g. headphones unplugged), OpenAL Soft stops every source and new ones stop as soon as they play. Recreates the device so looping sources replay. Returns false if the device was lost and couldn't be recreated
+    static bool CheckDeviceConnected()
+    {
+        var now = Time.GetTicksMsec();
+        if (now < _nextConnectionCheckMs)
+            return true;
+
+        _nextConnectionCheckMs = now + ConnectionCheckIntervalMs;
+
+        if (!ALDevice.HasExtension(DisconnectExtension) || ALDevice.GetIntegerALC(AL.ALC_CONNECTED) != 0)
+            return true;
+
+        LogWarning("The audio output device was disconnected, recreating it");
+
+        try
+        {
+            RecreateDeviceFully();
+            return true;
+        }
+        catch (Exception e)
+        {
+            LogError($"Failed to recreate the audio output device after it was disconnected: {e.Message}");
+            return false;
+        }
+    }
+
     static void RecreateDevice()
     {
         // Don't create OpenAL devices when changing properties in the editor

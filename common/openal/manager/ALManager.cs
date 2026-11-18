@@ -29,6 +29,9 @@ public static unsafe partial class ALManager
         if (Engine.IsEditorHint() || !Initialised)
             return;
 
+        if (!CheckDeviceConnected())
+            return;
+
         ALContext.Process();
         DisposeFinishedSources();
     }
