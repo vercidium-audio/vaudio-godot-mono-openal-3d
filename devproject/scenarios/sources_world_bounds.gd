@@ -9,7 +9,7 @@ const FREQUENCY := 44100
 # Frames to give a source the chance to (wrongly) start
 const WAIT_FRAMES := 30
 
-const OUTSIDE_WARNING := "outside the VAWorld's bounds"
+const OUTSIDE_WARNING := "did not play because it is outside the world bounds"
 
 var original_size
 var original_muffled: bool

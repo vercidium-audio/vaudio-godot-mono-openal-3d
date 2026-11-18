@@ -40,6 +40,8 @@ public partial class VAVisualisation : Node3D
     [Signal]
     public delegate void VisualisationDataReceivedEventHandler(Vector3[] positions, Vector3[] normals);
 
+    // The VAEmitter node whose vaudio.Emitter this node drives + renders. Either this node's direct
+    // VAEmitter parent, or the internal emitter of a VARaytracedSource parent (VASource etc.).
     VAEmitter emitter;
 
     MultiMesh multimesh;

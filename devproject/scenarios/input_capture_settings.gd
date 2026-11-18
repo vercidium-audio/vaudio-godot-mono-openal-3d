@@ -9,6 +9,7 @@ var input: Node
 
 func run() -> void:
 	input = VA.create_node(root.world, "VAInputStreamSource")
+	input.name = "Input"
 
 	var info := VA.property_info(input, "device_name")
 	check(info.get("hint", -1) == PROPERTY_HINT_ENUM, "device_name isn't an enum dropdown")
