@@ -11,12 +11,15 @@ var partition: Node
 var spawned: Array[Node] = []
 var original_target_clustering: bool
 var original_target_distance: float
+var baseline_eax := 0
 
 func _init() -> void:
 	scene = REVERB_ROOM
 
 func setup() -> void:
 	await wait_raytraced_by_listener(root.source)
+	await wait_raytraced(SETTLE_PASSES)
+	baseline_eax = VA.grouped_eax_count(root.world)
 	original_target_clustering = VA.get_value(root.listener, "target_clustering_enabled")
 	original_target_distance = VA.get_value(root.listener, "target_clustering_distance")
 
@@ -104,4 +107,5 @@ func teardown() -> void:
 	spawned.clear()
 	partition.queue_free()
 	override.queue_free()
-	await wait_raytraced()
+	# Freed sources stay in the grouped EAX blend until their reverb tails end, so wait for that or the next scenario's baseline is wrong
+	await wait_grouped_eax_count(baseline_eax)
