@@ -16,7 +16,7 @@ For Standard Godot (not C#), please use [this plugin](https://github.com/vercidi
 
 This repository requires Vercidium Audio v1.11.2 and OpenAL Soft to run:
 - Download the Vercidium Audio SDK from [vercidium.com](https://vercidium.com)
-- Download OpenAL Soft 1.25.2 from [github.com/kcat/openal-soft](https://github.com/kcat/openal-soft/releases/tag/1.25.2). The official release only has Windows x86 and x64 builds, so the Linux, macOS and ARM64 libraries are built from the same source. The plugin releases include all of them.
+- Download OpenAL Soft 1.25.2 from [github.com/kcat/openal-soft](https://github.com/kcat/openal-soft/releases/tag/1.25.2). Linux, Mac and ARM64 libraries are available in the latest [Releases](/releases)
 
 Windows (x64 and ARM64), Linux (x64 and ARM64) and macOS (universal: Apple Silicon and Intel) are supported. The Windows ARM64 build needs the ARM64 Visual C++ redistributable.
 
@@ -109,11 +109,3 @@ Then close the window, click the same small dropdown arrow, and select `Godot`. 
 The Vercidium Audio SDK is free for non-commercial products only. To purchase a licence for commercial use, head over to the [Vercidium Audio website](https://vercidium.com).
 
 This plugin uses OpenAL Soft, which is licensed under LGPL v2.1. Source is available at https://github.com/kcat/openal-soft.
-
-## Troubleshooting
-
-To solve the error below, create a C# solution, then disable and re-enable the plugin:
-
-```
-[vaudio-godot-mono-openal-3d] No C# solution found. This plugin requires C# - please create a C# solution (Project → Tools → C# → Create C# Solution) and then re-enable this plugin
-```
