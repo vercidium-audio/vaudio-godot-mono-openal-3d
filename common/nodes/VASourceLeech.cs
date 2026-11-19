@@ -66,15 +66,15 @@ public partial class VASourceLeech
     }
 
     // Matches VASource's Play() override: waits until the parent emitter is ready to play, and follows the same bounds rules
-    public override bool Play()
+    public override bool Play(float startTime)
     {
         var silenced = IsSilencedByBounds();
 
         // Returns true while waiting for the parent emitter to be ready, and false while silenced by the bounds, even for a loop that will play once inside
-        if (!playback.RequestPlay(this, silenced, IsReadyToPlay))
+        if (!playback.RequestPlay(this, silenced, IsReadyToPlay, startTime))
             return !silenced;
 
-        var played = base.Play();
+        var played = base.Play(startTime);
 
         if (played)
             playback.OnPlayed();
@@ -98,7 +98,7 @@ public partial class VASourceLeech
 
         // Stops the sound while the parent emitter is outside the bounds, and starts a queued play or autoplay once it's ready
         if (playback.Process(this, IsSilencedByBounds(), IsReadyToPlay, Autoplay))
-            Play();
+            Play(playback.PendingStartTime);
 
         if (!IsReadyToPlay)
             return;

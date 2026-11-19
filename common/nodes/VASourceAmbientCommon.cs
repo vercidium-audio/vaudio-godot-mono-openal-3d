@@ -45,13 +45,13 @@ public partial class VASourceAmbient
         base._Ready();
     }
 
-    public override bool Play()
+    public override bool Play(float startTime)
     {
         // Don't play until we've raytraced once
         if (vercidiumAudio?.ambientFilter == null)
             return false;
 
-        played = base.Play();
+        played = base.Play(startTime);
         return played;
     }
 

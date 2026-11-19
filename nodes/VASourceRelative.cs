@@ -30,7 +30,7 @@ public partial class VASourceRelative : ALSourceRelative
         base._ExitTree();
     }
 
-    public override bool Play()
+    public override bool Play(float startTime)
     {
         if (Engine.IsEditorHint())
             return false;
@@ -43,6 +43,6 @@ public partial class VASourceRelative : ALSourceRelative
         effect = vercidiumAudio.listenerReverbEffect;
         UpdateFilter(1, 1);
 
-        return base.Play();
+        return base.Play(startTime);
     }
 }

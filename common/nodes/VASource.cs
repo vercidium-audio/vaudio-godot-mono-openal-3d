@@ -53,15 +53,15 @@ public partial class VASource
     {
     }
 
-    public override bool Play()
+    public override bool Play(float startTime)
     {
         var silenced = IsSilencedByBounds();
 
         // Returns true while waiting for the emitter to be ready, and false while silenced by the bounds, even for a loop that will play once inside
-        if (!playback.RequestPlay(this, silenced, IsReadyToPlay))
+        if (!playback.RequestPlay(this, silenced, IsReadyToPlay, startTime))
             return !silenced;
 
-        var played = base.Play();
+        var played = base.Play(startTime);
 
         if (played)
             playback.OnPlayed();
@@ -79,7 +79,7 @@ public partial class VASource
     void PlayIfPending()
     {
         if (playback.Process(this, IsSilencedByBounds(), IsReadyToPlay, Autoplay))
-            Play();
+            Play(playback.PendingStartTime);
     }
 
     public override void _Process(double delta)
