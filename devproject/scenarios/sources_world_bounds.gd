@@ -9,7 +9,7 @@ const FREQUENCY := 44100
 # Frames to give a source the chance to (wrongly) start
 const WAIT_FRAMES := 30
 
-const OUTSIDE_WARNING := "outside the VAWorld's bounds"
+const OUTSIDE_WARNING := "did not play because it is outside the world bounds"
 
 var original_size
 var original_muffled: bool
@@ -45,6 +45,7 @@ func run() -> void:
 	await check_helpers()
 	await check_non_looping()
 	await check_looping()
+	await check_leech()
 	await check_stop_cancels()
 	await check_stream()
 	await check_clamped()
@@ -137,6 +138,42 @@ func check_looping() -> void:
 	check(await wait_playing(played), "looping source didn't resume once moved back inside")
 
 	shrink(false)
+
+# A leech follows its parent emitter's bounds: moving the emitter out cuts off a non-looping leech for good, and stops a looping one until it's back inside
+func check_leech() -> void:
+	shrink(true)
+
+	var emitter := VA.create_node(root.world, "VAEmitter")
+	emitter.name = "BoundsLeechEmitter"
+	emitter.position = inside
+	VA.set_value(emitter, "clamp_position", false)
+	root.add_child(emitter)
+	nodes.append(emitter)
+
+	var once := add_leech("BoundsLeechOnce", emitter, false)
+	var loop := add_leech("BoundsLeechLoop", emitter, true)
+	check(await wait_until(func(): return VA.play(once), 15000), "non-looping leech didn't play inside the bounds")
+	check(VA.play(loop), "looping leech didn't play inside the bounds")
+	check(await wait_playing(once), "non-looping leech isn't playing inside the bounds")
+	check(await wait_playing(loop), "looping leech isn't playing inside the bounds")
+	await step("leeches playing inside the bounds", 0.5)
+
+	emitter.position = outside
+	await wait_frames(2)
+	check(not VA.is_playing(once), "non-looping leech still playing after its emitter left the bounds")
+	check(not VA.is_playing(loop), "looping leech still playing after its emitter left the bounds")
+
+	emitter.position = inside
+	check(await wait_playing(loop), "looping leech didn't resume once its emitter was back inside")
+	check(not VA.is_playing(once), "non-looping leech resumed once its emitter was back inside")
+
+	shrink(false)
+
+func add_leech(leech_name: String, emitter: Node, looping: bool) -> Node:
+	var leech := spawn_leech(leech_name, emitter)
+	VA.set_value(leech, "looping", looping)
+	VA.set_value(leech, "autoplay", false)
+	return leech
 
 func check_stop_cancels() -> void:
 	shrink(true)

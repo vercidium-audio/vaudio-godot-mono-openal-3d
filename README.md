@@ -2,7 +2,7 @@
 
 Raytraced audio plugin for Mono Godot 4 with realistic muffling, reverb, ambience and visualisation. Uses OpenAL Soft for playback, spatialisation, filters and effects.
 
-For Standard Godot (not C#), please use [this plugin](https://github.com/vercidium-audio/vaudio-godot-native-openal-3d).
+For Standard Godot (not C#), please use [this plugin](https://github.com/vercidium-audio/vaudio-godot-native-openal-3d/releases).
 
 ## Features
 
@@ -14,9 +14,11 @@ For Standard Godot (not C#), please use [this plugin](https://github.com/vercidi
 
 ## Requirements
 
-This repository requires Vercidium Audio v1.11.1 and OpenAL Soft to run:
+This repository requires Vercidium Audio v1.11.2 and OpenAL Soft to run:
 - Download the Vercidium Audio SDK from [vercidium.com](https://vercidium.com)
-- Download the OpenAL Soft DLL from [github.com/kcat/openal-soft](https://github.com/kcat/openal-soft/releases/tag/1.25.2)
+- Download OpenAL Soft 1.25.2 from [github.com/kcat/openal-soft](https://github.com/kcat/openal-soft/releases/tag/1.25.2). Linux, Mac and ARM64 libraries are available in the latest [Releases](/releases)
+
+Windows (x64 and ARM64), Linux (x64 and ARM64) and macOS (universal: Apple Silicon and Intel) are supported. The Windows ARM64 build needs the ARM64 Visual C++ redistributable.
 
 > Please note that the Vercidium Audio SDK is not free for commercial use. See [vercidium.com/eula](https://vercidium.com/eula)
 
@@ -64,7 +66,17 @@ First, it will add this text to your project's `.csproj` file:
 </ItemGroup>
 ```
 
-Second, it will copy `soft_oal.dll` or `libopenal.so.1` (depending on your operating system) to your project root, which is where Godot searches for `.dll` files when it runs.
+Second, it will copy OpenAL Soft for your platform from `addons/vaudio-godot-mono-openal-3d/bin/{platform}/` to your project root, which is where Godot searches for `.dll` files when it runs. The platform folders match the Vercidium Audio SDK's:
+
+| Folder | Library |
+|---|---|
+| `bin/windows/` | `soft_oal.dll` (Windows x64) |
+| `bin/windows-arm64/` | `soft_oal.dll` (Windows ARM64) |
+| `bin/linux/` | `libopenal.so.1` (Linux x64) |
+| `bin/linux-arm64/` | `libopenal.so.1` (Linux ARM64) |
+| `bin/mac/` | `libopenal.1.dylib` (macOS universal) |
+
+When you export your game, the plugin also copies the export platform's OpenAL Soft library beside the exported executable.
 
 ### 4. Project Settings
 
@@ -97,11 +109,3 @@ Then close the window, click the same small dropdown arrow, and select `Godot`. 
 The Vercidium Audio SDK is free for non-commercial products only. To purchase a licence for commercial use, head over to the [Vercidium Audio website](https://vercidium.com).
 
 This plugin uses OpenAL Soft, which is licensed under LGPL v2.1. Source is available at https://github.com/kcat/openal-soft.
-
-## Troubleshooting
-
-To solve the error below, create a C# solution, then disable and re-enable the plugin:
-
-```
-[vaudio-godot-mono-openal-3d] No C# solution found. This plugin requires C# - please create a C# solution (Project → Tools → C# → Create C# Solution) and then re-enable this plugin
-```

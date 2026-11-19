@@ -100,6 +100,14 @@ func spawn_source(source_name: String, position, scattering_seed: int, looping :
 	root.add_child(source)
 	return source
 
+# Adds a VASourceLeech under parent that plays the scene source's streams
+func spawn_leech(node_name: String, parent: Node) -> Node:
+	var node := VA.create_node(root.world, "VASourceLeech")
+	node.name = node_name
+	VA.set_value(node, "streams", VA.get_value(root.source, "streams"))
+	parent.add_child(node)
+	return node
+
 # Freed emitters stay in the world until their reverb tails finish, so this polls for the grouped EAX count to reach target rather than waiting a fixed number of passes. Returns the last count seen
 func wait_grouped_eax_count(target: int, timeout_ms := 10000) -> int:
 	var started := Time.get_ticks_msec()

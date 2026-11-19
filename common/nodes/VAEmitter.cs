@@ -13,6 +13,10 @@ public partial class VAEmitter
 
     public float GainLF => filter?.gain ?? 0;
     public float GainHF => filter?.gainHF ?? 0;
+
+    // How muffled this emitter sounds to the listener, as absolute gains (ALFilter stores HF relative to LF). 1/1 until the listener raytraces it
+    internal float MufflingGainLF { get; private set; } = 1;
+    internal float MufflingGainHF { get; private set; } = 1;
     public bool Raytraced => emitter != null && !emitter.Initialising;
 
     // Set while waiting for a VAWorld to appear. _ExitTree cancels the pending retry if this node leaves the tree
@@ -272,11 +276,9 @@ public partial class VAEmitter
     }
 
     /// <summary>
-	/// True once the listener has raytraced this emitter, and this emitter has cast its own reverb rays.
-	/// If this emitter is outside the world bounds, it does not cast reverb rays and this field does not wait for the reverb rays to be cast.
-	/// Sources don't play until this field is true
+    /// True once this emitter has cast its own rays and the listener has raytraced it. Sources don't play until this is true. Inside the bounds it also waits for its own grouped EAX, which doesn't exist outside them
     /// </summary>
-    public bool IsReadyToPlay => HasListenerResults(!IsOutsideBounds());
+    public bool IsReadyToPlay => Raytraced && HasListenerResults(!IsOutsideBounds());
 
     /// <summary>
     /// <see cref="IsReadyToPlay"/>, but always waiting for its own reverb rays. <see cref="RaytraceOnce"/> waits for this, so a sound started outside the bounds still gets reverb once inside
@@ -307,6 +309,8 @@ public partial class VAEmitter
             if (vercidiumAudio.listener.HasRaytracedTarget(this))
             {
                 var vaudioFilter = vercidiumAudio.listener.GetTargetFilter(this);
+                MufflingGainLF = vaudioFilter.GainLF;
+                MufflingGainHF = vaudioFilter.GainHF;
                 filter?.SetGain(vaudioFilter.GainLF, vaudioFilter.GainHF);
             }
         }

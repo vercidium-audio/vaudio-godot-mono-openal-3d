@@ -23,8 +23,10 @@ public partial class VAWorld
 
     const string DEBUGGER_PLUGIN_SINGLETON_NAME = "VADebuggerPlugin";
 
+    // EditorInterface only exists in editor builds (TOOLS), so exported games compile this to nothing
     void SendViewportCameraToRunningGame()
     {
+#if TOOLS
         if (!Engine.HasSingleton(DEBUGGER_PLUGIN_SINGLETON_NAME))
             return;
 
@@ -37,6 +39,7 @@ public partial class VAWorld
         var debuggerRelay = Engine.GetSingleton(DEBUGGER_PLUGIN_SINGLETON_NAME);
 
         debuggerRelay.Call("sync_viewport_camera", camera.GlobalPosition, camera.GlobalRotation, camera.Fov);
+#endif
     }
 
     // EngineDebugger strips the "vaudio:" prefix before calling this, so message here is just

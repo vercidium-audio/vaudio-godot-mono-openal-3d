@@ -2,7 +2,6 @@ namespace vaudio_godot_mono_openal;
 
 public partial class VASourceLeech
 {
-    private VAWorld vercidiumAudio;
     private VAEmitter emitter;
 
     public bool Raytraced => emitter != null && emitter.Raytraced;
@@ -17,9 +16,13 @@ public partial class VASourceLeech
     /// </summary>
     public bool IsSilencedByBounds() => emitter != null && emitter.IsSilencedByBounds();
 
-    readonly VABoundsPlayback playback = new();
+    /// <summary>
+    /// Current muffling filter state (direct/dry path only). 0 until the listener has raytraced the parent emitter at least once
+    /// </summary>
+    public float GainLF => filter?.gain ?? 0;
+    public float GainHF => filter?.gainHF ?? 0;
 
-    Action cancelWaitForVAWorld;
+    readonly VABoundsPlayback playback = new();
 
     public override void _EnterTree()
     {
@@ -28,17 +31,18 @@ public partial class VASourceLeech
         if (Engine.IsEditorHint())
             return;
 
-        cancelWaitForVAWorld = this.WaitForVAWorld(world =>
-        {
-            cancelWaitForVAWorld = null;
-            vercidiumAudio = world;
-        });
-
         emitter = GetParent() as VAEmitter;
 
         if (emitter == null)
         {
-            LogWarning($"'{Name}' is a VASourceLeech but its parent is not a VAEmitter - it will never play. VASourceLeech must be a direct child of a VAEmitter (or VASource) node whose own raytracing results it leeches off.");
+            LogWarning($"{Name}: This source will never play. VASourceLeech nodes must be a direct child of a VAEmitter node.");
+            return;
+        }
+
+        if (emitter.IsMainListener)
+        {
+            emitter = null;
+            LogWarning($"{Name}: This source will never play. VASourceLeech nodes can't be a child of a VAListener node. Use a VASourceRelative instead.");
             return;
         }
 
@@ -61,15 +65,14 @@ public partial class VASourceLeech
     {
     }
 
-    // Matches VASource's Play() override: returns false without playing until the parent emitter is ready to play, and follows the same bounds rules
+    // Matches VASource's Play() override: waits until the parent emitter is ready to play, and follows the same bounds rules
     public override bool Play()
     {
-        if (playback.ApplyOnPlay(this, IsSilencedByBounds()))
-            return false;
+        var silenced = IsSilencedByBounds();
 
-        // Wait for the parent emitter's muffling and reverb results, so the sound never starts unmuffled or without reverb
-        if (!IsReadyToPlay)
-            return false;
+        // Returns true while waiting for the parent emitter to be ready, and false while silenced by the bounds, even for a loop that will play once inside
+        if (!playback.RequestPlay(this, silenced, IsReadyToPlay))
+            return !silenced;
 
         var played = base.Play();
 
@@ -93,29 +96,16 @@ public partial class VASourceLeech
         if (Engine.IsEditorHint())
             return;
 
-        var silenced = playback.Apply(this, IsSilencedByBounds());
-
-        if (!Raytraced)
-            return;
-
-        if (!silenced && playback.IsPending(Autoplay) && IsReadyToPlay)
+        // Stops the sound while the parent emitter is outside the bounds, and starts a queued play or autoplay once it's ready
+        if (playback.Process(this, IsSilencedByBounds(), IsReadyToPlay, Autoplay))
             Play();
 
-        if (vercidiumAudio?.listener == null)
+        if (!IsReadyToPlay)
             return;
 
-        ApplyRaytracingResults(vercidiumAudio.listener.emitter);
-    }
-
-    void ApplyRaytracingResults(vaudio.Emitter other)
-    {
-        effect = vercidiumAudio.GetReverbEffect(emitter);
-
-        if (other.HasRaytracedTarget(emitter.emitter))
-        {
-            var vaudioFilter = other.GetTargetFilter(emitter.emitter);
-            UpdateFilter(vaudioFilter.GainLF, vaudioFilter.GainHF, true);
-        }
+        // Copies the parent VAEmitter's muffling and reverb, which it updates in its own _Process before this child's. The effect is null if it casts no reverb rays
+        effect = emitter.effect;
+        UpdateFilter(emitter.MufflingGainLF, emitter.MufflingGainHF, true);
     }
 
     bool _wasPlayingBeforeDeviceDestroyed = false;
@@ -141,9 +131,6 @@ public partial class VASourceLeech
 
         // Unregister the device recreated callback (only registered when not in editor)
         ALManager.UnregisterDeviceRecreatedCallback(OnDeviceRecreated);
-
-        cancelWaitForVAWorld?.Invoke();
-        cancelWaitForVAWorld = null;
 
         emitter = null;
 

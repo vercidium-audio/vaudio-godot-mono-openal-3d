@@ -142,7 +142,7 @@ public partial class VARaytracedSource
 
     protected virtual void OnRaytracedByAnotherEmitter(vaudio.Emitter other)
     {
-        ApplyRaytracingResults(other);
+        ApplyRaytracingResults();
     }
 
     void OnEmitterRemoved()
@@ -157,20 +157,19 @@ public partial class VARaytracedSource
     {
         base._Process(delta);
 
-        // Even if we have cast our own reverb rays, we also need to wait for the listener to initialise
-        if (Raytraced && vercidiumAudio.listener != null)
-            ApplyRaytracingResults(vercidiumAudio.listener.emitter);
+        ApplyRaytracingResults();
     }
 
-    protected void ApplyRaytracingResults(vaudio.Emitter other)
+    void ApplyRaytracingResults()
     {
+        if (!IsReadyToPlay)
+            return;
+
+        // Read from the listener rather than the child VAEmitter, which processes after this node. The effect is null if it casts no reverb rays
         effect = vercidiumAudio.GetReverbEffect(emitter);
 
-        if (other.HasRaytracedTarget(emitter.emitter))
-        {
-            var vaudioFilter = other.GetTargetFilter(emitter.emitter);
-            UpdateFilter(vaudioFilter.GainLF, vaudioFilter.GainHF, true);
-        }
+        var vaudioFilter = vercidiumAudio.listener.GetTargetFilter(emitter);
+        UpdateFilter(vaudioFilter.GainLF, vaudioFilter.GainHF, true);
     }
 
     public override void _ExitTree()

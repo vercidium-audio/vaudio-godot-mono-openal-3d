@@ -56,6 +56,13 @@ public partial class ALSource
                 continue;
             }
         }
+
+        // Picks up this source's or the VAWorld's ReverbOnly changing, including on sources that don't update their filter every frame
+        if (UpdateDryOutput())
+        {
+            foreach (var s in sources)
+                ApplyFilters(s);
+        }
     }
 
     // Released on free rather than _ExitTree, so a reparent keeps playing (matches the native plugin, which releases them in its destructor)

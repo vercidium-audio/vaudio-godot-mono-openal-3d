@@ -9,7 +9,7 @@ public partial class VAStreamSource : VARaytracedSource
 {
     OpenALStreamSource streamSource;
 
-    // Latched once the emitter is first ready to play, so a RaytraceOnce stream keeps accepting data after its emitter leaves the world
+    // Set once the emitter is first ready to play and stays true, so a RaytraceOnce stream keeps accepting data after its emitter leaves the world
     bool streamReady;
 
     bool streamOpen;
@@ -56,8 +56,8 @@ public partial class VAStreamSource : VARaytracedSource
         source.SetPitch(Pitch);
         ConfigureSource(source);
 
-        var directFilter = ALManager.ReverbOnly ? silenceFilter : filter;
-        source.SetFilter(effect, directFilter, fullFilter);
+        UpdateDryOutput();
+        ApplyFilters(source);
 
         sources.Add(source);
         streamSource = source;
@@ -109,7 +109,7 @@ public partial class VAStreamSource : VARaytracedSource
     {
         if (!streamOpen)
         {
-            LogWarning($"PushAudioData called on {Name} before OpenStream (or after CloseStream)");
+            LogWarning($"{Name}: PushAudioData failed as the stream never opened");
             return;
         }
 
@@ -152,7 +152,7 @@ public partial class VAStreamSource : VARaytracedSource
 
         ApplyBoundsRules();
 
-        // Latched here too, since a RaytraceOnce emitter leaves the world later this frame
+        // Also set streamReady here in case nothing is pushed this frame. A RaytraceOnce emitter removes itself from the world later this frame, after which IsReadyToPlay is false and PushAudioData would drop everything
         if (streamOpen && !streamReady && IsReadyToPlay)
             streamReady = true;
 

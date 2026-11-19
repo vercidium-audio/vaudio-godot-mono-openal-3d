@@ -129,7 +129,7 @@ public partial class VAEmitter
         }
     }
 
-    bool _AffectsGroupedEAX = true;
+    bool _AffectsGroupedEAX = false;
     /// <summary>
     /// Controls whether this Emitter's EAX is blended to produced grouped EAX. Set this to false for listener emitters.
     /// Mutually exclusive with HasRelativeReverb - both can't be true at the same time.
@@ -165,7 +165,7 @@ public partial class VAEmitter
         }
     }
 
-    bool _HasRelativeReverb = true;
+    bool _HasRelativeReverb = false;
     /// <summary>
     /// Whether this emitter is used as a reference point for calculating relative reverb gain and direction.
     /// Mutually exclusive with AffectsGroupedEAX - both can't be true at the same time.
@@ -387,6 +387,9 @@ public partial class VAEmitter
         }
     }
 
+    /// <summary>True if both AmbientOcclusionRayCount and AmbientOcclusionBounceCount are above 0</summary>
+    public bool AmbientOcclusionEnabled => AmbientOcclusionRayCount > 0 && AmbientOcclusionBounceCount > 0;
+
     float _AmbientOcclusionEnergyCap = 0.15f;
     /// <summary>The percentage of occlusion energy required for the emitter to be at full volume.</summary>
     /// <exception cref="ArgumentException">Thrown if NaN, infinity or &lt; 0</exception>
@@ -447,6 +450,9 @@ public partial class VAEmitter
                 emitter.AmbientPermeationBounceCount = _AmbientPermeationBounceCount;
         }
     }
+
+    /// <summary>True if both AmbientPermeationRayCount and AmbientPermeationBounceCount are above 0</summary>
+    public bool AmbientPermeationEnabled => AmbientPermeationRayCount > 0 && AmbientPermeationBounceCount > 0;
 
     float _AmbientPermeationEnergyCap = 0.15f;
     /// <summary>The percentage of permeation energy required for the emitter to be at full volume.</summary>

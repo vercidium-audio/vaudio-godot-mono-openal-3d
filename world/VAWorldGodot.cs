@@ -116,14 +116,17 @@ public partial class VAWorld
         groupedReverbEffects.Clear();
     }
 
+    bool listeningToTree;
+
     void InitializeScene()
     {
+        // The scene can change again before this deferred call runs
+        if (!IsInsideTree())
+            return;
+
         // SceneRoot can be null if this node isn't under CurrentScene (e.g. added as a sibling autoload) -
         // scan from the tree root instead so primitives already baked into the scene aren't missed.
-        Node root = GetTree()?.Root;
-
-        if (root == null)
-            return;
+        Node root = GetTree().Root;
 
         foreach (var child in root.GetChildren())
             AddPrimitive(child, vaudio.MaterialType.Air, true);
@@ -131,6 +134,7 @@ public partial class VAWorld
         // Listen for scene tree changes
         GetTree().NodeAdded += OnNodeAdded;
         GetTree().NodeRemoved += OnNodeRemoved;
+        listeningToTree = true;
     }
 
     public override void _ExitTree()
@@ -141,8 +145,12 @@ public partial class VAWorld
         ALManager.UnregisterDeviceDestroyedCallback(OnDeviceDestroyed);
         ALManager.UnregisterDeviceRecreatedCallback(OnDeviceRecreated);
 
-        GetTree().NodeAdded -= OnNodeAdded;
-        GetTree().NodeRemoved -= OnNodeRemoved;
+        if (listeningToTree)
+        {
+            GetTree().NodeAdded -= OnNodeAdded;
+            GetTree().NodeRemoved -= OnNodeRemoved;
+            listeningToTree = false;
+        }
 
         UnregisterDebuggerCapture();
 

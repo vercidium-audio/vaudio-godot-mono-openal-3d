@@ -21,9 +21,8 @@ const PROPERTY_GROUP = """    <PropertyGroup>
         <NoWarn>$(NoWarn);1591</NoWarn>
     </PropertyGroup>"""
 
-const DLL_SOURCE_WINDOWS = "addons/vaudio-godot-mono-openal-3d/bin/soft_oal.dll"
-const DLL_SOURCE_LINUX = "addons/vaudio-godot-mono-openal-3d/bin/libopenal.so.1"
-const DLL_SOURCE_MAC = "addons/vaudio-godot-mono-openal-3d/bin/libopenal.1.dylib"
+const ADDON_ROOT = "res://addons/vaudio-godot-mono-openal-3d"
+const VAOpenALLibrary = preload("res://addons/vaudio-godot-mono-openal-3d/common/editor/VAOpenALLibrary.gd")
 
 var _setup_done := false
 var _no_csproj_error_shown := false
@@ -125,25 +124,15 @@ func _setup_project():
 	main_plugin = main_script.new()
 	main_plugin._enter_tree()
 
+# Copies this platform's OpenAL Soft from bin/{platform folder}/ to the project root, which is where the OpenAL bindings load it from in the editor
 func _copy_dll():
-	var source_path: String
-	var dest_path: String
-	var lib_name: String
-
-	if OS.get_name() == "Windows":
-		source_path = DLL_SOURCE_WINDOWS
-		dest_path = "res://soft_oal.dll"
-		lib_name = "soft_oal.dll"
-	elif OS.get_name() == "Linux":
-		source_path = DLL_SOURCE_LINUX
-		dest_path = "res://libopenal.so.1"
-		lib_name = "libopenal.so.1"
-	elif OS.get_name() == "macOS":
-		source_path = DLL_SOURCE_MAC
-		dest_path = "res://libopenal.1.dylib"
-		lib_name = "libopenal.1.dylib"
-	else:
+	var os_name := OS.get_name().to_lower()
+	var source_path := VAOpenALLibrary.get_library_path(ADDON_ROOT, os_name, Engine.get_architecture_name())
+	if source_path.is_empty():
 		return
+
+	var lib_name := VAOpenALLibrary.get_library_name(os_name)
+	var dest_path := "res://" + lib_name
 
 	# Replace an existing copy that differs from the addon's, so upgrading the plugin also upgrades OpenAL (e.g. the universal macOS build)
 	if FileAccess.file_exists(dest_path) and (not FileAccess.file_exists(source_path) or FileAccess.get_md5(dest_path) == FileAccess.get_md5(source_path)):

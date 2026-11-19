@@ -55,12 +55,11 @@ public partial class VASource
 
     public override bool Play()
     {
-        if (playback.ApplyOnPlay(this, IsSilencedByBounds()))
-            return false;
+        var silenced = IsSilencedByBounds();
 
-        // Wait for the muffling and reverb results, so the sound never starts unmuffled or without reverb
-        if (!IsReadyToPlay)
-            return false;
+        // Returns true while waiting for the emitter to be ready, and false while silenced by the bounds, even for a loop that will play once inside
+        if (!playback.RequestPlay(this, silenced, IsReadyToPlay))
+            return !silenced;
 
         var played = base.Play();
 
@@ -79,7 +78,7 @@ public partial class VASource
 
     void PlayIfPending()
     {
-        if (!playback.Apply(this, IsSilencedByBounds()) && playback.IsPending(Autoplay) && IsReadyToPlay)
+        if (playback.Process(this, IsSilencedByBounds(), IsReadyToPlay, Autoplay))
             Play();
     }
 

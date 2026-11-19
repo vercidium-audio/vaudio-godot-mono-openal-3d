@@ -36,8 +36,8 @@ func _run_scenarios() -> void:
 	var listen := args.has("--listen")
 	var names: Array[String] = []
 
-	# Only top-level scripts are scenarios - shared helpers live in scenarios/lib
-	for file in DirAccess.get_files_at(SCENARIOS_DIR):
+	# Only top-level scripts are scenarios - shared helpers live in scenarios/lib. ResourceLoader rather than DirAccess, since an exported game stores them as .gd.remap
+	for file in ResourceLoader.list_directory(SCENARIOS_DIR):
 		if file.get_extension() == "gd":
 			names.append(file.get_basename())
 	names.sort()
@@ -47,6 +47,10 @@ func _run_scenarios() -> void:
 			names.assign(arg.trim_prefix("--scenarios=").split(",", false))
 
 	var failed := 0
+
+	if names.is_empty():
+		push_error("[devproject] FAIL no scenarios found in %s" % SCENARIOS_DIR)
+		failed += 1
 
 	for scenario_name in names:
 		var path := "%s/%s.gd" % [SCENARIOS_DIR, scenario_name]
