@@ -1,6 +1,6 @@
 extends "res://scenarios/lib/scenario.gd"
 
-# stream_paused pauses and resumes a playing source without losing its place, seek() moves it while playing or paused, and play(start_time) starts part way through, including a play that waits for the source to be ready. A source played while paused starts paused. Mono only until the native plugins have the same API
+# stream_paused pauses and resumes a playing source without losing its place, seek() moves it while playing or paused, and play(start_time) starts part way through, including a play that waits for the source to be ready. A source played while paused starts paused.
 
 const SEED := 20261119
 
