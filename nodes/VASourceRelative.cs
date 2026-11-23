@@ -1,48 +1,8 @@
 namespace vaudio_godot_mono_openal;
 
+// The body lives in common/nodes/VASourceRelativeCommon.cs. Scenes reference this path, so don't move it
 [Tool]
 [GlobalClass]
 public partial class VASourceRelative : ALSourceRelative
 {
-    private VAWorld vercidiumAudio;
-
-    Action cancelWaitForVAWorld;
-
-    public override void _EnterTree()
-    {
-        base._EnterTree();
-
-        if (Engine.IsEditorHint())
-            return;
-
-        cancelWaitForVAWorld = this.WaitForVAWorld(world =>
-        {
-            cancelWaitForVAWorld = null;
-            vercidiumAudio = world;
-        });
-    }
-
-    public override void _ExitTree()
-    {
-        cancelWaitForVAWorld?.Invoke();
-        cancelWaitForVAWorld = null;
-
-        base._ExitTree();
-    }
-
-    public override bool Play(float startTime)
-    {
-        if (Engine.IsEditorHint())
-            return false;
-
-        // Don't play until we've found our VAWorld
-        if (vercidiumAudio == null)
-            return false;
-
-        // Set the effect, with no filter
-        effect = vercidiumAudio.listenerReverbEffect;
-        UpdateFilter(1, 1);
-
-        return base.Play(startTime);
-    }
 }

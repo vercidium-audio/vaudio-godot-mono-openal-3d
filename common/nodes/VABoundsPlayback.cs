@@ -1,6 +1,6 @@
 namespace vaudio_godot_mono_openal;
 
-// Autoplay and world bounds rules shared by VASource and VASourceLeech, which have no raytraced base class in common
+// Autoplay and world bounds rules shared by VASource, VASourceLeech and VASourceRelative, which have no raytraced base class in common. VASourceRelative is never silenced
 internal class VABoundsPlayback
 {
     // A Play() that hasn't started yet: waiting for the emitter to be ready, a loop waiting for the bounds, or one the bounds stopped

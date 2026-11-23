@@ -53,6 +53,23 @@ public partial class VAWorld
         return listenerReverbEffect;
     }
 
+    // Whether the current listener's reverb effect has its first EAX, or never will: no reverb effect, no reverb rays, or outside the bounds. False with no listener. VASourceRelative waits for this
+    internal bool IsListenerReverbReady()
+    {
+        if (listener?.emitter == null)
+            return false;
+
+        return listenerReverbEffect == null || listenerReverbEffect.effectSlotID == 0 || !listener.IsWaitingForEAX() || listener.IsOutsideBounds();
+    }
+
+    // Silent until CopyReverb's Update() writes its effectSlotGain with the first EAX, so nothing plays through OpenAL's default reverb
+    static ALReverbEffect CreateSilentReverbEffect()
+    {
+        var effect = new ALReverbEffect();
+        AL.AuxiliaryEffectSlotf(effect.effectSlotID, AL.AL_EFFECTSLOT_GAIN, 0);
+        return effect;
+    }
+
     void OnReverbUpdated()
     {
         raytraceCount++;
@@ -79,7 +96,7 @@ public partial class VAWorld
         for (int i = 0; i < world.GroupedEAX.Count; i++)
         {
             if (groupedReverbEffects.Count <= i)
-                groupedReverbEffects.Add(new());
+                groupedReverbEffects.Add(CreateSilentReverbEffect());
 
             CopyReverb(world.GroupedEAX[i], groupedReverbEffects[i], true);
 
