@@ -14,9 +14,8 @@ func setup() -> void:
 	await wait_raytraced_by_listener(root.source)
 
 func run() -> void:
-	await wait_raytraced(SETTLE_PASSES)
+	var baseline := await wait_grouped_eax_baseline()
 	var maximum: int = VA.get_value(root.world, "maximum_grouped_eax_count")
-	var baseline := VA.grouped_eax_count(root.world)
 	print("[devproject] baseline -> grouped EAX count %d (maximum %d)" % [baseline, maximum])
 
 	var rng := RandomNumberGenerator.new()

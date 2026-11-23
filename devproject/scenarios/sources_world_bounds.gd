@@ -37,8 +37,7 @@ func setup() -> void:
 	inside.x = -inside.x
 
 	await wait_raytraced_by_listener(root.source)
-	await wait_raytraced(SETTLE_PASSES)
-	baseline = VA.grouped_eax_count(root.world)
+	baseline = await wait_grouped_eax_baseline()
 
 func run() -> void:
 	VA.set_value(root.world, "emitters_outside_the_world_are_muffled", true)

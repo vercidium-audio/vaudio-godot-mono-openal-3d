@@ -27,6 +27,10 @@ var expected_warnings: PackedStringArray = []
 # Raytrace passes to wait after a material/ray change before reading reverb results
 const SETTLE_PASSES := 10
 
+# See wait_grouped_eax_count() and wait_grouped_eax_baseline()
+const GROUPED_EAX_TIMEOUT_MS := 10000
+const GROUPED_EAX_STABLE_MS := 2000
+
 # Seconds before the runner gives up on this scenario and fails the run, before the listen stretch is applied
 var timeout_seconds := 60.0
 
@@ -108,13 +112,31 @@ func spawn_leech(node_name: String, parent: Node) -> Node:
 	parent.add_child(node)
 	return node
 
-# Freed emitters stay in the world until their reverb tails finish, so this polls for the grouped EAX count to reach target rather than waiting a fixed number of passes. Returns the last count seen
-func wait_grouped_eax_count(target: int, timeout_ms := 10000) -> int:
+# Freed emitters stay in the world until their reverb tails finish, so this polls for the grouped EAX count to reach target rather than waiting a fixed number of passes. Fails the scenario if it never does, so a teardown that leaves groups behind is blamed instead of the next scenario. Returns the last count seen
+func wait_grouped_eax_count(target: int, timeout_ms := GROUPED_EAX_TIMEOUT_MS) -> int:
 	var started := Time.get_ticks_msec()
 	var count := VA.grouped_eax_count(root.world)
 	while count != target and Time.get_ticks_msec() - started < timeout_ms:
 		await wait_raytraced()
 		count = VA.grouped_eax_count(root.world)
+	check(count == target, "grouped EAX count %d didn't return to %d within %d s" % [count, target, timeout_ms / 1000])
+	return count
+
+# Scenes are reused between scenarios, so an earlier scenario's freed emitters can still be in the grouped EAX blend. Waits until the count has held for GROUPED_EAX_STABLE_MS before returning it as the baseline
+func wait_grouped_eax_baseline(timeout_ms := GROUPED_EAX_TIMEOUT_MS) -> int:
+	await wait_raytraced(SETTLE_PASSES)
+	var started := Time.get_ticks_msec()
+	var count := VA.grouped_eax_count(root.world)
+	var stable_since := started
+	while Time.get_ticks_msec() - stable_since < GROUPED_EAX_STABLE_MS:
+		if Time.get_ticks_msec() - started >= timeout_ms:
+			fail("grouped EAX count never settled within %d s, last count %d" % [timeout_ms / 1000, count])
+			break
+		await wait_raytraced()
+		var latest := VA.grouped_eax_count(root.world)
+		if latest != count:
+			count = latest
+			stable_since = Time.get_ticks_msec()
 	return count
 
 # For sources created or moved at runtime - waits until the listener has actually raytraced them, not just until any pass completes

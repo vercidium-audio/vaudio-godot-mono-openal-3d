@@ -21,8 +21,7 @@ func _init() -> void:
 
 func setup() -> void:
 	await wait_raytraced_by_listener(root.source)
-	await wait_raytraced(SETTLE_PASSES)
-	baseline = VA.grouped_eax_count(root.world)
+	baseline = await wait_grouped_eax_baseline()
 
 func run() -> void:
 	var source := add_source("PauseSeek")
