@@ -168,6 +168,10 @@ public partial class VARaytracedSource
         // Read from the listener rather than the child VAEmitter, which processes after this node. The effect is null if it casts no reverb rays
         effect = vercidiumAudio.GetReverbEffect(emitter);
 
+        // A raytrace-once source has left the listener's targets, so it keeps its last filter
+        if (!IsRaytracedByListener)
+            return;
+
         var vaudioFilter = vercidiumAudio.listener.GetTargetFilter(emitter);
         UpdateFilter(vaudioFilter.GainLF, vaudioFilter.GainHF, true);
     }

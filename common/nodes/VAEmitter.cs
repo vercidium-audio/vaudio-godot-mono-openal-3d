@@ -256,6 +256,9 @@ public partial class VAEmitter
         if (RaytraceOnce && !raytraceOnceRemoved && HasListenerResults())
         {
             raytraceOnceRemoved = true;
+
+            // The listener stops raytracing it too, so its muffling is held at this result, even while its reverb tail keeps it in the world
+            vercidiumAudio.listener.RemoveTarget(emitter);
             RemoveEmitter();
         }
     }
@@ -265,7 +268,11 @@ public partial class VAEmitter
     {
         var listener = vercidiumAudio?.listener;
 
-        if (emitter == null || listener == null || listener == this || !listener.HasRaytracedTarget(this))
+        if (emitter == null || listener == null || listener == this)
+            return false;
+
+        // A raytrace-once emitter has left the listener's targets and holds its last muffling
+        if (!raytraceOnceRemoved && !listener.HasRaytracedTarget(this))
             return false;
 
         // Its grouped EAX slot, and so its reverb effect, isn't known until it casts its own reverb rays

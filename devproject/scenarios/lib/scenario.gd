@@ -91,7 +91,7 @@ func measure_muffling(label: String, banner: String, source: Node = null) -> Vec
 	return muffling
 
 # Adds a looping, autoplaying VASource that plays the scene source's streams. Freed emitters linger until their reverb tails finish - see wait_grouped_eax_count()
-func spawn_source(source_name: String, position, scattering_seed: int, looping := true, autoplay := true) -> Node:
+func spawn_source(source_name: String, position, scattering_seed: int, looping := true, autoplay := true, raytrace_once := false) -> Node:
 	var source := VA.create_node(root.world, "VASource")
 	source.name = source_name
 	source.position = position
@@ -101,6 +101,7 @@ func spawn_source(source_name: String, position, scattering_seed: int, looping :
 	VA.set_value(source, "reverb_ray_count", 64)
 	VA.set_value(source, "reverb_bounce_count", 64)
 	VA.set_value(source, "scattering_seed", scattering_seed)
+	VA.set_value(source, "raytrace_once", raytrace_once)
 	root.add_child(source)
 	return source
 
