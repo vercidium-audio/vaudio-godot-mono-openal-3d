@@ -4,23 +4,6 @@ namespace vaudio_godot_mono_openal;
 
 public partial class VAWorld
 {
-    public ALReverbEffect GetReverbEffect(vaudio.Emitter emitter)
-    {
-        if (emitter.AffectsGroupedEAX && emitter.GroupedEAXIndex >= 0)
-        {
-            if (emitter.GroupedEAXIndex >= groupedReverbEffects.Count)
-            {
-                WarnMissingGroupedEAX(emitter.Name, emitter.GroupedEAXIndex);
-                return listenerReverbEffect;
-            }
-
-            return groupedReverbEffects[emitter.GroupedEAXIndex];
-        }
-
-        // TODO - a user might purposefully want an emitter to have no reverb. Maybe a new ReverbFallback enum option for 'No reverb' vs 'Listener reverb'?
-        return listenerReverbEffect;
-    }
-
     // Grouped reverb effects are only created once reverb updates with a listener
     void WarnMissingGroupedEAX(string emitterName, int groupedEAXIndex)
     {
