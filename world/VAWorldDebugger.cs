@@ -112,9 +112,8 @@ public partial class VAWorld
 
     bool OnSyncMaterialProperties(Godot.Collections.Array data)
     {
-        // sceneRootName, nodePath, nodeName, isCustomMaterial, materialType, customMaterialName,
-        // 7 material floats, debugColor
-        if (data.Count < 14)
+        // sceneRootName, nodePath, nodeName, isCustomMaterial, materialType, 7 material floats, debugColor
+        if (data.Count < 13)
             return false;
 
         var treeRoot = GetTree()?.Root;
@@ -139,19 +138,18 @@ public partial class VAWorld
         var nodeName = data[2].As<string>();
         var isCustomMaterial = data[3].As<bool>();
         var materialType = data[4].As<int>();
-        var customMaterialName = data[5].As<string>();
 
-        float absorptionLf = data[6].As<float>();
-        float absorptionHf = data[7].As<float>();
-        float scattering = data[8].As<float>();
-        float transmissionLf = data[9].As<float>();
-        float transmissionHf = data[10].As<float>();
-        float flatTransmissionLf = data[11].As<float>();
-        float flatTransmissionHf = data[12].As<float>();
-        var debugColor = data[13].As<Color>();
+        float absorptionLf = data[5].As<float>();
+        float absorptionHf = data[6].As<float>();
+        float scattering = data[7].As<float>();
+        float transmissionLf = data[8].As<float>();
+        float transmissionHf = data[9].As<float>();
+        float flatTransmissionLf = data[10].As<float>();
+        float flatTransmissionHf = data[11].As<float>();
+        var debugColor = data[12].As<Color>();
 
         if (node is not VADefaultMaterial and not VACustomMaterial)
-            node = ReplaceWithMaterialNode(sceneRoot, nodePath, node, nodeName, isCustomMaterial, materialType, customMaterialName);
+            node = ReplaceWithMaterialNode(sceneRoot, nodePath, node, nodeName, isCustomMaterial, materialType);
 
         if (node is VADefaultMaterial defaultMaterial)
             defaultMaterial.ApplyPropertiesFromEditor(absorptionLf, absorptionHf, scattering,
@@ -166,7 +164,7 @@ public partial class VAWorld
     }
 
     static Node ReplaceWithMaterialNode(Node sceneRoot, NodePath nodePath, Node existingNode, string nodeName,
-        bool isCustomMaterial, int materialType, string customMaterialName)
+        bool isCustomMaterial, int materialType)
     {
         Node parent;
 
@@ -197,7 +195,7 @@ public partial class VAWorld
 
         if (isCustomMaterial)
         {
-            node = new VACustomMaterial { Name = nodeName, MaterialName = customMaterialName };
+            node = new VACustomMaterial { Name = nodeName };
         }
         else
         {

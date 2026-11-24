@@ -68,9 +68,8 @@ script = ExtResource("3_world")
 position = Vector3(-10, -3, -8)
 Size = Vector3(20, 12, 16)
 
-[node name="RoomMaterial" type="Node" parent="VAWorld"]
+[node name="Room" type="Node" parent="VAWorld"]
 script = ExtResource("4_custommaterial")
-MaterialName = "room"
 AbsorptionLF = 0.1
 AbsorptionHF = 0.15
 Scattering = 0.3

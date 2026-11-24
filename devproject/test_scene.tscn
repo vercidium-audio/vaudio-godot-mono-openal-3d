@@ -129,9 +129,8 @@ script = ExtResource("3_world")
 position = Vector3(-28, -2, -16)
 Size = Vector3(56, 14, 32)
 
-[node name="VACustomMaterial" type="Node" parent="VAWorld"]
+[node name="Carpet" type="Node" parent="VAWorld"]
 script = ExtResource("4_custommaterial")
-MaterialName = "carpet"
 AbsorptionLF = 0.4
 AbsorptionHF = 0.6
 

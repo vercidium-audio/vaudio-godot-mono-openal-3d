@@ -51,7 +51,7 @@ public partial class VACustomMaterial : Node
             return;
 
         var world = vercidiumAudio;
-        var name = MaterialName;
+        string name = Name;
         vercidiumAudio = null;
 
         Callable.From(() => ReportIfRemovedAtRuntime(world, this, name)).CallDeferred();
@@ -68,22 +68,6 @@ public partial class VACustomMaterial : Node
             return;
 
         Logger.LogError($"VACustomMaterial '{name}' was removed while its VAWorld is still running. Custom materials can't be removed at runtime - primitives using it keep its last values until the scene is reloaded");
-    }
-
-    string _materialName = "CustomMaterial";
-
-    /// <summary>
-    /// Name of the custom material
-    /// </summary>
-    [Export(PropertyHint.None, "")]
-    public string MaterialName
-    {
-        get => _materialName;
-        set
-        {
-            _materialName = value;
-            UpdateConfigurationWarnings();
-        }
     }
 
     float _AbsorptionLF = 0.02f;
@@ -273,15 +257,5 @@ public partial class VACustomMaterial : Node
         vaudioMaterial.FlatTransmissionHF = _FlatTransmissionHF;
 
         vercidiumAudio?.world.SetMaterialColor((vaudio.MaterialType)materialType, GetDebugColor());
-    }
-
-    public override string[] _GetConfigurationWarnings()
-    {
-        var warnings = new List<string>();
-
-        if (string.IsNullOrWhiteSpace(MaterialName))
-            warnings.Add("Material Name should not be empty.");
-
-        return [.. warnings];
     }
 }

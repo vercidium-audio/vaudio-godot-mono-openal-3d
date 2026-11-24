@@ -20,7 +20,7 @@ func _init() -> void:
 	scene = REVERB_ROOM
 
 func setup() -> void:
-	material = root.world.get_node("RoomMaterial")
+	material = root.world.get_node("Room")
 	original_lf = VA.get_value(material, "absorption_lf")
 	original_hf = VA.get_value(material, "absorption_hf")
 	VA.set_value(material, "absorption_lf", ABSORPTION_LF)

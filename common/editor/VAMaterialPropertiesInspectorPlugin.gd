@@ -37,10 +37,9 @@ func _sync_running_game(node: Node) -> void:
 	var is_custom_material := node is VACustomMaterial
 
 	var material_type: int = 0 if is_custom_material else node.MaterialType
-	var custom_material_name: String = node.MaterialName if is_custom_material else ""
 
 	var node_path := scene_root.get_path_to(node)
 	debugger_plugin.sync_material_properties(scene_root.name, node_path, node.name,
-		is_custom_material, material_type, custom_material_name, node.AbsorptionLF,
+		is_custom_material, material_type, node.AbsorptionLF,
 		node.AbsorptionHF, node.Scattering, node.TransmissionLF, node.TransmissionHF,
 		node.FlatTransmissionLF, node.FlatTransmissionHF, node.DebugColor)

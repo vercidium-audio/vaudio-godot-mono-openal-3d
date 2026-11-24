@@ -213,7 +213,7 @@ func _find_custom_materials(node: Node) -> Array:
 
 func _find_custom_materials_recursive(node: Node, names: Array):
 	if node is VACustomMaterial:
-		names.append(node.MaterialName)
+		names.append(String(node.name))
 
 	for child in node.get_children():
 		_find_custom_materials_recursive(child, names)

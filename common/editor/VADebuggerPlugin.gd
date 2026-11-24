@@ -11,14 +11,14 @@ func sync_primitive(scene_root_name: String, node_path: NodePath, material: Stri
 				use_flat_transmission, propagate])
 
 func sync_material_properties(scene_root_name: String, node_path: NodePath, node_name: String,
-		is_custom_material: bool, material_type: int, custom_material_name: String,
+		is_custom_material: bool, material_type: int,
 		absorption_lf: float, absorption_hf: float, scattering: float, transmission_lf: float,
 		transmission_hf: float, flat_transmission_lf: float, flat_transmission_hf: float,
 		debug_color: Color) -> void:
 	for session in get_sessions():
 		if session != null and session.is_active():
 			session.send_message("vaudio:sync_material_properties", [scene_root_name, node_path,
-				node_name, is_custom_material, material_type, custom_material_name, absorption_lf,
+				node_name, is_custom_material, material_type, absorption_lf,
 				absorption_hf, scattering, transmission_lf, transmission_hf, flat_transmission_lf,
 				flat_transmission_hf, debug_color])
 

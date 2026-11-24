@@ -4,7 +4,8 @@ public partial class VAWorld
 {
     const int FirstCustomMaterialId = 1000;
 
-    public Dictionary<int, VACustomMaterial> customMaterials = [];
+    // Material ID -> node name at registration, so names still resolve after a custom material node is freed
+    public Dictionary<int, string> customMaterials = [];
 
     /// <summary>
     /// Assigns a VACustomMaterial the lowest material ID not already claimed by another custom
@@ -18,7 +19,7 @@ public partial class VAWorld
             if (id >= type)
                 type = id + 1;
 
-        customMaterials[type] = material;
+        customMaterials[type] = material.Name;
         return type;
     }
 
@@ -34,7 +35,7 @@ public partial class VAWorld
 
         // Match custom materials
         foreach (var kvp in customMaterials)
-            if (kvp.Value.MaterialName.Equals(materialString, StringComparison.CurrentCultureIgnoreCase))
+            if (kvp.Value.Equals(materialString, StringComparison.CurrentCultureIgnoreCase))
                 return (vaudio.MaterialType)kvp.Key;
 
         // Match default materials

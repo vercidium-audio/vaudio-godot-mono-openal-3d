@@ -18,7 +18,7 @@ func setup() -> void:
 	await wait_raytraced_by_listener(root.source)
 
 	material = VA.create_node(root.world, "VACustomMaterial")
-	VA.set_value(material, "material_name", MATERIAL_NAME)
+	material.name = MATERIAL_NAME
 	VA.set_value(material, "transmission_lf", TRANSMISSION)
 	VA.set_value(material, "transmission_hf", TRANSMISSION)
 	root.world.add_child(material)
