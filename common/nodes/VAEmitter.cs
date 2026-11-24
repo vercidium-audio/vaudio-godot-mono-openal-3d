@@ -269,11 +269,11 @@ public partial class VAEmitter
             return false;
 
         // Its grouped EAX slot, and so its reverb effect, isn't known until it casts its own reverb rays
-        if (waitForOwnEAX && emitter.AffectsGroupedEAX && emitter.ReverbEnabled)
-            return emitter.EAX != null;
-
-        return true;
+        return !(waitForOwnEAX && emitter.AffectsGroupedEAX && IsWaitingForEAX());
     }
+
+    // Casts reverb rays but has no EAX yet
+    internal bool IsWaitingForEAX() => emitter != null && emitter.ReverbEnabled && emitter.EAX == null;
 
     /// <summary>
     /// True once this emitter has cast its own rays and the listener has raytraced it. Sources don't play until this is true. Inside the bounds it also waits for its own grouped EAX, which doesn't exist outside them

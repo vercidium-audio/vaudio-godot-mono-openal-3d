@@ -45,13 +45,17 @@ public partial class VASourceAmbient
         base._Ready();
     }
 
-    public override bool Play()
+    /// <summary>If true, this source is sent to the listener's reverb effect, muffled by the ambient filter. It then waits for the listener's first raytraced reverb before it plays</summary>
+    [Export]
+    public bool UseListenerReverb { get; set; } = false;
+
+    public override bool Play(float startTime)
     {
-        // Don't play until we've raytraced once
-        if (vercidiumAudio?.ambientFilter == null)
+        // Don't play until we've raytraced once, and the listener's reverb has its first EAX, so it never starts in OpenAL's default reverb
+        if (vercidiumAudio?.ambientFilter == null || (UseListenerReverb && !vercidiumAudio.IsListenerReverbReady()))
             return false;
 
-        played = base.Play();
+        played = base.Play(startTime);
         return played;
     }
 
@@ -74,7 +78,7 @@ public partial class VASourceAmbient
         if (vercidiumAudio?.ambientFilter == null)
             return;
 
-        effect = null;// vercidiumAudio.listenerReverbEffect;
+        effect = UseListenerReverb ? vercidiumAudio.listenerReverbEffect : null;
         UpdateFilter(vercidiumAudio.ambientFilter.gain, vercidiumAudio.ambientFilter.gainHF);
 
         if (!played)

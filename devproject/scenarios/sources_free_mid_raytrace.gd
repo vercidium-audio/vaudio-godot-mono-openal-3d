@@ -14,8 +14,7 @@ func setup() -> void:
 	await wait_raytraced_by_listener(root.source)
 
 func run() -> void:
-	await wait_raytraced(SETTLE_PASSES)
-	var baseline := VA.grouped_eax_count(root.world)
+	var baseline := await wait_grouped_eax_baseline()
 	var rng := RandomNumberGenerator.new()
 	rng.seed = SEED
 

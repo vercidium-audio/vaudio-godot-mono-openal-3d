@@ -1,10 +1,13 @@
 namespace vaudio_godot_mono_openal;
 
-// Autoplay and world bounds rules shared by VASource and VASourceLeech, which have no raytraced base class in common
+// Autoplay and world bounds rules shared by VASource, VASourceLeech and VASourceRelative, which have no raytraced base class in common. VASourceRelative is never silenced
 internal class VABoundsPlayback
 {
     // A Play() that hasn't started yet: waiting for the emitter to be ready, a loop waiting for the bounds, or one the bounds stopped
     bool playPending;
+
+    // The time in seconds the queued play starts from
+    internal float PendingStartTime { get; private set; }
 
     // Set once played or cancelled, so autoplay only starts it once
     internal bool AutoplayDone;
@@ -12,6 +15,7 @@ internal class VABoundsPlayback
     internal void OnPlayed()
     {
         playPending = false;
+        PendingStartTime = 0;
         AutoplayDone = true;
     }
 
@@ -19,7 +23,7 @@ internal class VABoundsPlayback
     internal void Cancel() => OnPlayed();
 
     // Call at the top of Play(). Returns whether to play now, otherwise the play is queued until it's ready, and a loop waits until it's inside the bounds. A sound that doesn't loop isn't played outside the bounds, with a warning
-    internal bool RequestPlay(ALSource source, bool silenced, bool ready)
+    internal bool RequestPlay(ALSource source, bool silenced, bool ready, float startTime)
     {
         if (silenced && !source.Looping)
             LogWarning($"{source.Name}: This source did not play because it is outside the world bounds.");
@@ -29,11 +33,12 @@ internal class VABoundsPlayback
 
         // Waits for the emitter's muffling and reverb results, so the sound never starts unmuffled or without reverb. StopIfSilenced() cancels it if it doesn't loop and is outside the bounds
         playPending = true;
+        PendingStartTime = startTime;
         StopIfSilenced(source, silenced);
         return false;
     }
 
-    // Call every frame. While silenced it stops the sound, re-queues a loop that was playing so it resumes inside, and cancels a queued play that doesn't loop. Returns whether to call Play() now, for a queued play or autoplay
+    // Call every frame. While silenced it stops the sound, re-queues a loop that was playing so it resumes inside, and cancels a queued play that doesn't loop. Returns whether to call Play(PendingStartTime) now, for a queued play or autoplay
     internal bool Process(ALSource source, bool silenced, bool ready, bool autoplay)
     {
         if (StopIfSilenced(source, silenced))
@@ -50,8 +55,14 @@ internal class VABoundsPlayback
 
         if (!source.Looping)
             Cancel();
-        else if (source.IsPlaying() || source.IsPlayRequested)
+        // A paused loop is re-queued too, and starts paused once inside. It restarts from the beginning, unless a play from a start time is already queued
+        else if (source.HasSound() || source.IsPlayRequested)
+        {
+            if (!playPending)
+                PendingStartTime = 0;
+
             playPending = true;
+        }
 
         source.StopPlayback();
         return true;

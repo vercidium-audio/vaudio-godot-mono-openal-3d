@@ -156,6 +156,21 @@ static func play(source: Node) -> bool:
 static func stop(source: Node) -> void:
 	source.Stop()
 
+static func play_from(source: Node, start_time: float) -> bool:
+	return source.Play(start_time)
+
+static func set_stream_paused(source: Node, paused: bool) -> void:
+	source.StreamPaused = paused
+
+static func is_stream_paused(source: Node) -> bool:
+	return source.StreamPaused
+
+static func seek(source: Node, time: float) -> void:
+	source.Seek(time)
+
+static func playback_time(source: Node) -> float:
+	return source.GetPlaybackTime()
+
 # The C# ALManager isn't a Godot object, so its HRTF functions are reached through VAWorld's static passthroughs
 static func available_hrtfs(world: Node) -> PackedStringArray:
 	return PackedStringArray(world.get_script().GetAvailableHrtfs())

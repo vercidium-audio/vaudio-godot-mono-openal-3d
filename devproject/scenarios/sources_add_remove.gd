@@ -16,8 +16,7 @@ func _init() -> void:
 func setup() -> void:
 	partition = DIM.add_reverb_room_partition(root, "brick")
 	await wait_raytraced_by_listener(root.source)
-	await wait_raytraced(SETTLE_PASSES)
-	baseline_eax = VA.grouped_eax_count(root.world)
+	baseline_eax = await wait_grouped_eax_baseline()
 
 func run() -> void:
 	var listener_side = root.source.position

@@ -39,7 +39,7 @@ public partial class ALSource
             return;
 
         if (playRequested)
-            Play();
+            Play(requestedStartTime);
 
         for (int i = sources.Count - 1; i >= 0; i--)
         {

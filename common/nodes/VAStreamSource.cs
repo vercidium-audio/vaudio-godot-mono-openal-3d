@@ -61,7 +61,15 @@ public partial class VAStreamSource : VARaytracedSource
 
         sources.Add(source);
         streamSource = source;
+
+        // The stream source starts playing as soon as it's created
+        ApplyPaused(source);
         return true;
+    }
+
+    public override void Seek(float time)
+    {
+        LogWarning($"{Name}: A VAStreamSource can't seek");
     }
 
     void StopSound()
@@ -113,8 +121,8 @@ public partial class VAStreamSource : VARaytracedSource
             return;
         }
 
-        // Nothing plays it while the bounds have stopped it. A destroyed device releases the source without going through CloseStream
-        if (data == null || data.Length == 0 || stoppedByBounds || streamSource == null || streamSource.IsDisposed())
+        // Nothing plays it while the bounds have stopped it, and audio queued while paused would play late. A destroyed device releases the source without going through CloseStream
+        if (data == null || data.Length == 0 || stoppedByBounds || StreamPaused || streamSource == null || streamSource.IsDisposed())
             return;
 
         // Data that arrives before the muffling and reverb results is dropped, so the stream never plays unmuffled or without reverb

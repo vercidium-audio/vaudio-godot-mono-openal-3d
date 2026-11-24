@@ -84,6 +84,7 @@ public partial class ALSource
     static Random random = new();
 
     bool playRequested = false;
+    float requestedStartTime;
 
     int PickStreamIndex()
     {
@@ -105,7 +106,12 @@ public partial class ALSource
     {
     }
 
-    public virtual bool Play()
+    public bool Play() => Play(0);
+
+    /// <summary>
+    /// Plays a new sound, starting <paramref name="startTime"/> seconds in. While <see cref="StreamPaused"/> is set it starts paused, and plays once unpaused
+    /// </summary>
+    public virtual bool Play(float startTime)
     {
         ALManager.Ensure();
 
@@ -139,6 +145,7 @@ public partial class ALSource
         {
             // Buffer is still decoding in the background
             playRequested = true;
+            requestedStartTime = startTime;
             return false;
         }
 
@@ -159,9 +166,108 @@ public partial class ALSource
         UpdateDryOutput();
         ApplyFilters(source);
 
-        source.Play();
         sources.Add(source);
+
+        // An initial source starts from its offset once played
+        if (startTime > 0)
+            SeekSource(source, startTime);
+
+        if (!_streamPaused)
+            source.Play();
+
         return true;
+    }
+
+    bool _streamPaused;
+
+    /// <summary>
+    /// Pauses every sound this source is playing, and resumes them from the same time when set back to false. Sounds played while paused start paused. Matches AudioStreamPlayer's stream_paused
+    /// </summary>
+    [Export]
+    public bool StreamPaused
+    {
+        get => _streamPaused;
+        set
+        {
+            if (_streamPaused == value)
+                return;
+
+            _streamPaused = value;
+
+            foreach (var s in sources)
+                ApplyPaused(s);
+        }
+    }
+
+    protected void ApplyPaused(OpenALSource source)
+    {
+        var state = AL.GetSourcei(source.ID, AL.AL_SOURCE_STATE);
+
+        if (_streamPaused)
+        {
+            if (state == AL.AL_PLAYING)
+                AL.SourcePause(source.ID);
+        }
+        // Not a stopped one, which would restart from the beginning
+        else if (state == AL.AL_PAUSED || state == AL.AL_INITIAL)
+            source.Play();
+    }
+
+    /// <summary>
+    /// Moves every sound this source is playing to <paramref name="time"/> seconds, while playing or paused. A looping sound wraps around, and a sound that doesn't loop stops if it's past the end. Matches AudioStreamPlayer's seek()
+    /// </summary>
+    public virtual void Seek(float time)
+    {
+        foreach (var s in sources)
+            SeekSource(s, time);
+    }
+
+    void SeekSource(OpenALSource source, float seconds)
+    {
+        var length = BufferLength((uint)AL.GetSourcei(source.ID, AL.AL_BUFFER));
+
+        if (length <= 0)
+            return;
+
+        seconds = MathF.Max(0, seconds);
+
+        if (seconds >= length)
+        {
+            if (!source.looping)
+            {
+                source.Stop();
+                return;
+            }
+
+            seconds %= length;
+        }
+
+        source.SetSecOffset(seconds);
+    }
+
+    static float BufferLength(uint buffer)
+    {
+        if (buffer == 0)
+            return 0;
+
+        var bytesPerFrame = AL.GetBufferi(buffer, AL.AL_CHANNELS) * AL.GetBufferi(buffer, AL.AL_BITS) / 8;
+        var frequency = AL.GetBufferi(buffer, AL.AL_FREQUENCY);
+
+        if (bytesPerFrame <= 0 || frequency <= 0)
+            return 0;
+
+        return (float)AL.GetBufferi(buffer, AL.AL_SIZE) / bytesPerFrame / frequency;
+    }
+
+    /// <summary>
+    /// How many seconds into the most recently played sound it is, or 0 if nothing is playing. Matches AudioStreamPlayer's get_playback_position()
+    /// </summary>
+    public float GetPlaybackTime()
+    {
+        if (sources.Count == 0)
+            return 0;
+
+        return AL.GetSourcef(sources[^1].ID, AL.AL_SEC_OFFSET);
     }
 
     public virtual void Stop() => StopPlayback();
@@ -181,7 +287,11 @@ public partial class ALSource
         sources.Clear();
     }
 
-    public bool IsPlaying()
+    // False while paused, matching AudioStreamPlayer
+    public bool IsPlaying() => !_streamPaused && HasSound();
+
+    // Whether a sound is playing or paused
+    internal bool HasSound()
     {
         foreach (var s in sources)
             if (!s.Finished())
@@ -200,8 +310,11 @@ public partial class ALSource
 
     // GDScript aliases so existing AudioStreamPlayer scripts don't break
     public bool play() => Play();
+    public bool play(float start_time) => Play(start_time);
     public void stop() => Stop();
     public bool is_playing() => IsPlaying();
+    public void seek(float time) => Seek(time);
+    public float get_playback_position() => GetPlaybackTime();
 
     public virtual void OnDeviceDestroyed()
     {

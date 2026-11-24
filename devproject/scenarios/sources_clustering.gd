@@ -18,8 +18,7 @@ func _init() -> void:
 
 func setup() -> void:
 	await wait_raytraced_by_listener(root.source)
-	await wait_raytraced(SETTLE_PASSES)
-	baseline_eax = VA.grouped_eax_count(root.world)
+	baseline_eax = await wait_grouped_eax_baseline()
 	original_target_clustering = VA.get_value(root.listener, "target_clustering_enabled")
 	original_target_distance = VA.get_value(root.listener, "target_clustering_distance")
 

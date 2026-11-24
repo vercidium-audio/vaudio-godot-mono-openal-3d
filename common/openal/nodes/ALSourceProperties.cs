@@ -129,10 +129,19 @@ public partial class ALSource
         set => Volume = Mathf.DbToLinear(value);
     }
 
+    /// <summary>Script-only alias for <see cref="StreamPaused"/>, matching AudioStreamPlayer3D's "stream_paused" property.</summary>
+    [Export]
+    public bool stream_paused
+    {
+        get => StreamPaused;
+        set => StreamPaused = value;
+    }
+
     static readonly StringName[] scriptOnlyAliasProperties =
     [
         PropertyName.pitch_scale,
         PropertyName.volume_db,
+        PropertyName.stream_paused,
     ];
 
     public override void _ValidateProperty(Godot.Collections.Dictionary property)
