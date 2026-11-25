@@ -1,3 +1,5 @@
+# AI-created
+
 extends RefCounted
 
 # Base class for devproject test scenarios, run by lib/runner.gd. Override setup/run/teardown - each may be a coroutine. teardown must restore the scene so scenarios stay order-independent.
@@ -23,6 +25,9 @@ var failure := ""
 # Substrings of errors/warnings this scenario deliberately triggers - see expect_error()/expect_warning()
 var expected_errors: PackedStringArray = []
 var expected_warnings: PackedStringArray = []
+
+# How many times each expected_warnings entry must be logged, or -1 for at least once
+var expected_warning_counts: PackedInt32Array = []
 
 # Raytrace passes to wait after a material/ray change before reading reverb results
 const SETTLE_PASSES := 10
@@ -53,9 +58,10 @@ func expect_error(substring: String) -> void:
 	expected_errors.append(substring)
 	print("[devproject] EXPECT_ERROR %s" % substring)
 
-# Call before triggering a warning on purpose. The runner fails the scenario if no warning containing this text is logged - warnings never fail a run otherwise, so there's nothing for godottest.cs to ignore
-func expect_warning(substring: String) -> void:
+# Call before triggering a warning on purpose. The runner fails the scenario if no warning containing this text is logged, or with count >= 0 if it isn't logged exactly that many times - warnings never fail a run otherwise, so there's nothing for godottest.cs to ignore
+func expect_warning(substring: String, count := -1) -> void:
 	expected_warnings.append(substring)
+	expected_warning_counts.append(count)
 
 func check(condition: bool, reason: String) -> void:
 	if not condition:

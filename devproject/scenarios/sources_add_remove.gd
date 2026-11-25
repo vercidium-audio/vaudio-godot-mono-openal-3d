@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Adds a source on each side of a sealed brick partition, detaches the far one with remove_child() and adds it back, and adds then frees a source in the same frame. Each source has to be muffled according to its own side of the wall, a detached source mustn't disturb the others, and grouped reverb must return to its baseline once they're all gone

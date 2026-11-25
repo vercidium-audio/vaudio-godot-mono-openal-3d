@@ -1,3 +1,5 @@
+# AI-created
+
 extends RefCounted
 
 # C# (Mono) plugin adapter - the Standard plugin has its own va.gd with the same functions. Property names are always given in snake_case and converted to the C# PascalCase name here.

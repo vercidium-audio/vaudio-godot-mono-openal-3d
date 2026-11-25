@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Plays a sine wave through a VAStreamSource, then checks stop() closes the stream as well as stopping playback, so is_stream_open() doesn't stay true with nothing playing it. Reopening afterwards plays again, and close_stream() stops it too

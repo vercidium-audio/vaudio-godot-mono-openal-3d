@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Tweens a sealed brick partition from beyond the source to between the listener and source and back, so the primitive follows a transform that changes every frame

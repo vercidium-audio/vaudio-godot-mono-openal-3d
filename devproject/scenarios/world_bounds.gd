@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Shrinks the world's bounds so they end between the listener and source, leaving the source outside. A clamped source is pulled back inside and still raytraced; an unclamped one follows emitters_outside_the_world_are_muffled, which also stops it while on (see sources_world_bounds.gd)

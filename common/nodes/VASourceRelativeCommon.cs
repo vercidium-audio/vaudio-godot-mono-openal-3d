@@ -10,6 +10,8 @@ public partial class VASourceRelative
     // Never silenced by the bounds, as it plays at the listener
     readonly VABoundsPlayback playback = new();
 
+    bool warnedNoListenerReverb = false;
+
     /// <summary>
     /// True once the current listener's reverb has its first raytraced results, or never will (no reverb rays, or outside the bounds). Sources don't play until this is true, so they never start in OpenAL's default reverb
     /// </summary>
@@ -60,6 +62,7 @@ public partial class VASourceRelative
             return true;
 
         // Set the effect, with no filter
+        vercidiumAudio.WarnIfListenerCastsNoReverbRays(this, ref warnedNoListenerReverb);
         effect = vercidiumAudio.listenerReverbEffect;
         UpdateFilter(1, 1);
 

@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # VAInputStreamSource's settings, without opening a microphone. The node is never added to the tree, so _ready() doesn't start capturing. device_name is always a dropdown led by "System Default", even when the machine has no capture devices, and open_capture() rejects formats the microphone threshold can't read before touching the device

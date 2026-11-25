@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Switches between every available HRTF (OpenAL Soft's built-in one, plus any .mhr files in audio/vaudio/hrtf_folder) while a source plays, checking the device resets in place without stopping it. Then checks an unknown HRTF name falls back to the default, and HRTF can be turned off and back on

@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Changes scene again straight after scene_changed, so the new scene's VAWorld leaves the tree before its deferred scene scan runs. The world must skip the scan and not disconnect tree signals it never connected

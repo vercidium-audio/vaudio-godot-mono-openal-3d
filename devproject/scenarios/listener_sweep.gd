@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Sweeps the listener around the scene - the original smoke test, kept as a baseline for the other scenarios

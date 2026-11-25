@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Pins down that vaudio geometry follows tree membership and metadata only: hiding a node, disabling a collision shape or disabling processing leaves its primitive in place. Invisible occluders are common, so hiding a wall mustn't open it up acoustically - remove the node, or change its material and call sync_primitive, to take it out of the simulation

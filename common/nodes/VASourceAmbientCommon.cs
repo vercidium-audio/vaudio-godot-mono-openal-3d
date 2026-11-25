@@ -6,6 +6,7 @@ public partial class VASourceAmbient
     private VAWorld vercidiumAudio;
     private bool played = false;
     private bool warnedNoAmbience = false;
+    private bool warnedNoListenerReverb = false;
 
     Action cancelWaitForVAWorld;
 
@@ -54,6 +55,9 @@ public partial class VASourceAmbient
         // Don't play until we've raytraced once, and the listener's reverb has its first EAX, so it never starts in OpenAL's default reverb
         if (vercidiumAudio?.ambientFilter == null || (UseListenerReverb && !vercidiumAudio.IsListenerReverbReady()))
             return false;
+
+        if (UseListenerReverb)
+            vercidiumAudio.WarnIfListenerCastsNoReverbRays(this, ref warnedNoListenerReverb);
 
         played = base.Play(startTime);
         return played;

@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Rotates and scales a sealed brick partition so it starts and stops blocking the listener. It's long enough to seal the room either way round, so a quarter turn moves it from between the listener and source to beside them, and squashing its length leaves a narrow column sound goes around

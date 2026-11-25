@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Changing a primitive's material metadata at runtime only takes effect after VAWorld.sync_primitive(node) - Godot has no signal for metadata changes, and polling every node's metadata each frame isn't worth it. Uses a sealed partition in the reverb room so its material alone decides the muffling

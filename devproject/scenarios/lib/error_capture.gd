@@ -1,3 +1,5 @@
+# AI-created
+
 extends Logger
 
 # Captures every engine/plugin error and warning (push_error/push_warning, C# GD.PushError/PushWarning, native VA_ERROR/VA_WARN) so the runner can check what each scenario produced. Installed by runner.gd via OS.add_logger - loggers can be called from any thread

@@ -1,3 +1,5 @@
+# AI-created
+
 extends RefCounted
 
 # 3D geometry helpers - the 2D version has the same functions, so scenarios using them stay dimension-agnostic

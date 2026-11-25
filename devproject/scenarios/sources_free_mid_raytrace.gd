@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Raises a source's reverb ray count and frees it 0-3 frames later, so the free races the work item the change queued. Each round varies the gap, queue_free() vs immediate free(), and whether the source has finished its first raytrace yet. Any error, crash or stalled world fails it

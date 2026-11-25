@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Adds a sealed wall of 20 StaticBodies at runtime, then frees it. The material is only on the pieces' shared parent, so this also covers colliders inheriting a material when a whole subtree enters the tree at once (e.g. an instanced scene)

@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Keeps the reverb room's LF absorption fixed and raises only HF absorption - the reverb should get darker, not shorter. The world only reports one broadband decay time, so "not shorter" is checked against a control step that absorbs both bands equally

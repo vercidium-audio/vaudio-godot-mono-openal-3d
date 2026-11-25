@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Checks reverb_room.tscn is actually enclosed and raytraced before the material/reverb scenarios rely on it

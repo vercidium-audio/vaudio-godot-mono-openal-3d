@@ -243,6 +243,8 @@ public partial class VAEmitter
 
     bool raytraceOnceRemoved = false;
 
+    bool warnedNoListenerReverb = false;
+
     public override void _Process(double delta)
     {
         // If initialisation failed, skip
@@ -251,6 +253,9 @@ public partial class VAEmitter
 
         if (Raytraced)
             ApplyRaytracingResults();
+
+        if (UseListenerReverb)
+            vercidiumAudio?.WarnIfListenerCastsNoReverbRays(this, ref warnedNoListenerReverb);
 
         // Once ready, cast rays no more. A parent VARaytracedSource processes before this node, so it has already played. A sound started outside the bounds keeps going until it's raytraced inside and has reverb
         if (RaytraceOnce && !raytraceOnceRemoved && HasListenerResults())
@@ -282,10 +287,23 @@ public partial class VAEmitter
     // Casts reverb rays but has no EAX yet
     internal bool IsWaitingForEAX() => emitter != null && emitter.ReverbEnabled && emitter.EAX == null;
 
+    // Sent to the listener's reverb effect (see VAWorld.GetReverbEffect), which has no EAX yet
+    bool IsWaitingForListenerReverb() => UseListenerReverb && !(AffectsGroupedEAX && GroupedEAXIndex >= 0) && !vercidiumAudio.IsListenerReverbReady();
+
     /// <summary>
-    /// True once this emitter has cast its own rays and the listener has raytraced it. Sources don't play until this is true. Inside the bounds it also waits for its own grouped EAX, which doesn't exist outside them
+    /// True once this emitter has cast its own rays and the listener has raytraced it. Sources don't play until this is true. Inside the bounds it also waits for its own grouped EAX, and with <see cref="UseListenerReverb"/> for the listener's first EAX, neither of which exist outside them
     /// </summary>
-    public bool IsReadyToPlay => Raytraced && HasListenerResults(!IsOutsideBounds());
+    public bool IsReadyToPlay
+    {
+        get
+        {
+            if (!Raytraced)
+                return false;
+
+            var insideBounds = !IsOutsideBounds();
+            return HasListenerResults(insideBounds) && !(insideBounds && IsWaitingForListenerReverb());
+        }
+    }
 
     /// <summary>
     /// <see cref="IsReadyToPlay"/>, but always waiting for its own reverb rays. <see cref="RaytraceOnce"/> waits for this, so a sound started outside the bounds still gets reverb once inside

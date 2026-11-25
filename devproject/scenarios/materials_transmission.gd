@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Splits the reverb room with a sealed brick partition and raises brick's HF transmission via a runtime VADefaultMaterial - more HF should get through the wall. test_scene.tscn isn't used because in 3D enough energy goes over and around its brick wall to saturate the occlusion energy cap, so it reads as unmuffled even when fully opaque

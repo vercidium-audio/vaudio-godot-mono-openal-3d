@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Every listener shares one SDK emitter, so a VAVisualisation under a listener must only render while that listener is current, and must hand over to the new current listener's visualisation. Each visualisation's multimesh visible instance count shows whether it's rendering - it drops to 0 the moment the visualisation stops

@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Reparents a playing source under a pivot on the far side of a sealed brick partition, moves the pivot to the listener's side and back, then reparents the source back to the scene root. The source has to keep playing and being raytraced through each exit/enter, and follow its new parent's transform

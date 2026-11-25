@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Changes VAWorld.collision_layers (which rebuilds every primitive) and moves the walls in the same frame. The rebuild queue_free()s each node's old transform watcher, which stays in the tree until the end of the frame, so the move's transform notification reaches it after its primitive was destroyed. Any error or crash fails it

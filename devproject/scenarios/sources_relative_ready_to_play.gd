@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # A VASourceRelative waits for the current listener's first reverb results before it plays, so it never starts in the default OpenAL reverb. autoplay and play() wait, and stop() cancels a waiting play. A listener that never gets reverb results (no reverb rays, or outside the bounds) is ready straight away. Each case reloads the scene, since the listener's results stay with the world across listener switches
@@ -51,6 +53,7 @@ func check_stop_cancels() -> void:
 # The listener never gets reverb results, so there's nothing to wait for
 func check_no_reverb_rays() -> void:
 	await reload_scene(0)
+	expect_warning("RelativeNoReverbRays: The listener '%s' casts no reverb rays" % root.listener.name, 1)
 	await check_ready_straight_away("RelativeNoReverbRays", "with no reverb rays")
 
 func check_outside_bounds() -> void:

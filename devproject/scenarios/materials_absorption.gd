@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Steps the reverb room's absorption from almost none to almost total - decay time must drop at every step

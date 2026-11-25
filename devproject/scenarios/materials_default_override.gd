@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Adds a VADefaultMaterial for concrete at runtime, then frees it without touching its properties - the world must go back to concrete's built-in values. Uses a sealed concrete partition in the reverb room, so concrete's transmission is the only thing deciding the muffling

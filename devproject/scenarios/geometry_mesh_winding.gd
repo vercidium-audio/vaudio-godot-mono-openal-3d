@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Adds a solid ArrayMesh box to the reverb room, built once with a normal array and once without. Reflection rays only hit front faces, so if the mesh without normals were wound inside out, rays would pass into the box and get trapped instead of reflecting off it, changing the decay time

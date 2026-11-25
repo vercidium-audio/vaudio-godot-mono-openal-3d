@@ -1,3 +1,5 @@
+# AI-created
+
 extends Node
 
 # Runs the scenarios in res://scenarios. Lives directly under the tree root rather than in the scene, so it survives switching to each scenario's scene. Started by test_controller.gd in --test mode:
@@ -104,9 +106,14 @@ func _check_errors(scenario, logged: Dictionary) -> void:
 		if not Array(errors).any(func(e): return e.contains(expected)):
 			scenario.fail("expected an error containing \"%s\", but none was logged" % expected)
 
-	for expected in scenario.expected_warnings:
-		if not Array(warnings).any(func(w): return w.contains(expected)):
+	for i in scenario.expected_warnings.size():
+		var expected: String = scenario.expected_warnings[i]
+		var expected_count: int = scenario.expected_warning_counts[i]
+		var logged_count := Array(warnings).filter(func(w): return w.contains(expected)).size()
+		if logged_count == 0:
 			scenario.fail("expected a warning containing \"%s\", but none was logged" % expected)
+		elif expected_count >= 0 and logged_count != expected_count:
+			scenario.fail("expected a warning containing \"%s\" %d time(s), but it was logged %d times" % [expected, expected_count, logged_count])
 
 	for error in errors:
 		if not Array(scenario.expected_errors).any(func(expected): return error.contains(expected)):

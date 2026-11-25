@@ -45,6 +45,16 @@ public partial class VAWorld
         return listenerReverbEffect == null || listenerReverbEffect.effectSlotID == 0 || !listener.IsWaitingForEAX() || listener.IsOutsideBounds();
     }
 
+    // Warns once per source (warned tracks it) that uses the listener's reverb effect while the current listener casts no reverb rays, as it then plays without reverb
+    internal void WarnIfListenerCastsNoReverbRays(Node source, ref bool warned)
+    {
+        if (warned || listener?.emitter == null || listener.emitter.ReverbEnabled)
+            return;
+
+        warned = true;
+        LogWarning($"{source.Name}: The listener '{listener.Name}' casts no reverb rays, so this source plays without the listener's reverb. Set the listener's reverb ray and bounce counts above 0.");
+    }
+
     // Silent until CopyReverb's Update() writes its effectSlotGain with the first EAX, so nothing plays through OpenAL's default reverb
     static ALReverbEffect CreateSilentReverbEffect()
     {

@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # play() called on a VASource or VASourceLeech before its emitter has been raytraced waits, and starts once it's ready to play, instead of being dropped. stop() cancels the waiting play

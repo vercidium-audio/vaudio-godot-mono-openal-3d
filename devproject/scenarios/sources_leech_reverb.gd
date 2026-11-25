@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # A VASourceLeech under a VAEmitter that casts no reverb rays follows the emitter's use_listener_reverb: no reverb when off, the listener's reverb when on, and it follows the setting when it's toggled while playing

@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Calls every va.gd function so a renamed C# or native member fails here, rather than as a confusing failure in some other scenario

@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # An unknown material name must log a warning and fall back to Air (no primitive), not error or crash. Covers both places a name is resolved - a primitive added at runtime, and an existing one re-read via sync_primitive after its metadata changed

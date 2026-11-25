@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # World bounds rules for raytraced sources, with the bounds shrunk to end at x = 0 like world_bounds.gd so the scene source's side is outside. With emitters_outside_the_world_are_muffled on, a non-looping source outside doesn't play, a playing source that leaves stops, and a looping source or stream waits outside and resumes inside. With it off, sources outside play clear with no reverb

@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Spawns 32 playing VASources at fixed-seed random spots in the reverb room, then frees them all in one frame. Grouped reverb must stay within maximum_grouped_eax_count throughout and return to its baseline once they're gone

@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # A VASourceAmbient has no reverb by default. With use_listener_reverb it's sent to the listener's reverb effect, which can be toggled while playing, and it waits for the listener's first reverb results before it plays, like VASourceRelative. A VASourceRelative is the probe for when the listener's reverb is ready

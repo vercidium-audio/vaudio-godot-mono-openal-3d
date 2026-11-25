@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # With bounds_follow set to Listener the bounds are centred on the current listener instead of starting at the VAWorld's position. They recentre once the listener is bounds_update_distance from the box's centre, and straight away when bounds_size or the current listener changes, and moving the VAWorld itself does nothing. Shrinking the bounds so the source falls outside them muffles it until the listener walks close enough to bring it back inside. While following, bounds_size is clamped to at least twice bounds_update_distance on every axis

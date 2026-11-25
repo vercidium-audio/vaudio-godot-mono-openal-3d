@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Swaps a sealed MeshInstance3D partition's mesh for a narrow one and back. MeshInstance3D has no signal for a mesh swap, so it's applied with VAWorld.sync_primitive, same as metadata changes

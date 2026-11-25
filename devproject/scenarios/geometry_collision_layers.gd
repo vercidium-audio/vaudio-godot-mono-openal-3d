@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Excludes a static body wall's collision layer from VAWorld.collision_layers at runtime, which rebuilds every primitive. The material is inherited from the wall's parent, since a node's own material bypasses the layer filter

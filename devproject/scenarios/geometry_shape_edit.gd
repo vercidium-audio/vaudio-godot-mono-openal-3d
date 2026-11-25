@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Edits the shape resource of a sealing collider (size, radius, points), which doesn't move the node, so the plugin has to pick it up from the shape's changed signal. Open concave shapes use flat transmission, so brick is made fully opaque like geometry_line_edit, and the checks use LF since that silences LF too

@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Adds a second VAListener beside the source, with a sealed brick partition between it and the scene's listener, then hands the current listener back and forth via make_current(), current = false, removing or freeing the current listener, and adding a listener with current already enabled. The source's muffling has to follow whichever listener is current, and exactly one listener is current at a time

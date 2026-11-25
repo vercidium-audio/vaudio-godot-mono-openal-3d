@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Scenes saved by older plugin versions reference each node's C# script by path (the per-user .uid files aren't shipped), so moving a node's file breaks every scene that uses it. Loads a scene referencing each path a released version bound a node to, and checks the node comes back with its class. If a node's body moves to common/, leave a per-addon file named after the class at the old path, like nodes/VASourceAmbient.cs

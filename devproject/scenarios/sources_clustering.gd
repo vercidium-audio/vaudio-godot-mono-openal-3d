@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Spawns a tight group of sources behind a partly transmissive brick partition, then turns on clustering (sources share rays) and target clustering (the listener groups them). Clustered sources must end up with identical muffling and the same grouped EAX slot

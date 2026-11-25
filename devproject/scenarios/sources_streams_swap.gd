@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Reassigning a looping source's streams stops whatever was playing, like AudioStreamPlayer.set_stream(). Then clears the streams array in place while the new stream plays, which skips the setter, so playing again drops the decoded buffer while a voice still has it attached - stop() must then release it without an alDeleteBuffers error

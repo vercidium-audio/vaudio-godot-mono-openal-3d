@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Splits the reverb room with a sealed brick partition and moves the listener between the source's side (line of sight) and the far side (behind the wall). test_scene.tscn isn't used because in 3D enough energy goes over and around its brick wall to saturate the occlusion energy cap

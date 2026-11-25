@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # A VASourceLeech copies its parent VAEmitter's muffling. The emitter sits on the scene source, so the leech's muffling follows the source's as the listener moves behind a brick partition. A leech under a VAListener never plays

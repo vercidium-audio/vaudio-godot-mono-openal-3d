@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # raytrace_once also stops the listener raytracing the source, so its muffling is held at its first result while the listener moves behind a brick partition. Checked while its reverb tail keeps its emitter in the world, since that's when the listener used to keep updating it

@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Resizes a sealed CSGBox3D partition and toggles a child CSG shape's operation. Node property edits have no change signal, so they're applied with VAWorld.sync_primitive, same as metadata changes

@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # VAVisualisation's random_visualisation_seed / visualisation_seed. With a fixed seed every update casts the same rays, so each batch lands in the same places. With a random seed they don't. Batches come from the visualisation_data_received signal, since headless Godot's dummy renderer doesn't keep MultiMesh instance data

@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Adds a VACustomMaterial at runtime and uses it on a sealed reverb-room partition, then frees it. Custom materials can't be removed at runtime, so freeing it must log an error, and primitives keep using its last values - including ones re-created afterwards via sync_primitive, which used to read the freed node in the Standard plugin

@@ -1,3 +1,5 @@
+# AI-created
+
 extends "res://scenarios/lib/scenario.gd"
 
 # Every source type's reverb_only turns off only its own dry output, and VAWorld.reverb_only turns off every source's, whichever is set. Sources added while the world is reverb-only start with their dry output off. Checked through is_dry_output_enabled(), the direct filter state last applied to the source's sounds. VAInputStreamSource isn't spawned, as it opens the microphone, and shares VAStreamSource's code
