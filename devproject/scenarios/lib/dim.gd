@@ -96,7 +96,15 @@ static func add_reverb_room_shape_partition(root: Node, shape: Shape3D, material
 	root.add_child(body)
 	return body
 
-const SEALING_SIZE := Vector3(PARTITION_THICKNESS_METRES, 7, 9)
+static func add_reverb_room_mesh_partition(root: Node, mesh: Mesh, material: String) -> Node:
+	var mesh_instance := MeshInstance3D.new()
+	mesh_instance.mesh = mesh
+	mesh_instance.position = Vector3(0, 3, 0)
+	mesh_instance.set_meta(MATERIAL_META, material)
+	root.add_child(mesh_instance)
+	return mesh_instance
+
+const SEALING_SIZE :=Vector3(PARTITION_THICKNESS_METRES, 7, 9)
 const NARROW_SIZE := Vector3(PARTITION_THICKNESS_METRES, 7, 0.9)
 
 static func box_faces(size: Vector3) -> PackedVector3Array:
@@ -125,8 +133,13 @@ static func sealing_shape_edits() -> Array:
 	var convex := ConvexPolygonShape3D.new()
 	convex.points = box_points(SEALING_SIZE)
 
+	# A visual mesh rather than a collider. Resizing a BoxMesh edits the mesh resource, not the node's transform
+	var box_mesh := BoxMesh.new()
+	box_mesh.size = SEALING_SIZE
+
 	return [
 		{"name": "box", "shape": box, "narrow": func(): box.size = NARROW_SIZE, "seal": func(): box.size = SEALING_SIZE},
+		{"name": "box mesh", "partition": func(root: Node, material: String) -> Node: return add_reverb_room_mesh_partition(root, box_mesh, material), "narrow": func(): box_mesh.size = NARROW_SIZE, "seal": func(): box_mesh.size = SEALING_SIZE},
 		{"name": "concave polygon", "shape": concave, "narrow": func(): concave.set_faces(box_faces(NARROW_SIZE)), "seal": func(): concave.set_faces(box_faces(SEALING_SIZE))},
 		{"name": "convex polygon", "shape": convex, "narrow": func(): convex.points = box_points(NARROW_SIZE), "seal": func(): convex.points = box_points(SEALING_SIZE)},
 	]

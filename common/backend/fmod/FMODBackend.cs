@@ -1,6 +1,7 @@
 // AI-created
 
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace vaudio_godot_mono_openal;
 
@@ -48,6 +49,10 @@ public sealed partial class FMODBackend : VAAudioBackendBase
             return;
 
         RaiseDeviceDestroying();
+
+        // Anything still undisposed is freed by System::release
+        foreach (var voice in new List<FMODVoice>(_voices))
+            voice.Dispose();
 
         Check(_system.release(), "System::release");
         _system.clearHandle();
@@ -131,8 +136,12 @@ public sealed partial class FMODBackend : VAAudioBackendBase
 
     protected override void ApplyMasterVolume(float volume) => Check(_masterGroup.setVolume(volume), "ChannelGroup::setVolume");
 
-    // TEMP: FMOD has no global distance model. Voices will apply it with their own rolloff once they're implemented
-    protected override void ApplyDistanceModel(VADistanceModel model) { }
+    // FMOD has no global distance model, so each voice samples it into its own rolloff curve
+    protected override void ApplyDistanceModel(VADistanceModel model)
+    {
+        foreach (var voice in _voices)
+            voice.ApplyRolloff();
+    }
 
     protected override void ApplyMetersPerUnit(float metersPerUnit) => Apply3DSettings();
     protected override void ApplySpeedOfSound(float speedOfSound) => Apply3DSettings();
@@ -179,13 +188,57 @@ public sealed partial class FMODBackend : VAAudioBackendBase
 
     internal static FMOD.VECTOR ToFMOD(Vector3 v) => new() { x = v.X, y = v.Y, z = v.Z };
 
-    // TEMP: voices, sounds and streams aren't implemented yet, so nothing plays
-    public override VASound CreateSound(short[] pcm16, int channels, int sampleRate) => null;
+    internal FMOD.System System => _system;
+
+    // Every undisposed voice, so a distance model change reaches them all
+    readonly HashSet<FMODVoice> _voices = [];
+
+    internal void AddVoice(FMODVoice voice) => _voices.Add(voice);
+    internal void RemoveVoice(FMODVoice voice) => _voices.Remove(voice);
+
+    public override unsafe VASound CreateSound(short[] pcm16, int channels, int sampleRate)
+    {
+        // The device can be destroyed while a sound decodes on a worker thread
+        var system = _system;
+
+        if (!system.hasHandle())
+            return null;
+
+        var exinfo = new FMOD.CREATESOUNDEXINFO
+        {
+            cbsize = Marshal.SizeOf<FMOD.CREATESOUNDEXINFO>(),
+            length = (uint)(pcm16.Length * sizeof(short)),
+            numchannels = channels,
+            defaultfrequency = sampleRate,
+            format = FMOD.SOUND_FORMAT.PCM16,
+        };
+
+        // FMOD copies the data. Each voice sets its own 2D/3D, relative and loop mode
+        var mode = FMOD.MODE.OPENMEMORY | FMOD.MODE.OPENRAW | FMOD.MODE.CREATESAMPLE | FMOD.MODE.LOOP_OFF | FMOD.MODE._3D;
+        FMOD.Sound sound;
+
+        fixed (short* data = pcm16)
+        {
+            if (!Check(system.createSound((IntPtr)data, mode, ref exinfo, out sound), "System::createSound"))
+                return null;
+        }
+
+        return new FMODSound(this, sound, sampleRate, pcm16.Length / channels / (float)sampleRate);
+    }
+
+    // Plays the sound paused on a new channel. Returns null if FMOD failed, which it logs
+    internal FMODVoice PlaySound(FMOD.Sound sound, int sampleRate, float length, bool spatialised, FMOD.Sound streamSound = default)
+    {
+        if (!IsInitialised || !Check(_system.playSound(sound, default, true, out var channel), "System::playSound"))
+            return null;
+
+        return new FMODVoice(this, channel, sampleRate, length, spatialised, streamSound);
+    }
 
     public override bool TryCreateStream(VAPcmFormat format, int sampleRate, out VAStream stream)
     {
-        stream = null;
-        return false;
+        stream = IsInitialised ? FMODStream.Create(this, format, sampleRate) : null;
+        return stream != null;
     }
 
     // TEMP: reverb isn't implemented yet. An invalid effect counts as ready, so sources play without reverb

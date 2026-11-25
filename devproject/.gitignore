@@ -1,4 +1,5 @@
 .godot/
+.vs/
 addons/
 *.csproj.user
 

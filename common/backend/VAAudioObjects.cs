@@ -54,9 +54,6 @@ public abstract class VAStream
 
     /// <summary>Queues audio to play after what's already queued. The array must not be changed until it's been played</summary>
     public abstract void Enqueue(byte[] data, int offset, int length);
-
-    /// <summary>Releases the chunks that have finished playing</summary>
-    public abstract void ReleasePlayedChunks();
 }
 
 /// <summary>

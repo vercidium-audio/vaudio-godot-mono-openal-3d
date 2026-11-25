@@ -1,4 +1,4 @@
-// Human-reviewed
+// AI-created
 
 namespace vaudio_godot_mono_openal;
 
@@ -158,8 +158,6 @@ public partial class VAStreamSource : VARaytracedSource
         // Also set streamReady here in case nothing is pushed this frame. A RaytraceOnce emitter removes itself from the world later this frame, after which IsReadyToPlay is false and PushAudioData would drop everything
         if (streamOpen && !streamReady && IsReadyToPlay)
             streamReady = true;
-
-        stream?.ReleasePlayedChunks();
     }
 
     public override void OnDeviceDestroyed()

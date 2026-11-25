@@ -114,7 +114,7 @@ public sealed partial class OpenALBackend : VAAudioBackendBase
     public override bool TryCreateStream(VAPcmFormat format, int sampleRate, out VAStream stream)
     {
         var id = GenSource();
-        stream = id == 0 ? null : new OpenALStream(new ALStreamSource(id, ToAL(format), sampleRate));
+        stream = id == 0 ? null : new OpenALStream(id, format, sampleRate);
         return stream != null;
     }
 

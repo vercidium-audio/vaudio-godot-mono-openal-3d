@@ -1,4 +1,4 @@
-// Human-reviewed
+// AI-created
 
 namespace vaudio_godot_mono_openal;
 
@@ -108,9 +108,7 @@ public partial class VAWorld
                 wrapper.Watcher = null;
             }
 
-            if (wrapper.ShapeCallable is Callable shapeCallable && node is CollisionShape3D cs && cs.Shape != null)
-                if (cs.Shape.IsConnected(Resource.SignalName.Changed, shapeCallable))
-                    cs.Shape.Disconnect(Resource.SignalName.Changed, shapeCallable);
+            wrapper.DisconnectChanged();
 
             world.RemovePrimitive(wrapper.Primitive);
             ReleaseSharedMesh(wrapper.SharedGeometry as SharedMesh);
@@ -470,11 +468,7 @@ public partial class VAWorld
             var wrapper = AttachWatcher(collisionShape, prim, update);
             wrapper.SharedGeometry = sharedMesh;
 
-            // Editing the shape resource (size, radius, points etc) doesn't move the node, so the watcher won't see it
-            Action onShapeChanged = prim is vaudio.MeshPrimitive ? () => RebuildCollisionShapePrimitive(collisionShape) : update;
-            var callable = Callable.From(onShapeChanged);
-            shape.Connect(Resource.SignalName.Changed, callable);
-            wrapper.ShapeCallable = callable;
+            wrapper.ConnectChanged(shape, prim is vaudio.MeshPrimitive ? () => RebuildCollisionShapePrimitive(collisionShape) : update);
 
             collisionShape.SetMeta(PRIMITIVE_META_KEY, wrapper);
         }
@@ -594,7 +588,20 @@ public partial class VAWorld
         });
 
         wrapper.SharedGeometry = sharedMesh;
+        wrapper.ConnectChanged(mesh, () => RebuildMeshInstancePrimitive(meshInstance, material, useFlatTransmission));
         meshInstance.SetMeta(PRIMITIVE_META_KEY, wrapper);
+    }
+
+    // Like RebuildCollisionShapePrimitive, for an edited Mesh resource (e.g. a BoxMesh's size)
+    void RebuildMeshInstancePrimitive(MeshInstance3D meshInstance, vaudio.MaterialType material, bool useFlatTransmission)
+    {
+        if (!meshInstance.HasMeta(PRIMITIVE_META_KEY))
+            return;
+
+        var wrapper = meshInstance.GetMeta(PRIMITIVE_META_KEY).As<VAPrimitiveRef>();
+        InvalidateSharedMesh(wrapper.SharedGeometry as SharedMesh);
+        RemovePrimitive(meshInstance, false);
+        CreateVAudioPrimitive(meshInstance, material, useFlatTransmission);
     }
 
     // A vaudio Mesh built once per Godot Mesh/Shape3D resource and shared by every MeshPrimitive created from it. Stored on the world rather than as resource metadata, since a vaudio Mesh can only belong to one World
@@ -605,7 +612,7 @@ public partial class VAWorld
         public int ReferenceCount;
     }
 
-    // Keyed by the resource's instance id. Runtime edits to a Mesh resource (e.g. ArrayMesh surfaces) aren't detected, so nodes keep its old triangles until they're re-added
+    // Keyed by the resource's instance id. An edited Mesh or Shape3D resource emits changed, and each node using it rebuilds its primitive
     readonly Dictionary<ulong, SharedMesh> sharedMeshes = [];
 
     delegate List<vaudio.Vector> ReadTriangles(out vaudio.Vector min, out vaudio.Vector max);

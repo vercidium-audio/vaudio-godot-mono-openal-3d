@@ -1,11 +1,12 @@
 // AI-created
 
+using System.Runtime.InteropServices;
 using OpenALSource = global::OpenAL.managed.ALSource;
 
 namespace vaudio_godot_mono_openal;
 
-// An AL source, with its own direct and send filters
-sealed class OpenALVoice(OpenALSource source, bool isStream = false) : VAVoice
+// An AL source, with its own direct and send filters. A stream's voice owns its callback buffer
+sealed class OpenALVoice(OpenALSource source, uint streamBuffer = 0) : VAVoice
 {
     internal readonly OpenALSource Source = source;
 
@@ -29,7 +30,7 @@ sealed class OpenALVoice(OpenALSource source, bool isStream = false) : VAVoice
     public override void Stop() => Source.Stop();
 
     // A stream's callback buffer has no fixed length
-    public override float Length => isStream ? 0 : BufferLength((uint)AL.GetSourcei(Source.ID, AL.AL_BUFFER));
+    public override float Length => streamBuffer != 0 ? 0 : BufferLength((uint)AL.GetSourcei(Source.ID, AL.AL_BUFFER));
 
     public override float PlaybackPosition
     {
@@ -75,7 +76,13 @@ sealed class OpenALVoice(OpenALSource source, bool isStream = false) : VAVoice
         if (!Source.IsDisposed())
             Source.Dispose();
 
-        // Filters must be deleted after the source that uses them
+        // Buffers and filters must be deleted after the source that uses them
+        if (streamBuffer != 0)
+        {
+            AL.DeleteBuffer(streamBuffer);
+            streamBuffer = 0;
+        }
+
         directFilter?.Delete();
         directFilter = null;
 
@@ -99,18 +106,36 @@ sealed class OpenALVoice(OpenALSource source, bool isStream = false) : VAVoice
 }
 
 // An AL source fed by alBufferCallbackSOFT
-sealed class OpenALStream(ALStreamSource stream) : VAStream
+sealed unsafe class OpenALStream : VAStream
 {
-    readonly OpenALVoice voice = new(stream, isStream: true);
+    readonly VAStreamQueue queue;
+
+    // Kept alive for as long as OpenAL can call it
+    readonly AL.ALBufferCallbackTypeSoft readCallback;
+
+    readonly OpenALVoice voice;
+
+    public OpenALStream(uint sourceID, VAPcmFormat format, int sampleRate)
+    {
+        queue = new(format);
+
+        readCallback = (_, data, bytes) =>
+        {
+            queue.Read((byte*)data, bytes);
+            return bytes;
+        };
+
+        var buffer = AL.GenBuffer();
+        AL.BufferCallbackSOFT(buffer, OpenALBackend.ToAL(format), sampleRate, Marshal.GetFunctionPointerForDelegate(readCallback), IntPtr.Zero);
+
+        var source = new OpenALSource(sourceID);
+        source.SetBuffer(buffer);
+        source.Play();
+
+        voice = new(source, buffer);
+    }
 
     public override VAVoice Voice => voice;
 
-    public override void Enqueue(byte[] data, int offset, int length) => stream.EnqueueData(data, offset, length);
-
-    public override void ReleasePlayedChunks()
-    {
-        while (!stream.IsDisposed() && stream.TryGetUsedData(out _))
-        {
-        }
-    }
+    public override void Enqueue(byte[] data, int offset, int length) => queue.Enqueue(data, offset, length);
 }
