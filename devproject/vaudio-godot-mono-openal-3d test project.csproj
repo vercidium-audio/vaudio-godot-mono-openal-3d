@@ -17,7 +17,16 @@
         </Reference>
     </ItemGroup>
 
+    <!-- vaudio audio backend (managed by the vaudio plugin) -->
+    <PropertyGroup>
+        <VaudioAddonDir>addons\vaudio-godot-mono-openal-3d</VaudioAddonDir>
+        <VaudioBackend Condition="Exists('$(MSBuildProjectDirectory)\project.godot')">$([System.Text.RegularExpressions.Regex]::Match($([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)\project.godot')), '(?m)(?&lt;=^\[audio\][^\[]*^vaudio/backend=")[^"]*').Value)</VaudioBackend>
+        <VaudioBackend Condition="'$(VaudioBackend)' == ''">OpenAL</VaudioBackend>
+    </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="openal_soft_bindings" Version="1.0.10" />
+        <PackageReference Include="openal_soft_bindings" Version="1.0.10" Condition="'$(VaudioBackend)' == 'OpenAL'" />
+        <Compile Remove="$(VaudioAddonDir)\common\backend\openal\**" Condition="'$(VaudioBackend)' != 'OpenAL'" />
+        <Compile Remove="$(VaudioAddonDir)\common\backend\fmod\**" Condition="'$(VaudioBackend)' != 'FMOD'" />
     </ItemGroup>
+    <!-- end vaudio audio backend -->
 </Project>

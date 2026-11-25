@@ -150,6 +150,19 @@ static func open_capture(source: Node, device_name: String, format: int, frequen
 static func is_capture_open(source: Node) -> bool:
 	return source.IsCaptureOpen
 
+static func start_capture(source: Node) -> void:
+	source.StartCapture()
+
+static func stop_capture(source: Node) -> void:
+	source.StopCapture()
+
+static func close_capture(source: Node) -> void:
+	source.CloseCapture()
+
+# What the inspector's Refresh Audio Devices button does: re-queries the backend's capture devices for device_name's dropdown
+static func refresh_capture_devices(source: Node) -> void:
+	source.RefreshDevices()
+
 static func close_stream(source: Node) -> void:
 	source.CloseStream()
 

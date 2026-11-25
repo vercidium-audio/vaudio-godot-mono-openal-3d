@@ -3,6 +3,7 @@
 [ext_resource type="AudioStream" uid="uid://dm2es6ig4v0dc" path="res://audio/speech.ogg" id="1_speech"]
 [ext_resource type="Script" uid="uid://c04dexf0loxhp" path="res://test_controller.gd" id="2_controller"]
 [ext_resource type="Script" uid="uid://ddctieu0tc84f" path="res://addons/vaudio-godot-mono-openal-3d/world/VAWorld.cs" id="3_world"]
+[ext_resource type="Script" uid="uid://dt7vjin680gmm" path="res://addons/vaudio-godot-mono-openal-3d/common/nodes/VADefaultMaterial.cs" id="4_buypi"]
 [ext_resource type="Script" uid="uid://be5r7gyrxter0" path="res://addons/vaudio-godot-mono-openal-3d/common/nodes/VACustomMaterial.cs" id="4_custommaterial"]
 [ext_resource type="Script" uid="uid://bmroyop5t2dy4" path="res://addons/vaudio-godot-mono-openal-3d/common/nodes/VAListener.cs" id="5_listener"]
 [ext_resource type="Script" uid="uid://c0c2q7ey6f6t7" path="res://addons/vaudio-godot-mono-openal-3d/common/nodes/VASource.cs" id="6_source"]
@@ -64,6 +65,17 @@ script = ExtResource("4_custommaterial")
 AbsorptionLF = 0.4
 AbsorptionHF = 0.6
 
+[node name="VADefaultMaterial" type="Node" parent="VAWorld" unique_id=685844121]
+script = ExtResource("4_buypi")
+MaterialType = 0
+AbsorptionHF = 0.1
+Scattering = 1.0
+TransmissionLF = 1.0
+TransmissionHF = 1.0
+FlatTransmissionLF = 0.0
+FlatTransmissionHF = 0.0
+metadata/_custom_type_script = "uid://dt7vjin680gmm"
+
 [node name="Listener" type="Node3D" parent="." unique_id=148582785]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 1, 0)
 script = ExtResource("5_listener")
@@ -96,7 +108,32 @@ script = ExtResource("7_visualisation")
 [node name="ConcreteFloor" type="MeshInstance3D" parent="." unique_id=1393744625]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14159393, -0.70150566, 0.03230667)
 mesh = SubResource("BoxMesh_floor")
-metadata/vercidium_audio_material = "carpet"
+metadata/vercidium_audio_material = "metal"
+
+[node name="ConcreteFloor2" type="MeshInstance3D" parent="." unique_id=404155591]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28318787, 11.105418, 0.06461334)
+mesh = SubResource("BoxMesh_floor")
+metadata/vercidium_audio_material = "metal"
+
+[node name="ConcreteFloor5" type="MeshInstance3D" parent="." unique_id=1058612129]
+transform = Transform3D(1, 0, 0, 0, -0.033582613, -0.99943596, 0, 0.99943596, -0.033582613, 0.28318787, 11.105418, -15.181847)
+mesh = SubResource("BoxMesh_floor")
+metadata/vercidium_audio_material = "metal"
+
+[node name="ConcreteFloor6" type="MeshInstance3D" parent="." unique_id=689006061]
+transform = Transform3D(1, 0, 0, 0, -0.033582613, -0.99943596, 0, 0.99943596, -0.033582613, 0.28318787, 11.105418, 14.904915)
+mesh = SubResource("BoxMesh_floor")
+metadata/vercidium_audio_material = "metal"
+
+[node name="ConcreteFloor3" type="MeshInstance3D" parent="." unique_id=1582743667]
+transform = Transform3D(0.053912077, 0.9985457, 0, -0.9985457, 0.053912077, 0, 0, 0, 1, 26.717665, 22.912342, 0.09692001)
+mesh = SubResource("BoxMesh_floor")
+metadata/vercidium_audio_material = "metal"
+
+[node name="ConcreteFloor4" type="MeshInstance3D" parent="." unique_id=1279078355]
+transform = Transform3D(0.053912077, 0.9985457, 0, -0.9985457, 0.053912077, 0, 0, 0, 1, -28.51085, 22.912342, 0.09692001)
+mesh = SubResource("BoxMesh_floor")
+metadata/vercidium_audio_material = "metal"
 
 [node name="ConcreteCsgBox" type="CSGBox3D" parent="." unique_id=51390547]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 1.5, -10)

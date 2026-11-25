@@ -249,8 +249,19 @@ public sealed partial class FMODBackend : VAAudioBackendBase
 
     public override VAReverbEffect CreateReverbEffect() => new FMODReverbEffect(this);
 
-    // TEMP: capture isn't implemented yet
-    public override string[] GetCaptureDevices() => [];
+    public override VACaptureDevice OpenCaptureDevice(string deviceName, VAPcmFormat format, int sampleRate, int bufferFrames, Action<nint, int> onData) => FMODCaptureDevice.Open(this, deviceName, format, sampleRate, bufferFrames, onData);
 
-    public override VACaptureDevice OpenCaptureDevice(string deviceName, VAPcmFormat format, int sampleRate, int bufferFrames, Action<nint, int> onData) => throw new NotSupportedException("FMOD capture isn't implemented yet");
+    internal static FMOD.SOUND_FORMAT ToFMOD(VAPcmFormat format) => format.BytesPerSample() switch
+    {
+        1 => FMOD.SOUND_FORMAT.PCM8,
+        2 => FMOD.SOUND_FORMAT.PCM16,
+        _ => FMOD.SOUND_FORMAT.PCMFLOAT,
+    };
+
+    // FMOD's PCM8 is signed, VAPcmFormat's 8-bit formats are unsigned like OpenAL's, so this converts either way
+    internal static unsafe void ToggleSign8(byte* data, uint length)
+    {
+        for (uint i = 0; i < length; i++)
+            data[i] ^= 0x80;
+    }
 }

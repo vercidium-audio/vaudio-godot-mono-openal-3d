@@ -15,6 +15,9 @@ const BACKEND_PREFIXES = {
 const DEFAULT_DEVICE_LABEL = "System Default"
 const DEFAULT_HRTF_LABEL = "Default"
 
+static func selected_backend() -> String:
+	return ProjectSettings.get_setting(BACKEND_SETTING, DEFAULT_BACKEND)
+
 # The backend the visible settings were last picked for
 static var _visible_backend := ""
 
@@ -70,7 +73,7 @@ static func _add(name: String, default_value: Variant, type: int, hint: int = PR
 
 # Hides the other backends' settings. Internal settings keep their saved values in project.godot, so switching back shows them unchanged. Connect to ProjectSettings.settings_changed
 static func update_backend_visibility() -> void:
-	var selected: String = ProjectSettings.get_setting(BACKEND_SETTING, DEFAULT_BACKEND)
+	var selected := selected_backend()
 
 	if selected == _visible_backend:
 		return

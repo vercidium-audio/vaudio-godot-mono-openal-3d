@@ -82,7 +82,9 @@ sealed class FMODReverbEffect : VAReverbEffect
         SetReverbParam(FMOD.DSP_SFXREVERB.LOWSHELFGAIN, Math.Clamp(eax.LowShelfGain, -36, 12));
         SetReverbParam(FMOD.DSP_SFXREVERB.HIGHCUT, Math.Clamp(eax.HighCut, 20, 20000));
         SetReverbParam(FMOD.DSP_SFXREVERB.EARLYLATEMIX, Math.Clamp(eax.EarlyLateMix, 0, 100));
-        SetReverbParam(FMOD.DSP_SFXREVERB.WETLEVEL, Math.Clamp(eax.WetLevel, -80, 20));
+        // GainLF/GainHF also carry the reverb's overall level in OpenAL (band share x energy scale), which HighCut/LowShelfGain don't, so apply the louder one here
+        float bandGain = MathF.Max(MathF.Max(eax.GainLF, eax.GainHF), 0.0001f);
+        SetReverbParam(FMOD.DSP_SFXREVERB.WETLEVEL, Math.Clamp(eax.WetLevel + 20f * MathF.Log10(bandGain), -80, 20));
 
         if (gain != lastGain)
         {

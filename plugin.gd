@@ -5,36 +5,24 @@ extends EditorPlugin
 
 var main_plugin: EditorPlugin
 
-const VAUDIO_DLL_HINT_PATH = "addons\\vaudio-godot-mono-openal-3d\\bin\\vaudio.dll"
-
-const CSPROJ_INSERT = """    <ItemGroup>
-        <Reference Include="vaudio">
-            <HintPath>%s</HintPath>
-        </Reference>
-    </ItemGroup>""" % VAUDIO_DLL_HINT_PATH
-
-const PACKAGE_REFERENCES = """    <ItemGroup>
-        <PackageReference Include="openal_soft_bindings" Version="1.0.10" />
-    </ItemGroup>"""
-
-const PROPERTY_GROUP = """    <PropertyGroup>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <NoWarn>$(NoWarn);1591</NoWarn>
-    </PropertyGroup>"""
-
-const ADDON_ROOT = "res://addons/vaudio-godot-mono-openal-3d"
+const ADDON_NAME = "vaudio-godot-mono-openal-3d"
+const ADDON_ROOT = "res://addons/" + ADDON_NAME
+const LOG_PREFIX = "[" + ADDON_NAME + "] "
 const VAOpenALLibrary = preload("res://addons/vaudio-godot-mono-openal-3d/common/editor/VAOpenALLibrary.gd")
+const VACsproj = preload("res://addons/vaudio-godot-mono-openal-3d/common/editor/VACsproj.gd")
+const VAProjectSettings = preload("res://addons/vaudio-godot-mono-openal-3d/common/editor/VAProjectSettings.gd")
 
 var _setup_done := false
 var _no_csproj_error_shown := false
 var _needs_rebuild_error_shown := false
 var _wrong_godot_version_error_shown := false
+var _backend := ""
 
 func _enter_tree():
 	if not ProjectSettings.settings_changed.is_connected(_on_settings_changed):
 		ProjectSettings.settings_changed.connect(_on_settings_changed)
 
+	_backend = VAProjectSettings.selected_backend()
 	_setup_project()
 
 func _exit_tree():
@@ -47,6 +35,13 @@ func _exit_tree():
 		main_plugin = null
 
 func _on_settings_changed():
+	# The .csproj compiles only the selected backend (see VACsproj.gd), so the C# assembly has to be rebuilt
+	var backend := VAProjectSettings.selected_backend()
+	if backend != _backend:
+		_backend = backend
+		push_warning(LOG_PREFIX + "The audio backend is now %s. Rebuild the C# project (Alt + B, or the hammer icon in the top right) and restart the editor to switch to it" % backend)
+		_copy_dll()
+
 	if not _setup_done:
 		_setup_project()
 
@@ -58,7 +53,7 @@ func _setup_project():
 	if not ClassDB.class_exists("CSharpScript"):
 		if not _wrong_godot_version_error_shown:
 			_wrong_godot_version_error_shown = true
-			push_error("[vaudio-godot-mono-openal-3d] This plugin requires the .NET (C#) version of Godot, but you're running the standard version. Please download Godot .NET from https://godotengine.org/download and disable this plugin in the meantime")
+			push_error(LOG_PREFIX + "This plugin requires the .NET (C#) version of Godot, but you're running the standard version. Please download Godot .NET from https://godotengine.org/download and disable this plugin in the meantime")
 		return
 
 	var csproj_path = _get_csproj_path()
@@ -66,7 +61,7 @@ func _setup_project():
 	if not FileAccess.file_exists(csproj_path):
 		if not _no_csproj_error_shown:
 			_no_csproj_error_shown = true
-			push_error("[vaudio-godot-mono-openal-3d] No C# solution found. This plugin requires C# - please create a C# solution (Project → Tools → C# → Create C# Solution) and then re-enable this plugin")
+			push_error(LOG_PREFIX + "No C# solution found. This plugin requires C# - please create a C# solution (Project → Tools → C# → Create C# Solution) and then re-enable this plugin")
 		return
 
 	var file = FileAccess.open(csproj_path, FileAccess.READ)
@@ -76,43 +71,35 @@ func _setup_project():
 	var content = file.get_as_text()
 	file.close()
 
-	var dll_res_path = "res://addons/vaudio-godot-mono-openal-3d/bin/vaudio.dll"
+	var dll_res_path = ADDON_ROOT + "/bin/vaudio.dll"
 	var dll_exists = FileAccess.file_exists(dll_res_path)
 
-	var insert_content = ""
-	if "vaudio.dll" not in content:
-		insert_content += "\n" + CSPROJ_INSERT + "\n"
+	if "</Project>" not in content:
+		push_error(LOG_PREFIX + "Could not find a </Project> tag in the .csproj file")
+		return
 
-	if "openal_soft_bindings" not in content:
-		insert_content += "\n" + PROPERTY_GROUP + "\n\n" + PACKAGE_REFERENCES + "\n"
+	var new_content := VACsproj.update(content, ADDON_NAME)
 
-	if insert_content != "":
-		var insert_pos = content.rfind("</Project>")
-		if insert_pos == -1:
-			push_error("[vaudio-godot-mono-openal-3d] Could not find a </Project> tag in the .csproj file")
-			return
-
-		var new_content = content.substr(0, insert_pos) + insert_content + content.substr(insert_pos)
-
+	if new_content != content:
 		file = FileAccess.open(csproj_path, FileAccess.WRITE)
 		if file:
 			file.store_string(new_content)
 			file.close()
-			print("[vaudio-godot-mono-openal-3d] Added vaudio references to ", ProjectSettings.globalize_path(csproj_path))
+			print(LOG_PREFIX + "Added vaudio references to ", ProjectSettings.globalize_path(csproj_path))
 
-		push_error("[vaudio-godot-mono-openal-3d] Updated your .csproj with the vaudio references. Godot needs to rebuild the C# assembly before the plugin can fully load - please rebuild the project (Alt + B, or hammer icon in the top right) and then disable and re-enable this plugin")
+		push_error(LOG_PREFIX + "Updated your .csproj with the vaudio references. Godot needs to rebuild the C# assembly before the plugin can fully load - please rebuild the project (Alt + B, or hammer icon in the top right) and then disable and re-enable this plugin")
 		return
 
 	if dll_exists:
-		print("[vaudio-godot-mono-openal-3d] vaudio.dll found")
+		print(LOG_PREFIX + "vaudio.dll found")
 	else:
-		push_error("[vaudio-godot-mono-openal-3d] vaudio.dll not found - please copy your vaudio.dll into %s, then disable and enable the Vercidium Audio plugin" % ProjectSettings.globalize_path(dll_res_path.get_base_dir()))
+		push_error(LOG_PREFIX + "vaudio.dll not found - please copy your vaudio.dll into %s, then disable and enable the Vercidium Audio plugin" % ProjectSettings.globalize_path(dll_res_path.get_base_dir()))
 
-	var probe_script = load("res://addons/vaudio-godot-mono-openal-3d/common/nodes/VAEmitter.cs")
+	var probe_script = load(ADDON_ROOT + "/common/nodes/VAEmitter.cs")
 	if probe_script == null or probe_script.get_instance_base_type() == "":
 		if not _needs_rebuild_error_shown:
 			_needs_rebuild_error_shown = true
-			push_error("[vaudio-godot-mono-openal-3d] Godot needs to rebuild the C# assembly before the plugin can fully load - please rebuild the project (Alt + B, or hammer icon in the top right) and then disable and re-enable this plugin")
+			push_error(LOG_PREFIX + "Godot needs to rebuild the C# assembly before the plugin can fully load - please rebuild the project (Alt + B, or hammer icon in the top right) and then disable and re-enable this plugin")
 		return
 
 	_copy_dll()
@@ -122,12 +109,15 @@ func _setup_project():
 	if main_plugin:
 		return
 
-	var main_script = load("res://addons/vaudio-godot-mono-openal-3d/plugin_main.gd")
+	var main_script = load(ADDON_ROOT + "/plugin_main.gd")
 	main_plugin = main_script.new()
 	main_plugin._enter_tree()
 
-# Copies this platform's OpenAL Soft from bin/{platform folder}/ to the project root, which is where the OpenAL bindings load it from in the editor
+# Copies this platform's OpenAL Soft from bin/{platform folder}/ to the project root, which is where the OpenAL bindings load it from in the editor. Only for the OpenAL backend
 func _copy_dll():
+	if _backend != "OpenAL":
+		return
+
 	var os_name := OS.get_name().to_lower()
 	var source_path := VAOpenALLibrary.get_library_path(ADDON_ROOT, os_name, Engine.get_architecture_name())
 	if source_path.is_empty():
@@ -144,8 +134,8 @@ func _copy_dll():
 	if FileAccess.file_exists(source_path):
 		var result = DirAccess.copy_absolute(source_path, dest_path)
 		if result == OK:
-			print("[vaudio-godot-mono-openal-3d] Copied %s to project root" % lib_name)
+			print(LOG_PREFIX + "Copied %s to project root" % lib_name)
 		else:
-			push_error("[vaudio-godot-mono-openal-3d] Failed to copy %s: %s. If OpenAL is already loaded, restart the editor to finish updating it" % [lib_name, result])
+			push_error(LOG_PREFIX + "Failed to copy %s: %s. If OpenAL is already loaded, restart the editor to finish updating it" % [lib_name, result])
 	else:
-		push_error("[vaudio-godot-mono-openal-3d] Source library not found at ", source_path)
+		push_error(LOG_PREFIX + "Source library not found at ", source_path)

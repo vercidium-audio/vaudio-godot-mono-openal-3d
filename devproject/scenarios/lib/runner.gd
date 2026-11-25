@@ -9,7 +9,7 @@ extends Node
 #   --mute            set VAWorld.master_volume (the OpenAL listener gain) to 0 so headless runs are silent. Also applied by test_controller.gd's _enter_tree
 #   --backend=name    the audio backend the project runs on (default openal; godottest --backend selects it via override.cfg). Scenarios whose requires_backends doesn't include it are skipped
 #   --backend-smoke   only run scenarios with backend_smoke set (the playback-related ones), for checking a non-default backend
-# Skipped scenarios print "[devproject] SKIP name: reason", even when named in --scenarios=, and the run fails if every scenario was skipped
+# Skipped scenarios print "[devproject] SKIP name: reason", even when named in --scenarios=, and the run fails if every scenario was skipped. A scenario can also skip itself at runtime with skip() (e.g. no capture device), which prints SKIP instead of PASS
 # A scenario also fails if the audio backend's error count (VA.backend_error_count) went up while it ran, so "no backend errors" is checked on every backend
 
 const VA := preload("res://scenarios/lib/va.gd")
@@ -109,7 +109,9 @@ func _run_scenarios() -> void:
 		if backend_errors > 0:
 			scenario.fail("the %s backend logged %d error(s)" % [backend, backend_errors])
 
-		if scenario.failure.is_empty():
+		if scenario.failure.is_empty() and not scenario.skipped.is_empty():
+			print("[devproject] SKIP %s: %s" % [scenario_name, scenario.skipped])
+		elif scenario.failure.is_empty():
 			print("[devproject] PASS %s" % scenario_name)
 		else:
 			push_error("[devproject] FAIL %s: %s" % [scenario_name, scenario.failure])

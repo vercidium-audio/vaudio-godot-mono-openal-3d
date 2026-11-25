@@ -22,6 +22,9 @@ var root: Node
 var listen := false
 var failure := ""
 
+# Set by skip(), when the machine can't run this scenario (e.g. no capture device). The runner prints SKIP instead of PASS
+var skipped := ""
+
 # Substrings of errors/warnings this scenario deliberately triggers - see expect_error()/expect_warning()
 var expected_errors: PackedStringArray = []
 var expected_warnings: PackedStringArray = []
@@ -68,6 +71,10 @@ func expect_error(substring: String) -> void:
 func expect_warning(substring: String, count := -1) -> void:
 	expected_warnings.append(substring)
 	expected_warning_counts.append(count)
+
+# Call from run() and return when the machine can't run this scenario. A failure recorded before or after still fails it
+func skip(reason: String) -> void:
+	skipped = reason
 
 func check(condition: bool, reason: String) -> void:
 	if not condition:

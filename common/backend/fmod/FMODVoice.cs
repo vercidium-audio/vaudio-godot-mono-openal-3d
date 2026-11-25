@@ -431,10 +431,7 @@ sealed unsafe class FMODStream : VAStream
         queue.Read(bytes, (int)length);
 
         if (unsigned8)
-        {
-            for (uint i = 0; i < length; i++)
-                bytes[i] ^= 0x80;
-        }
+            FMODBackend.ToggleSign8(bytes, length);
 
         return FMOD.RESULT.OK;
     }
@@ -449,12 +446,7 @@ sealed unsafe class FMODStream : VAStream
             cbsize = Marshal.SizeOf<FMOD.CREATESOUNDEXINFO>(),
             numchannels = format.Channels(),
             defaultfrequency = sampleRate,
-            format = format.BytesPerSample() switch
-            {
-                1 => FMOD.SOUND_FORMAT.PCM8,
-                2 => FMOD.SOUND_FORMAT.PCM16,
-                _ => FMOD.SOUND_FORMAT.PCMFLOAT,
-            },
+            format = FMODBackend.ToFMOD(format),
             decodebuffersize = (uint)Math.Max(256, sampleRate * DecodeBufferSeconds),
 
             // One second, looped forever

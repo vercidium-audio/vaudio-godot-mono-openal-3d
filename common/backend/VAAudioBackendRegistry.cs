@@ -30,12 +30,12 @@ public static class VAAudioBackendRegistry
 
         if (fallback == null)
         {
-            LogError($"No audio backends are available, so no audio will play. The '{selected}' backend selected in the {SettingName} project setting isn't compiled in");
+            LogError($"No audio backends are available, so no audio will play. The '{selected}' backend selected in the {SettingName} project setting isn't compiled in. Only the selected backend is compiled, so rebuild the C# project after changing it");
             return null;
         }
 
         var backend = factories[fallback]();
-        backend.LogError($"The '{selected}' audio backend selected in the {SettingName} project setting is not available, so the {fallback} backend is used instead");
+        backend.LogError($"The '{selected}' audio backend selected in the {SettingName} project setting is not available, so the {fallback} backend is used instead. Only the selected backend is compiled, so rebuild the C# project after changing it");
         return backend;
     }
 }
