@@ -9,3 +9,7 @@ libopenal.1.dylib
 
 # Written by vaudio godottest --backend
 override.cfg
+
+# FMOD libs copied in by vaudio godottest --backend fmod
+fmod*.dll
+libfmod*
