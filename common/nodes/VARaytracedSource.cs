@@ -165,8 +165,8 @@ public partial class VARaytracedSource
         if (!IsReadyToPlay)
             return;
 
-        // Read from the listener rather than the child VAEmitter, which processes after this node. The bus is null if it casts no reverb rays
-        reverbBus = vercidiumAudio.GetReverbBus(emitter);
+        // Read from the listener rather than the child VAEmitter, which processes after this node. The effect is null if it casts no reverb rays
+        reverbEffect = vercidiumAudio.GetReverbEffect(emitter);
 
         // A raytrace-once source has left the listener's targets, so it keeps its last filter
         if (!IsRaytracedByListener)

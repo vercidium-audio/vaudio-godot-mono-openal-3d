@@ -31,7 +31,7 @@ public abstract class VAAudioBackendBase
         Logger.LogError(message);
     }
 
-    /// <summary>Raised before the device is destroyed (e.g. when switching output devices), after which every voice, sound and reverb bus is invalid</summary>
+    /// <summary>Raised before the device is destroyed (e.g. when switching output devices), after which every voice, sound and reverb effect is invalid</summary>
     public event Action DeviceDestroying;
 
     /// <summary>Raised once the device has been recreated</summary>
@@ -145,8 +145,8 @@ public abstract class VAAudioBackendBase
     /// <summary>Creates a stream that plays audio pushed into it. Its voice starts playing straight away. Fails when out of voices</summary>
     public abstract bool TryCreateStream(VAPcmFormat format, int sampleRate, out VAStream stream);
 
-    /// <summary>Creates a reverb bus that's silent until its first <see cref="VAReverbBus.SetParams"/></summary>
-    public abstract VAReverbBus CreateReverbBus();
+    /// <summary>Creates a reverb effect that's silent until its first <see cref="VAReverbEffect.SetParams"/></summary>
+    public abstract VAReverbEffect CreateReverbEffect();
 
     /// <summary>Opens a capture device (empty name = system default). onData receives a pointer to the captured frames and the frame count. Throws if the device fails to open</summary>
     public abstract VACaptureDevice OpenCaptureDevice(string deviceName, VAPcmFormat format, int sampleRate, int bufferFrames, Action<nint, int> onData);

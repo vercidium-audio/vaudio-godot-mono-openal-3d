@@ -48,7 +48,7 @@ public partial class VASourceAmbient
 
     protected override void ConfigureVoice(VAVoice voice) => ConfigureListenerRelativeVoice(voice);
 
-    /// <summary>If true, this source is sent to the listener's reverb bus, muffled by the ambient filter. It then waits for the listener's first raytraced reverb before it plays</summary>
+    /// <summary>If true, this source is sent to the listener's reverb effect, muffled by the ambient filter. It then waits for the listener's first raytraced reverb before it plays</summary>
     [Export]
     public bool UseListenerReverb { get; set; } = false;
 
@@ -81,10 +81,10 @@ public partial class VASourceAmbient
         }
 
         // Ensure VAWorld is available
-        if (vercidiumAudio?.ambientFilter is not VALowPass ambientFilter)
+        if (vercidiumAudio?.ambientFilter is not VALowPassFilter ambientFilter)
             return;
 
-        reverbBus = UseListenerReverb ? vercidiumAudio.listenerReverbBus : null;
+        reverbEffect = UseListenerReverb ? vercidiumAudio.listenerReverbEffect : null;
         UpdateFilter(ambientFilter.GainLF, ambientFilter.GainHF);
 
         if (!played)

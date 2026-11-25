@@ -44,10 +44,10 @@ public static class VAPcmFormatExtensions
 /// <summary>
 /// Low and high frequency gains (0-1) applied to a voice's direct path or reverb send, from the SDK's muffling results
 /// </summary>
-public readonly record struct VALowPass(float GainLF, float GainHF)
+public readonly record struct VALowPassFilter(float GainLF, float GainHF)
 {
-    public static readonly VALowPass Full = new(1, 1);
-    public static readonly VALowPass Silence = new(0, 0);
+    public static readonly VALowPassFilter Full = new(1, 1);
+    public static readonly VALowPassFilter Silence = new(0, 0);
 
     /// <summary>GainHF relative to GainLF, clamped to 1, as the nodes' GainHF properties report it</summary>
     public float RelativeGainHF => MathF.Min(1, GainHF / MathF.Max(0.01f, GainLF));

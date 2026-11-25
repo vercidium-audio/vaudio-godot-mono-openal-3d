@@ -37,8 +37,8 @@ public abstract class VAVoice : IDisposable
     public abstract void SetMaxDistance(float distance);
     public abstract void SetRolloff(float rolloff);
 
-    /// <summary>Sets the direct path's low pass, and sends the voice through the send low pass into reverbBus (null for no reverb)</summary>
-    public abstract void SetFilters(VALowPass direct, VAReverbBus reverbBus, VALowPass send);
+    /// <summary>Sets the direct path's low pass, and sends the voice through the send low pass into reverbEffect (null for no reverb)</summary>
+    public abstract void SetFilters(VALowPassFilter direct, VAReverbEffect reverbEffect, VALowPassFilter send);
 
     public abstract void Dispose();
 }
@@ -74,12 +74,12 @@ public abstract class VASound : IDisposable
 /// <summary>
 /// A reverb effect that voices send into. Each VAWorld owns one for the listener's reverb, plus one per grouped EAX
 /// </summary>
-public abstract class VAReverbBus : IDisposable
+public abstract class VAReverbEffect : IDisposable
 {
     /// <summary>False if the backend failed to create it</summary>
     public abstract bool IsValid { get; }
 
-    /// <summary>Applies the raytraced reverb. gain is the bus's output volume, and the pans point where the reflections and late reverb come from, relative to the listener</summary>
+    /// <summary>Applies the raytraced reverb. gain is the effect's output volume, and the pans point where the reflections and late reverb come from, relative to the listener</summary>
     public abstract void SetParams(vaudio.EAXReverb eax, float gain, Vector3 reflectionsPan, Vector3 lateReverbPan);
 
     public abstract void Dispose();

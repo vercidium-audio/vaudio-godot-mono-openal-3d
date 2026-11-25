@@ -10,7 +10,7 @@ public static partial class VAAudioBackend
 
     /// <summary>
     /// Register a callback to be invoked when the audio device is destroyed.
-    /// Use this to clean up any backend resources (reverb buses, etc.)
+    /// Use this to clean up any backend resources (reverb effects, etc.)
     /// </summary>
     public static void RegisterDeviceDestroyedCallback(Action callback)
     {
@@ -33,7 +33,7 @@ public static partial class VAAudioBackend
 
     /// <summary>
     /// Register a callback to be invoked when the audio device is recreated.
-    /// Use this to recreate any backend resources (reverb buses, etc.) after the device is ready.
+    /// Use this to recreate any backend resources (reverb effects, etc.) after the device is ready.
     /// </summary>
     public static void RegisterDeviceRecreatedCallback(Action callback)
     {

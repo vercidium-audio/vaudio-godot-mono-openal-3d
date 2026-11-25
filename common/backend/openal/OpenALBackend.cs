@@ -115,7 +115,7 @@ public sealed partial class OpenALBackend : VAAudioBackendBase
         return stream != null;
     }
 
-    public override VAReverbBus CreateReverbBus() => new OpenALReverbBus();
+    public override VAReverbEffect CreateReverbEffect() => new OpenALReverbEffect();
 
     public override string[] GetCaptureDevices() => [.. AL.GetStringList(IntPtr.Zero, AL.ALC_CAPTURE_DEVICE_SPECIFIER)];
 

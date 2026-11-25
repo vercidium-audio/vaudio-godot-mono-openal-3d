@@ -12,7 +12,7 @@ public partial class VASourceRelative
 
     bool warnedNoListenerReverb = false;
 
-    /// <summary>If true, this source is sent to the listener's reverb bus, and waits for the listener's first raytraced reverb before it plays. If false, it plays straight away with no reverb (e.g. music, UI), and needs no VAWorld</summary>
+    /// <summary>If true, this source is sent to the listener's reverb effect, and waits for the listener's first raytraced reverb before it plays. If false, it plays straight away with no reverb (e.g. music, UI), and needs no VAWorld</summary>
     [Export]
     public bool UseListenerReverb { get; set; } = true;
 
@@ -67,11 +67,11 @@ public partial class VASourceRelative
         if (!playback.RequestPlay(this, false, IsReadyToPlay, startTime))
             return true;
 
-        // Send to the listener reverb bus (or none), with no filter
+        // Send to the listener reverb effect (or none), with no filter
         if (UseListenerReverb)
             vercidiumAudio.WarnIfListenerCastsNoReverbRays(this, ref warnedNoListenerReverb);
 
-        reverbBus = UseListenerReverb ? vercidiumAudio.listenerReverbBus : null;
+        reverbEffect = UseListenerReverb ? vercidiumAudio.listenerReverbEffect : null;
         UpdateFilter(1, 1);
 
         var played = base.Play(startTime);

@@ -51,16 +51,16 @@ sealed class OpenALVoice(OpenALSource source, bool isStream = false) : VAVoice
     public override void SetMaxDistance(float distance) => Source.SetMaxDistance(distance);
     public override void SetRolloff(float rolloff) => Source.SetRolloff(rolloff);
 
-    public override void SetFilters(VALowPass direct, VAReverbBus reverbBus, VALowPass send)
+    public override void SetFilters(VALowPassFilter direct, VAReverbEffect reverbEffect, VALowPassFilter send)
     {
         UpdateFilter(ref directFilter, direct);
         UpdateFilter(ref sendFilter, send);
 
-        Source.SetFilter((reverbBus as OpenALReverbBus)?.Effect, directFilter, sendFilter);
+        Source.SetFilter((reverbEffect as OpenALReverbEffect)?.Effect, directFilter, sendFilter);
     }
 
     // ALFilter.SetGain takes an absolute gainHF and converts it to AL_LOWPASS_GAINHF's relative value itself
-    static void UpdateFilter(ref ALFilter filter, VALowPass lowPass)
+    static void UpdateFilter(ref ALFilter filter, VALowPassFilter lowPass)
     {
         if (filter == null)
             filter = new(lowPass.GainLF, lowPass.GainHF);

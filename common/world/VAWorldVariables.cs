@@ -43,9 +43,9 @@ public partial class VAWorld
     public vaudio.World world;
     public VAEmitter listener;
 
-    public VALowPass? ambientFilter;
-    public VAReverbBus listenerReverbBus;
-    internal List<VAGroupedReverbBus> groupedReverbBuses = [];
+    public VALowPassFilter? ambientFilter;
+    public VAReverbEffect listenerReverbEffect;
+    internal List<VAGroupedReverbEffect> groupedReverbEffects = [];
 
     Dictionary<string, vaudio.MaterialType> DefaultMaterialDict = new()
     {

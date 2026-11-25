@@ -5,11 +5,11 @@ public partial class VAPlayer
 {
     protected List<VAVoice> voices = [];
 
-    // The muffling last passed to UpdateFilter, or null if it never was
-    protected VALowPass? muffling;
+    // The muffling filter last passed to UpdateFilter, or null if it never was
+    protected VALowPassFilter? mufflingFilter;
 
-    // The reverb bus each voice sends to, or null for no reverb. Applied by the next UpdateFilter
-    public VAReverbBus reverbBus;
+    // The reverb effect each voice sends to, or null for no reverb. Applied by the next UpdateFilter
+    public VAReverbEffect reverbEffect;
 
     // The fullReverb last passed to UpdateFilter
     bool fullReverb = true;
@@ -33,20 +33,20 @@ public partial class VAPlayer
     // Applies the direct filter (or silence while reverb-only) and the reverb send
     protected void ApplyFilters(VAVoice voice)
     {
-        var filter = muffling ?? VALowPass.Full;
+        var filter = mufflingFilter ?? VALowPassFilter.Full;
 
-        // For reverb in other rooms, we send the sound's clear audio to the reverb bus, then reduce the bus's gain to make it muffled
-        var send = fullReverb ? VALowPass.Full : filter;
-        var direct = dryOutputEnabled ? filter : VALowPass.Silence;
+        // For reverb in other rooms, we send the sound's clear audio to the reverb effect, then reduce the effect's gain to make it muffled
+        var send = fullReverb ? VALowPassFilter.Full : filter;
+        var direct = dryOutputEnabled ? filter : VALowPassFilter.Silence;
 
-        voice.SetFilters(direct, reverbBus, send);
+        voice.SetFilters(direct, reverbEffect, send);
     }
 
     public void UpdateFilter(float gain, float gainHF, bool fullReverb = false)
     {
         VAAudioBackend.Ensure();
 
-        muffling = new VALowPass(gain, gainHF);
+        mufflingFilter = new VALowPassFilter(gain, gainHF);
         this.fullReverb = fullReverb;
         UpdateDryOutput();
 
@@ -272,9 +272,9 @@ public partial class VAPlayer
     internal bool IsPlayRequested => playRequested;
 
     /// <summary>
-    /// Whether the sound is sent to a reverb bus (grouped or the listener's). A raytraced source outside the bounds has none
+    /// Whether the sound is sent to a reverb effect (grouped or the listener's). A raytraced source outside the bounds has none
     /// </summary>
-    public bool HasReverb() => reverbBus != null;
+    public bool HasReverb() => reverbEffect != null;
 
     // GDScript aliases so existing AudioStreamPlayer scripts don't break
     public bool play() => Play();
@@ -297,7 +297,7 @@ public partial class VAPlayer
     {
         DisposeVoices();
 
-        // The bus belongs to the old device
-        reverbBus = null;
+        // The effect belongs to the old device
+        reverbEffect = null;
     }
 }

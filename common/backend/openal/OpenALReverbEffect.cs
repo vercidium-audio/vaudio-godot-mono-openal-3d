@@ -1,12 +1,12 @@
 namespace vaudio_godot_mono_openal;
 
 // An EFX EAX reverb effect in an auxiliary effect slot
-sealed class OpenALReverbBus : VAReverbBus
+sealed class OpenALReverbEffect : VAReverbEffect
 {
     internal ALReverbEffect Effect { get; private set; } = new();
 
     // Silent until SetParams writes its slot gain with the first EAX, so nothing plays through OpenAL's default reverb
-    public OpenALReverbBus() => AL.AuxiliaryEffectSlotf(Effect.effectSlotID, AL.AL_EFFECTSLOT_GAIN, 0);
+    public OpenALReverbEffect() => AL.AuxiliaryEffectSlotf(Effect.effectSlotID, AL.AL_EFFECTSLOT_GAIN, 0);
 
     public override bool IsValid => Effect != null && Effect.effectSlotID != 0;
 
