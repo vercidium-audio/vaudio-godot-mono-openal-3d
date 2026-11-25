@@ -40,7 +40,7 @@ static func register() -> void:
 	# Same DEFAULT_*_LABEL storage as output_device. The dropdown is filled by VAWorld.RefreshOutputDeviceList()
 	_add("audio/vaudio/openal_hrtf", DEFAULT_HRTF_LABEL, TYPE_STRING, PROPERTY_HINT_ENUM, DEFAULT_HRTF_LABEL)
 
-	# .mhr files in here are listed alongside OpenAL Soft's built-in HRTF, and are bundled into exports by VAHRTFExportPlugin
+	# .mhr files in here are listed alongside OpenAL Soft's built-in HRTF, and are bundled into exports by VABackendExportPlugin
 	_add("audio/vaudio/openal_hrtf_folder", "res://hrtf", TYPE_STRING, PROPERTY_HINT_DIR)
 
 	# Read once at device-open time, can't be changed at runtime

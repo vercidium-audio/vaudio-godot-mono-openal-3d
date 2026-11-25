@@ -9,7 +9,7 @@ const VAProjectSettings = preload("VAProjectSettings.gd")
 # Ships the selected audio backend's library beside the exported executable, where the backend loads it from. OpenAL: the addon's OpenAL Soft, plus the audio/vaudio/openal_hrtf_folder .mhr files (they aren't Godot resources, so exports skip them unless they're added to the include filter by hand). FMOD: the user's own FMOD library, since vaudio doesn't ship FMOD
 
 func _get_name() -> String:
-	return "VAHRTFExportPlugin"
+	return "VABackendExportPlugin"
 
 func _addon_root() -> String:
 	return get_script().resource_path.get_base_dir().get_base_dir().get_base_dir()

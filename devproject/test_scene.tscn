@@ -8,6 +8,7 @@
 [ext_resource type="Script" uid="uid://bmroyop5t2dy4" path="res://addons/vaudio-godot-mono-openal-3d/common/nodes/VAListener.cs" id="5_listener"]
 [ext_resource type="Script" uid="uid://c0c2q7ey6f6t7" path="res://addons/vaudio-godot-mono-openal-3d/common/nodes/VASource.cs" id="6_source"]
 [ext_resource type="Script" uid="uid://h5iajht6pde6" path="res://addons/vaudio-godot-mono-openal-3d/nodes/VAVisualisation.cs" id="7_visualisation"]
+[ext_resource type="Script" uid="uid://d4la262upwfo0" path="res://addons/vaudio-godot-mono-openal-3d/common/nodes/VAInputStreamSource.cs" id="9_njel3"]
 
 [sub_resource type="StandardMaterial3D" id="Mat_listener"]
 albedo_color = Color(0.2, 0.5, 1, 1)
@@ -68,6 +69,7 @@ AbsorptionHF = 0.6
 [node name="VADefaultMaterial" type="Node" parent="VAWorld" unique_id=685844121]
 script = ExtResource("4_buypi")
 MaterialType = 0
+AbsorptionLF = 1.0
 AbsorptionHF = 0.1
 Scattering = 1.0
 TransmissionLF = 1.0
@@ -163,3 +165,12 @@ offset_right = 600.0
 offset_bottom = 60.0
 text = "Move the mouse to move the listener across the floor. Hold right mouse to move the source instead.
 Enable Debug > Visible Collision Shapes to see the CollisionShape3D occluders."
+
+[node name="VAInputStreamSource" type="Node3D" parent="." unique_id=1586483206]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.15463, 0, 7.332591)
+script = ExtResource("9_njel3")
+DeviceName = "System Default"
+ReverbRayCount = 64
+ReverbBounceCount = 64
+ScatteringSeed = 1872519311
+metadata/_custom_type_script = "uid://d4la262upwfo0"
