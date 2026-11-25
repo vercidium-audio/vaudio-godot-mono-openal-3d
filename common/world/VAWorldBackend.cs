@@ -33,6 +33,9 @@ public partial class VAWorld
         { nameof(ReverbOnly), VAAudioBackend.ReverbOnly },
     };
 
+    // The reverb send level (0-1) of a player's most recent voice, or -1 when it has none or the backend doesn't report it (only FMOD does). For tests
+    public static float GetReverbSendLevel(Node player) => (player as VAPlayer)?.LastVoice?.ReverbSendLevel ?? -1;
+
     // The backend's settings are global, so the last VAWorld to enter the tree pushes all of its own
     void ApplyBackendSettings()
     {

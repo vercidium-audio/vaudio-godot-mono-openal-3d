@@ -83,6 +83,8 @@ public abstract class VAAudioBackendBase
     Vector3 _listenerForward = new(0, 0, -1);
     Vector3 _listenerUp = Vector3.Up;
 
+    public Vector3 ListenerPosition => _listenerPosition;
+
     public void SetListenerPosition(Vector3 position) => UpdateProperty(ref _listenerPosition, position, ApplyListenerPosition);
     public void SetListenerVelocity(Vector3 velocity) => UpdateProperty(ref _listenerVelocity, velocity, ApplyListenerVelocity);
 

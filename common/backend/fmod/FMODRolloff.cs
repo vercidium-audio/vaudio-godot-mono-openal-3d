@@ -10,13 +10,14 @@ static class FMODRolloff
     // How far past the max distance the unclamped models keep falling, after which FMOD holds the last point's volume
     const float UnclampedRange = 10;
 
+    const float MinReferenceDistance = 0.01f;
+
     // Volume is 1 up to the reference distance in every model, then the points spread out geometrically, since the inverse and exponent curves change fastest near the start
     public static unsafe void Fill(FMOD.VECTOR* points, VADistanceModel model, float referenceDistance, float maxDistance, float rolloff)
     {
-        float start = MathF.Max(referenceDistance, 0.01f);
+        float start = MathF.Max(referenceDistance, MinReferenceDistance);
         float max = MathF.Max(maxDistance, start);
-        float end = model is VADistanceModel.Inverse or VADistanceModel.Exponent ? max * UnclampedRange : max;
-        end = MathF.Max(end, start * 1.01f);
+        float end = CurveEnd(model, start, max);
 
         points[0] = new() { x = 0, y = 1 };
 
@@ -25,6 +26,20 @@ static class FMODRolloff
             float distance = start * MathF.Pow(end / start, (i - 1) / (float)(PointCount - 2));
             points[i] = new() { x = distance, y = Gain(model, distance, start, max, rolloff) };
         }
+    }
+
+    static float CurveEnd(VADistanceModel model, float start, float max)
+    {
+        float end = model is VADistanceModel.Inverse or VADistanceModel.Exponent ? max * UnclampedRange : max;
+        return MathF.Max(end, start * 1.01f);
+    }
+
+    // The volume the voice's rolloff curve gives at this distance (ignoring FMOD's interpolation between its points), for things FMOD's rolloff doesn't reach, like a pre-fader reverb send
+    public static float CurveGain(VADistanceModel model, float distance, float referenceDistance, float maxDistance, float rolloff)
+    {
+        float start = MathF.Max(referenceDistance, MinReferenceDistance);
+        float max = MathF.Max(maxDistance, start);
+        return Gain(model, MathF.Min(distance, CurveEnd(model, start, max)), start, max, rolloff);
     }
 
     // The OpenAL 1.1 distance models, clamped to 0-1 like OpenAL Soft's source gain

@@ -232,6 +232,9 @@ public partial class VAPlayer
     /// <summary>
     /// How many seconds into the most recently played sound it is, or 0 if nothing is playing. Matches AudioStreamPlayer's get_playback_position()
     /// </summary>
+    // The most recently played voice, or null. For tests
+    internal VAVoice LastVoice => voices.Count > 0 ? voices[^1] : null;
+
     public float GetPlaybackTime()
     {
         if (voices.Count == 0)

@@ -42,6 +42,9 @@ public abstract class VAVoice : IDisposable
     /// <summary>Sets the direct path's low pass, and sends the voice through the send low pass into reverbEffect (null for no reverb)</summary>
     public abstract void SetFilters(VALowPassFilter direct, VAReverbEffect reverbEffect, VALowPassFilter send);
 
+    // The reverb send's level (0-1) after distance attenuation, or -1 when not sending or the backend doesn't report it. For tests
+    internal virtual float ReverbSendLevel => -1;
+
     public abstract void Dispose();
 }
 

@@ -211,3 +211,7 @@ static func backend_name(world: Node) -> String:
 
 static func is_backend_initialised(world: Node) -> bool:
 	return world.get_script().IsBackendInitialised()
+
+# The reverb send level (0-1) of a player's most recent voice after distance attenuation, or -1 when it isn't sending or the backend doesn't report it (only FMOD does)
+static func reverb_send_level(world: Node, player: Node) -> float:
+	return world.get_script().GetReverbSendLevel(player)

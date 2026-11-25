@@ -39,8 +39,14 @@ public sealed partial class FMODBackend : VAAudioBackendBase
 
     public override void Update()
     {
-        if (IsInitialised)
-            Check(_system.update(), "System::update");
+        if (!IsInitialised)
+            return;
+
+        // FMOD's rolloff comes after the reverb send, so each send applies its own distance attenuation from this frame's positions
+        foreach (var voice in _voices)
+            voice.UpdateSendLevel();
+
+        Check(_system.update(), "System::update");
     }
 
     public override void Shutdown()
@@ -190,7 +196,7 @@ public sealed partial class FMODBackend : VAAudioBackendBase
 
     internal FMOD.System System => _system;
 
-    // Every undisposed voice, so a distance model change reaches them all
+    // Every undisposed voice, so a distance model change and the per-frame send levels reach them all
     readonly HashSet<FMODVoice> _voices = [];
 
     internal void AddVoice(FMODVoice voice) => _voices.Add(voice);
@@ -241,8 +247,7 @@ public sealed partial class FMODBackend : VAAudioBackendBase
         return stream != null;
     }
 
-    // TEMP: reverb isn't implemented yet. An invalid effect counts as ready, so sources play without reverb
-    public override VAReverbEffect CreateReverbEffect() => new FMODReverbEffect();
+    public override VAReverbEffect CreateReverbEffect() => new FMODReverbEffect(this);
 
     // TEMP: capture isn't implemented yet
     public override string[] GetCaptureDevices() => [];

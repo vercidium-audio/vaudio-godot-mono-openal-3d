@@ -12,11 +12,21 @@ sealed unsafe class FMODVoice : VAVoice
     const float HighCrossover = 5000;
 
     // THREE_EQ's lowest gain
-    const float SilenceDecibels = -80;
+    internal const float SilenceDecibels = -80;
 
     readonly FMODBackend backend;
     FMOD.Channel channel;
+
+    // The direct path's muffling filter
     FMOD.DSP eq;
+
+    // The reverb send and its filter, before eq. Created when the voice first sends to a reverb effect
+    FMOD.DSP send;
+    FMOD.DSP sendEQ;
+    int sendReturnID = -1;
+    FMODReverbEffect sendEffect;
+    float sendLevel = float.NaN;
+    VALowPassFilter preSend = VALowPassFilter.Full;
 
     readonly float sampleRate;
     readonly float length;
@@ -39,6 +49,7 @@ sealed unsafe class FMODVoice : VAVoice
     float maxDistance = 1000;
     float rolloff = 1;
     VALowPassFilter? direct;
+    float gain = 1;
 
     internal FMODVoice(FMODBackend backend, FMOD.Channel channel, float sampleRate, float length, bool spatialised, FMOD.Sound streamSound = default)
     {
@@ -57,12 +68,7 @@ sealed unsafe class FMODVoice : VAVoice
         ApplyMode();
         ApplyRolloff();
 
-        if (backend.Check(backend.System.createDSPByType(FMOD.DSP_TYPE.THREE_EQ, out eq), "System::createDSPByType"))
-        {
-            backend.Check(eq.setParameterFloat((int)FMOD.DSP_THREE_EQ.LOWCROSSOVER, LowCrossover), "DSP::setParameterFloat");
-            backend.Check(eq.setParameterFloat((int)FMOD.DSP_THREE_EQ.HIGHCROSSOVER, HighCrossover), "DSP::setParameterFloat");
-            Call(channel.addDSP(FMOD.CHANNELCONTROL_DSP_INDEX.TAIL, eq), "Channel::addDSP");
-        }
+        AddEQ(out eq);
 
         backend.AddVoice(this);
     }
@@ -149,8 +155,13 @@ sealed unsafe class FMODVoice : VAVoice
 
     public override void SetGain(float gain)
     {
-        if (HasChannel)
-            Call(channel.setVolume(gain), "Channel::setVolume");
+        this.gain = gain;
+
+        if (!HasChannel)
+            return;
+
+        Call(channel.setVolume(gain), "Channel::setVolume");
+        UpdateSendLevel();
     }
 
     public override void SetPitch(float pitch)
@@ -201,21 +212,121 @@ sealed unsafe class FMODVoice : VAVoice
         ApplyRolloff();
     }
 
-    // TEMP: reverb sends are added with FMOD reverb effects
+    // The DSP chain from the input end is sendEQ -> send -> eq -> fader. The send comes before the fader and FMOD's 3D rolloff, so it carries the voice's gain and its rolloff curve's distance attenuation itself, and the direct path's silence or extra filtering in eq never reaches it
     public override void SetFilters(VALowPassFilter direct, VAReverbEffect reverbEffect, VALowPassFilter send)
     {
-        if (this.direct == direct || !HasChannel || !eq.hasHandle())
+        if (!HasChannel || !eq.hasHandle())
+            return;
+
+        var effect = reverbEffect as FMODReverbEffect;
+        int returnID = effect != null && effect.IsValid ? effect.ReturnID : -1;
+
+        if (returnID >= 0 && !this.send.hasHandle() && !AddSend())
+            returnID = -1;
+
+        sendEffect = returnID >= 0 ? effect : null;
+
+        if (returnID != sendReturnID)
+        {
+            sendReturnID = returnID;
+            backend.Check(this.send.setParameterInt((int)FMOD.DSP_SEND.RETURNID, returnID), "DSP::setParameterInt");
+        }
+
+        UpdateSendLevel();
+
+        // Without a send, eq does all the filtering
+        var preSend = returnID >= 0 ? send : VALowPassFilter.Full;
+
+        if (this.preSend != preSend && sendEQ.hasHandle())
+        {
+            SetEQ(sendEQ, ToDecibels(preSend.GainLF), ToDecibels(Mid(preSend)), ToDecibels(preSend.GainHF));
+            backend.Check(sendEQ.setBypass(preSend == VALowPassFilter.Full), "DSP::setBypass");
+        }
+
+        if (this.direct == direct && this.preSend == preSend)
             return;
 
         this.direct = direct;
+        this.preSend = preSend;
 
-        // The mid band gets the average of the two, like vaudio-fmod's FMODSound
-        backend.Check(eq.setParameterFloat((int)FMOD.DSP_THREE_EQ.LOWGAIN, ToDecibels(direct.GainLF)), "DSP::setParameterFloat");
-        backend.Check(eq.setParameterFloat((int)FMOD.DSP_THREE_EQ.MIDGAIN, ToDecibels((direct.GainLF + direct.GainHF) / 2)), "DSP::setParameterFloat");
-        backend.Check(eq.setParameterFloat((int)FMOD.DSP_THREE_EQ.HIGHGAIN, ToDecibels(direct.GainHF)), "DSP::setParameterFloat");
+        // eq comes after sendEQ, so it only applies what's left of the direct filter
+        SetEQ(eq, RemainingDecibels(direct.GainLF, preSend.GainLF), RemainingDecibels(Mid(direct), Mid(preSend)), RemainingDecibels(direct.GainHF, preSend.GainHF));
+    }
+
+    // The mid band gets the average of the two, like vaudio-fmod's FMODSound
+    static float Mid(VALowPassFilter filter) => (filter.GainLF + filter.GainHF) / 2;
+
+    static float RemainingDecibels(float gain, float alreadyApplied) => Math.Clamp(ToDecibels(gain) - ToDecibels(alreadyApplied), SilenceDecibels, 0);
+
+    void SetEQ(FMOD.DSP dsp, float low, float mid, float high)
+    {
+        backend.Check(dsp.setParameterFloat((int)FMOD.DSP_THREE_EQ.LOWGAIN, low), "DSP::setParameterFloat");
+        backend.Check(dsp.setParameterFloat((int)FMOD.DSP_THREE_EQ.MIDGAIN, mid), "DSP::setParameterFloat");
+        backend.Check(dsp.setParameterFloat((int)FMOD.DSP_THREE_EQ.HIGHGAIN, high), "DSP::setParameterFloat");
     }
 
     static float ToDecibels(float gain) => gain <= 0 ? SilenceDecibels : Math.Clamp(20 * MathF.Log10(gain), SilenceDecibels, 0);
+
+    // Adds a THREE_EQ at the input end of the chain
+    bool AddEQ(out FMOD.DSP dsp)
+    {
+        if (!backend.Check(backend.System.createDSPByType(FMOD.DSP_TYPE.THREE_EQ, out dsp), "System::createDSPByType"))
+            return false;
+
+        backend.Check(dsp.setParameterFloat((int)FMOD.DSP_THREE_EQ.LOWCROSSOVER, LowCrossover), "DSP::setParameterFloat");
+        backend.Check(dsp.setParameterFloat((int)FMOD.DSP_THREE_EQ.HIGHCROSSOVER, HighCrossover), "DSP::setParameterFloat");
+        return AddToChannel(ref dsp);
+    }
+
+    // Adds the SEND and its EQ the first time the voice sends to a reverb effect. Most voices never do
+    bool AddSend()
+    {
+        if (!backend.Check(backend.System.createDSPByType(FMOD.DSP_TYPE.SEND, out send), "System::createDSPByType") || !AddToChannel(ref send))
+            return false;
+
+        if (AddEQ(out sendEQ))
+            backend.Check(sendEQ.setBypass(true), "DSP::setBypass");
+
+        return true;
+    }
+
+    // Releases the DSP if it couldn't be added
+    bool AddToChannel(ref FMOD.DSP dsp)
+    {
+        if (Call(channel.addDSP(FMOD.CHANNELCONTROL_DSP_INDEX.TAIL, dsp), "Channel::addDSP"))
+            return true;
+
+        backend.Check(dsp.release(), "DSP::release");
+        dsp.clearHandle();
+        return false;
+    }
+
+    internal override float ReverbSendLevel => sendEffect != null && send.hasHandle() ? sendLevel : -1;
+
+    // Called whenever the gain or effect changes, and every frame by the backend, since the voice's or listener's position may have moved
+    internal void UpdateSendLevel()
+    {
+        if (!HasChannel || !send.hasHandle())
+            return;
+
+        float level = Math.Clamp(gain, 0, 1) * SendDistanceGain();
+
+        if (level == sendLevel)
+            return;
+
+        sendLevel = level;
+        backend.Check(send.setParameterFloat((int)FMOD.DSP_SEND.LEVEL, level), "DSP::setParameterFloat");
+    }
+
+    // The same attenuation the voice's own rolloff curve gives the direct path. A relative voice's distance is from the listener, and an unspatialised one (FMOD's 2D mode) isn't attenuated
+    float SendDistanceGain()
+    {
+        if (!spatialised)
+            return 1;
+
+        float distance = relative ? position.Length() : position.DistanceTo(backend.ListenerPosition);
+        return FMODRolloff.CurveGain(backend.DistanceModel, distance, referenceDistance, maxDistance, rolloff);
+    }
 
     void ApplyMode()
     {
@@ -252,19 +363,25 @@ sealed unsafe class FMODVoice : VAVoice
         if (disposed)
             return;
 
-        if (HasChannel)
-        {
-            if (eq.hasHandle())
-                Call(channel.removeDSP(eq), "Channel::removeDSP");
+        var dsps = new[] { sendEQ, send, eq };
 
-            Call(channel.stop(), "Channel::stop");
+        foreach (var dsp in dsps)
+        {
+            if (HasChannel && dsp.hasHandle())
+                Call(channel.removeDSP(dsp), "Channel::removeDSP");
         }
+
+        if (HasChannel)
+            Call(channel.stop(), "Channel::stop");
 
         // System::release already freed these with the device
         if (backend.IsInitialised)
         {
-            if (eq.hasHandle())
-                backend.Check(eq.release(), "DSP::release");
+            foreach (var dsp in dsps)
+            {
+                if (dsp.hasHandle())
+                    backend.Check(dsp.release(), "DSP::release");
+            }
 
             if (streamSound.hasHandle())
                 backend.Check(streamSound.release(), "Sound::release");
@@ -273,6 +390,8 @@ sealed unsafe class FMODVoice : VAVoice
         disposed = true;
         channel.clearHandle();
         eq.clearHandle();
+        send.clearHandle();
+        sendEQ.clearHandle();
         streamSound.clearHandle();
         backend.RemoveVoice(this);
 
