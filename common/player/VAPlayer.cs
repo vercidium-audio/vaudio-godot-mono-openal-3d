@@ -1,38 +1,15 @@
-using OpenALSource = global::OpenAL.managed.ALSource;
-
 namespace vaudio_godot_mono_openal;
 
-// Base type (Node2D/Node3D) and [Tool] are declared per-addon in ALSourceBase.cs.
-public partial class ALSource
+// Base type (Node2D/Node3D) and [Tool] are declared per-addon in VAPlayerBase.cs.
+public partial class VAPlayer
 {
-    protected List<OpenALSource> sources = [];
-    public ALFilter filter;
-    public ALReverbEffect effect;
+    protected List<VAVoice> voices = [];
 
-    static ALFilter _silenceFilter;
-    static ALFilter _fullFilter;
-    static bool nativeLoadErrorLogged = false;
+    // The muffling last passed to UpdateFilter, or null if it never was
+    protected VALowPass? muffling;
 
-    public static ALFilter silenceFilter => _silenceFilter ??= CreateFilterSafe(0, 0);
-    public static ALFilter fullFilter => _fullFilter ??= CreateFilterSafe(1, 1);
-
-    static ALFilter CreateFilterSafe(float gain, float gainHF)
-    {
-        try
-        {
-            return new ALFilter(gain, gainHF);
-        }
-        catch (Exception ex)
-        {
-            if (!nativeLoadErrorLogged)
-            {
-                ALManager.LogBackendError($"Failed to initialise OpenAL ({ex.Message}). Audio playback will not work until this is fixed.");
-                nativeLoadErrorLogged = true;
-            }
-
-            return null;
-        }
-    }
+    // The reverb bus each voice sends to, or null for no reverb. Applied by the next UpdateFilter
+    public VAReverbBus reverbBus;
 
     // The fullReverb last passed to UpdateFilter
     bool fullReverb = true;
@@ -47,36 +24,34 @@ public partial class ALSource
     // Recalculates dryOutputEnabled, returning whether it changed
     protected bool UpdateDryOutput()
     {
-        var enabled = !ReverbOnly && !ALManager.ReverbOnly;
+        var enabled = !ReverbOnly && !VAAudioBackend.ReverbOnly;
         var changed = enabled != dryOutputEnabled;
         dryOutputEnabled = enabled;
         return changed;
     }
 
-    // Applies the direct filter (or the silence filter while reverb-only) and the reverb send
-    protected void ApplyFilters(OpenALSource source)
+    // Applies the direct filter (or silence while reverb-only) and the reverb send
+    protected void ApplyFilters(VAVoice voice)
     {
-        // For reverb in other rooms, we send the sound's clear audio to the reverb effect, then reduce the reverb effect's gain to make it muffled
-        var reverbFilter = fullReverb ? fullFilter : filter;
-        var directFilter = dryOutputEnabled ? filter : silenceFilter;
+        var filter = muffling ?? VALowPass.Full;
 
-        source.SetFilter(effect, directFilter, reverbFilter);
+        // For reverb in other rooms, we send the sound's clear audio to the reverb bus, then reduce the bus's gain to make it muffled
+        var send = fullReverb ? VALowPass.Full : filter;
+        var direct = dryOutputEnabled ? filter : VALowPass.Silence;
+
+        voice.SetFilters(direct, reverbBus, send);
     }
 
     public void UpdateFilter(float gain, float gainHF, bool fullReverb = false)
     {
-        ALManager.Ensure();
+        VAAudioBackend.Ensure();
 
-        if (filter == null)
-            filter = new(gain, gainHF);
-        else
-            filter.SetGain(gain, gainHF);
-
+        muffling = new VALowPass(gain, gainHF);
         this.fullReverb = fullReverb;
         UpdateDryOutput();
 
-        foreach (var s in sources)
-            ApplyFilters(s);
+        foreach (var voice in voices)
+            ApplyFilters(voice);
     }
 
     bool streamsErrorLogged = false;
@@ -102,8 +77,15 @@ public partial class ALSource
         return index;
     }
 
-    protected virtual void ConfigureSource(OpenALSource source)
+    protected virtual void ConfigureVoice(VAVoice voice)
     {
+    }
+
+    // For sources that play at the listener, e.g. ambience, music, UI
+    protected static void ConfigureListenerRelativeVoice(VAVoice voice)
+    {
+        voice.SetRelative(true);
+        voice.SetPosition(Vector3.Zero);
     }
 
     public bool Play() => Play(0);
@@ -113,7 +95,7 @@ public partial class ALSource
     /// </summary>
     public virtual bool Play(float startTime)
     {
-        ALManager.Ensure();
+        VAAudioBackend.Ensure();
 
         var streamIndex = PickStreamIndex();
 
@@ -121,7 +103,7 @@ public partial class ALSource
         {
             if (!streamsErrorLogged)
             {
-                LogWarning($"Unable to play the ALSource {Name} because its Streams property is not set");
+                LogWarning($"Unable to play {Name} because its Streams property is not set");
                 streamsErrorLogged = true;
             }
 
@@ -134,14 +116,14 @@ public partial class ALSource
         {
             if (!streamsErrorLogged)
             {
-                LogWarning($"Unable to play the ALSource {Name} because Streams[{streamIndex}] is not a valid AudioStream");
+                LogWarning($"Unable to play {Name} because Streams[{streamIndex}] is not a valid AudioStream");
                 streamsErrorLogged = true;
             }
 
             return false;
         }
 
-        if (!ALManager.TryCreateSource(pickedStream, true, out var source))
+        if (!VAAudioBackend.TryCreateVoice(pickedStream, true, out var voice))
         {
             // Buffer is still decoding in the background
             playRequested = true;
@@ -158,22 +140,22 @@ public partial class ALSource
         var randomizedGain = Volume * Mathf.DbToLinear((float)(-VolumeRandomnessDb + random.NextDouble() * (2 * VolumeRandomnessDb)));
 
         // Set initial properties
-        source.SetGain(randomizedGain);
-        source.SetPitch(randomizedPitch);
-        source.SetLooping(Looping);
-        ConfigureSource(source);
+        voice.SetGain(randomizedGain);
+        voice.SetPitch(randomizedPitch);
+        voice.Looping = Looping;
+        ConfigureVoice(voice);
 
         UpdateDryOutput();
-        ApplyFilters(source);
+        ApplyFilters(voice);
 
-        sources.Add(source);
+        voices.Add(voice);
 
-        // An initial source starts from its offset once played
+        // An initial voice starts from its offset once played
         if (startTime > 0)
-            SeekSource(source, startTime);
+            SeekVoice(voice, startTime);
 
         if (!_streamPaused)
-            source.Play();
+            voice.Play();
 
         return true;
     }
@@ -194,23 +176,23 @@ public partial class ALSource
 
             _streamPaused = value;
 
-            foreach (var s in sources)
-                ApplyPaused(s);
+            foreach (var voice in voices)
+                ApplyPaused(voice);
         }
     }
 
-    protected void ApplyPaused(OpenALSource source)
+    protected void ApplyPaused(VAVoice voice)
     {
-        var state = AL.GetSourcei(source.ID, AL.AL_SOURCE_STATE);
+        var state = voice.State;
 
         if (_streamPaused)
         {
-            if (state == AL.AL_PLAYING)
-                AL.SourcePause(source.ID);
+            if (state == VAVoiceState.Playing)
+                voice.Pause();
         }
         // Not a stopped one, which would restart from the beginning
-        else if (state == AL.AL_PAUSED || state == AL.AL_INITIAL)
-            source.Play();
+        else if (state == VAVoiceState.Paused || state == VAVoiceState.Initial)
+            voice.Play();
     }
 
     /// <summary>
@@ -218,13 +200,13 @@ public partial class ALSource
     /// </summary>
     public virtual void Seek(float time)
     {
-        foreach (var s in sources)
-            SeekSource(s, time);
+        foreach (var voice in voices)
+            SeekVoice(voice, time);
     }
 
-    void SeekSource(OpenALSource source, float seconds)
+    static void SeekVoice(VAVoice voice, float seconds)
     {
-        var length = BufferLength((uint)AL.GetSourcei(source.ID, AL.AL_BUFFER));
+        var length = voice.Length;
 
         if (length <= 0)
             return;
@@ -233,30 +215,16 @@ public partial class ALSource
 
         if (seconds >= length)
         {
-            if (!source.looping)
+            if (!voice.Looping)
             {
-                source.Stop();
+                voice.Stop();
                 return;
             }
 
             seconds %= length;
         }
 
-        source.SetSecOffset(seconds);
-    }
-
-    static float BufferLength(uint buffer)
-    {
-        if (buffer == 0)
-            return 0;
-
-        var bytesPerFrame = AL.GetBufferi(buffer, AL.AL_CHANNELS) * AL.GetBufferi(buffer, AL.AL_BITS) / 8;
-        var frequency = AL.GetBufferi(buffer, AL.AL_FREQUENCY);
-
-        if (bytesPerFrame <= 0 || frequency <= 0)
-            return 0;
-
-        return (float)AL.GetBufferi(buffer, AL.AL_SIZE) / bytesPerFrame / frequency;
+        voice.PlaybackPosition = seconds;
     }
 
     /// <summary>
@@ -264,10 +232,10 @@ public partial class ALSource
     /// </summary>
     public float GetPlaybackTime()
     {
-        if (sources.Count == 0)
+        if (voices.Count == 0)
             return 0;
 
-        return AL.GetSourcef(sources[^1].ID, AL.AL_SEC_OFFSET);
+        return voices[^1].PlaybackPosition;
     }
 
     public virtual void Stop() => StopPlayback();
@@ -277,14 +245,14 @@ public partial class ALSource
     {
         playRequested = false;
 
-        // Release them now - a stopped looping source never reports finished, so _Process would never clean it up
-        foreach (var s in sources)
+        // Release them now - a stopped looping voice never reports finished, so _Process would never clean it up
+        foreach (var voice in voices)
         {
-            s.Stop();
-            s.Dispose();
+            voice.Stop();
+            voice.Dispose();
         }
 
-        sources.Clear();
+        voices.Clear();
     }
 
     // False while paused, matching AudioStreamPlayer
@@ -293,8 +261,8 @@ public partial class ALSource
     // Whether a sound is playing or paused
     internal bool HasSound()
     {
-        foreach (var s in sources)
-            if (!s.Finished())
+        foreach (var voice in voices)
+            if (!voice.IsFinished)
                 return true;
 
         return false;
@@ -304,9 +272,9 @@ public partial class ALSource
     internal bool IsPlayRequested => playRequested;
 
     /// <summary>
-    /// Whether the sound is sent to a reverb effect (grouped or the listener's). A raytraced source outside the bounds has none
+    /// Whether the sound is sent to a reverb bus (grouped or the listener's). A raytraced source outside the bounds has none
     /// </summary>
-    public bool HasReverb() => effect != null;
+    public bool HasReverb() => reverbBus != null;
 
     // GDScript aliases so existing AudioStreamPlayer scripts don't break
     public bool play() => Play();
@@ -316,15 +284,20 @@ public partial class ALSource
     public void seek(float time) => Seek(time);
     public float get_playback_position() => GetPlaybackTime();
 
+    // Releases every voice, e.g. before the device is destroyed or when the node is freed
+    protected void DisposeVoices()
+    {
+        foreach (var voice in voices)
+            voice.Dispose();
+
+        voices.Clear();
+    }
+
     public virtual void OnDeviceDestroyed()
     {
-        foreach (var s in sources)
-            s.Dispose();
+        DisposeVoices();
 
-        sources.Clear();
-
-        // Must delete the filter after deleting the sources
-        filter?.Delete();
-        filter = null;
+        // The bus belongs to the old device
+        reverbBus = null;
     }
 }

@@ -5,7 +5,6 @@ extends "res://scenarios/lib/scenario.gd"
 # Every source type's reverb_only turns off only its own dry output, and VAWorld.reverb_only turns off every source's, whichever is set. Sources added while the world is reverb-only start with their dry output off. Checked through is_dry_output_enabled(), the direct filter state last applied to the source's sounds. VAInputStreamSource isn't spawned, as it opens the microphone, and shares VAStreamSource's code
 
 const SEED := 20261114
-const AL_FORMAT_MONO16 := 4353
 
 var spawned: Array[Node] = []
 var sources: Array[Node] = []
@@ -20,7 +19,7 @@ func run() -> void:
 
 	var stream := spawn_raytraced("VAStreamSource", "ReverbOnlyStream", -2, SEED + 1)
 	var networked := spawn_raytraced("VANetworkedStreamSource", "ReverbOnlyNetworked", -3, SEED + 2)
-	check(VA.open_stream(stream, AL_FORMAT_MONO16, 44100), "open_stream failed")
+	check(VA.open_stream(stream, VA.PCM_MONO16, 44100), "open_stream failed")
 
 	var ambient := spawn_unraytraced("VASourceAmbient", "ReverbOnlyAmbient", root)
 	var relative := spawn_unraytraced("VASourceRelative", "ReverbOnlyRelative", root)

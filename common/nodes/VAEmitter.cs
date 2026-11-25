@@ -8,13 +8,13 @@ public partial class VAEmitter
     protected VAWorld vercidiumAudio;
     public vaudio.Emitter emitter;
 
-    public ALReverbEffect effect;
-    public ALFilter filter;
+    public VAReverbBus reverbBus;
+    VALowPass? filter;
 
-    public float GainLF => filter?.gain ?? 0;
-    public float GainHF => filter?.gainHF ?? 0;
+    public float GainLF => filter?.GainLF ?? 0;
+    public float GainHF => filter?.RelativeGainHF ?? 0;
 
-    // How muffled this emitter sounds to the listener, as absolute gains (ALFilter stores HF relative to LF). 1/1 until the listener raytraces it
+    // How muffled this emitter sounds to the listener, as absolute gains (GainHF is relative to GainLF). 1/1 until the listener raytraces it
     internal float MufflingGainLF { get; private set; } = 1;
     internal float MufflingGainHF { get; private set; } = 1;
     public bool Raytraced => emitter != null && !emitter.Initialising;
@@ -27,7 +27,7 @@ public partial class VAEmitter
         if (Engine.IsEditorHint())
             return;
 
-        ALManager.Ensure();
+        VAAudioBackend.Ensure();
 
         cancelWaitForVAWorld = this.WaitForVAWorld(OnVAWorldFound);
     }
@@ -95,7 +95,6 @@ public partial class VAEmitter
         vercidiumAudio = null;
 
         // Creating a fresh emitter creates a fresh filter once it's raytraced
-        filter?.Delete();
         filter = null;
     }
 
@@ -231,10 +230,10 @@ public partial class VAEmitter
 
     void OnRaytracedByAnotherEmitter(vaudio.Emitter emitter)
     {
-        ALManager.Ensure();
+        VAAudioBackend.Ensure();
 
         // Already set if a new listener emitter raytraced this again, e.g. after the last VAListener left the tree and came back
-        filter ??= new(1, 1);
+        filter ??= VALowPass.Full;
 
         ApplyRaytracingResults();
 
@@ -287,7 +286,7 @@ public partial class VAEmitter
     // Casts reverb rays but has no EAX yet
     internal bool IsWaitingForEAX() => emitter != null && emitter.ReverbEnabled && emitter.EAX == null;
 
-    // Sent to the listener's reverb effect (see VAWorld.GetReverbEffect), which has no EAX yet
+    // Sent to the listener's reverb effect (see VAWorld.GetReverbBus), which has no EAX yet
     bool IsWaitingForListenerReverb() => UseListenerReverb && !(AffectsGroupedEAX && GroupedEAXIndex >= 0) && !vercidiumAudio.IsListenerReverbReady();
 
     /// <summary>
@@ -322,7 +321,7 @@ public partial class VAEmitter
 
     void ApplyRaytracingResults()
     {
-        effect = vercidiumAudio.GetReverbEffect(this);
+        reverbBus = vercidiumAudio.GetReverbBus(this);
 
         // If no listener, we can't know how muffled we are
         if (vercidiumAudio.listener == null)
@@ -336,7 +335,9 @@ public partial class VAEmitter
                 var vaudioFilter = vercidiumAudio.listener.GetTargetFilter(this);
                 MufflingGainLF = vaudioFilter.GainLF;
                 MufflingGainHF = vaudioFilter.GainHF;
-                filter?.SetGain(vaudioFilter.GainLF, vaudioFilter.GainHF);
+
+                if (filter != null)
+                    filter = new VALowPass(vaudioFilter.GainLF, vaudioFilter.GainHF);
             }
         }
     }

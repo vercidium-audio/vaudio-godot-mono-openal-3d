@@ -1,19 +1,16 @@
-using OpenALSource = global::OpenAL.managed.ALSource;
-using OpenALStreamSource = global::OpenAL.managed.ALStreamSource;
-
 namespace vaudio_godot_mono_openal;
 
 [Tool]
 [GlobalClass]
 public partial class VAStreamSource : VARaytracedSource
 {
-    OpenALStreamSource streamSource;
+    VAStream stream;
 
     // Set once the emitter is first ready to play and stays true, so a RaytraceOnce stream keeps accepting data after its emitter leaves the world
     bool streamReady;
 
     bool streamOpen;
-    int streamFormat;
+    VAPcmFormat streamFormat;
     int streamFrequency;
 
     // Set when the bounds stopped the sound, or the stream was opened outside them, so it only restarts once inside if the bounds were the reason
@@ -22,9 +19,9 @@ public partial class VAStreamSource : VARaytracedSource
     public bool IsStreamOpen => streamOpen;
 
     // If outside the world bounds the stream opens without a sound, then starts once inside
-    public bool OpenStream(int format, int frequency)
+    public bool OpenStream(VAPcmFormat format, int frequency)
     {
-        ALManager.Ensure();
+        VAAudioBackend.Ensure();
 
         CloseStream();
 
@@ -43,27 +40,23 @@ public partial class VAStreamSource : VARaytracedSource
     // The stream's queued audio lives in its source, so a fresh one starts from the next push
     bool StartSound()
     {
-        var sourceID = AL.GenSource();
-
-        if (sourceID == 0)
-        {
-            ALManager.LogBackendError($"Failed to create a stream source for {Name} - likely too many sources have been created");
+        // The backend logs why it failed
+        if (!VAAudioBackend.TryCreateStream(streamFormat, streamFrequency, out var newStream))
             return false;
-        }
 
-        var source = new OpenALStreamSource(sourceID, streamFormat, streamFrequency);
-        source.SetGain(Volume);
-        source.SetPitch(Pitch);
-        ConfigureSource(source);
+        var voice = newStream.Voice;
+        voice.SetGain(Volume);
+        voice.SetPitch(Pitch);
+        ConfigureVoice(voice);
 
         UpdateDryOutput();
-        ApplyFilters(source);
+        ApplyFilters(voice);
 
-        sources.Add(source);
-        streamSource = source;
+        voices.Add(voice);
+        stream = newStream;
 
-        // The stream source starts playing as soon as it's created
-        ApplyPaused(source);
+        // The stream voice starts playing as soon as it's created
+        ApplyPaused(voice);
         return true;
     }
 
@@ -74,15 +67,15 @@ public partial class VAStreamSource : VARaytracedSource
 
     void StopSound()
     {
-        if (streamSource == null)
+        if (stream == null)
             return;
 
-        sources.Remove(streamSource);
+        voices.Remove(stream.Voice);
 
-        if (!streamSource.IsDisposed())
-            streamSource.Dispose();
+        if (!stream.Voice.IsDisposed)
+            stream.Voice.Dispose();
 
-        streamSource = null;
+        stream = null;
     }
 
     void ApplyBoundsRules()
@@ -92,7 +85,7 @@ public partial class VAStreamSource : VARaytracedSource
 
         if (IsSilencedByBounds())
         {
-            if (streamSource == null)
+            if (stream == null)
                 return;
 
             StopSound();
@@ -122,7 +115,7 @@ public partial class VAStreamSource : VARaytracedSource
         }
 
         // Nothing plays it while the bounds have stopped it, and audio queued while paused would play late. A destroyed device releases the source without going through CloseStream
-        if (data == null || data.Length == 0 || stoppedByBounds || StreamPaused || streamSource == null || streamSource.IsDisposed())
+        if (data == null || data.Length == 0 || stoppedByBounds || StreamPaused || stream == null || stream.Voice.IsDisposed)
             return;
 
         // Data that arrives before the muffling and reverb results is dropped, so the stream never plays unmuffled or without reverb
@@ -134,7 +127,7 @@ public partial class VAStreamSource : VARaytracedSource
             streamReady = true;
         }
 
-        streamSource.EnqueueData(data, 0, data.Length);
+        stream.Enqueue(data, 0, data.Length);
     }
 
     public void CloseStream()
@@ -164,21 +157,14 @@ public partial class VAStreamSource : VARaytracedSource
         if (streamOpen && !streamReady && IsReadyToPlay)
             streamReady = true;
 
-        DrainUsedChunks();
-    }
-
-    void DrainUsedChunks()
-    {
-        while (streamSource != null && !streamSource.IsDisposed() && streamSource.TryGetUsedData(out _))
-        {
-        }
+        stream?.ReleasePlayedChunks();
     }
 
     public override void OnDeviceDestroyed()
     {
-        // base already disposes streamSource via `sources`, which closes the stream
+        // base already disposes the stream's voice via `voices`, which closes the stream
         base.OnDeviceDestroyed();
-        streamSource = null;
+        stream = null;
         streamOpen = false;
         stoppedByBounds = false;
     }

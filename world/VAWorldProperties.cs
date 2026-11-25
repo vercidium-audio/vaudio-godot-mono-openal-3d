@@ -1,5 +1,4 @@
 using Godot.Collections;
-using OpenAL;
 
 namespace vaudio_godot_mono_openal;
 
@@ -256,7 +255,7 @@ public partial class VAWorld
     }
 
 
-    [ExportGroup("OpenAL")]
+    [ExportGroup("Audio Backend")]
 
     float _MasterVolume = 1;
     /// <summary>
@@ -271,26 +270,41 @@ public partial class VAWorld
         {
             _MasterVolume = MathF.Max(0, value);
 
-            if (ALManager.Initialised)
-                ALManager.MasterVolume = _MasterVolume;
+            VAAudioBackend.MasterVolume = _MasterVolume;
         }
     }
 
-    ALDistanceModel _DistanceModel = ALDistanceModel.InverseDistance;
+    VADistanceModel _DistanceModel = VADistanceModel.InverseClamped;
     /// <summary>
-    /// OpenAL distance attenuation model. 
+    /// How sounds fade with distance, between each source's reference and max distance.
     /// If multiple VAWorlds exist, the last one to set this wins.
     /// </summary>
     [Export]
-    public ALDistanceModel DistanceModel
+    public VADistanceModel DistanceModel
     {
         get => _DistanceModel;
         set
         {
             _DistanceModel = value;
 
-            if (ALManager.Initialised)
-                ALManager.DistanceModel = _DistanceModel;
+            VAAudioBackend.DistanceModel = _DistanceModel;
+        }
+    }
+
+    float _DopplerScale = 1;
+    /// <summary>
+    /// Scales the doppler pitch shift of moving sources and listeners. 0 turns doppler off.
+    /// If multiple VAWorlds exist, the last one to set this wins.
+    /// </summary>
+    [Export(PropertyHint.Range, "0.0,4.0,0.01,or_greater")]
+    public float DopplerScale
+    {
+        get => _DopplerScale;
+        set
+        {
+            _DopplerScale = MathF.Max(0, value);
+
+            VAAudioBackend.DopplerScale = _DopplerScale;
         }
     }
 
@@ -298,7 +312,7 @@ public partial class VAWorld
     /// <summary>
     /// When true, you'll only hear reverb - use for debugging.
     /// If multiple VAWorlds exist, the last one to set this wins.
-    /// Each source also has its own <see cref="ALSource.ReverbOnly"/>.
+    /// Each source also has its own <see cref="VAPlayer.ReverbOnly"/>.
     /// </summary>
     [Export]
     public bool ReverbOnly
@@ -308,8 +322,7 @@ public partial class VAWorld
         {
             _ReverbOnly = value;
 
-            if (ALManager.Initialised)
-                ALManager.ReverbOnly = _ReverbOnly;
+            VAAudioBackend.ReverbOnly = _ReverbOnly;
         }
     }
 
@@ -341,7 +354,7 @@ public partial class VAWorld
     float _MetersPerUnit = 1;
     /// <summary>
     /// Gets meters per world unit. Affects air absorption and reverb calculation.
-    /// Also affects OpenAL's own air-absorption and reverb decay math.
+    /// Also passed to the audio backend, for its own distance and doppler calculations.
     /// If multiple VAWorlds exist, the last one to set this wins.
     /// </summary>
     /// <exception cref="ArgumentException">Thrown if NaN, infinity or &lt;= 0</exception>
@@ -356,8 +369,7 @@ public partial class VAWorld
             if (world != null)
                 world.MetersPerUnit = _MetersPerUnit;
 
-            if (ALManager.Initialised)
-                ALManager.MetersPerUnit = _MetersPerUnit;
+            VAAudioBackend.MetersPerUnit = _MetersPerUnit;
         }
     }
 
@@ -365,7 +377,7 @@ public partial class VAWorld
 
     /// <summary>
     /// Speed of sound in seconds per meter. Affects reverb calculation.
-    /// Also affects OpenAL's own Doppler calculation.    
+    /// Also passed to the audio backend, for its own doppler calculation.
     /// If multiple VAWorlds exist, the last one to set this wins.
     /// </summary>
     /// <exception cref="ArgumentException">Thrown if NaN, infinity or &lt;= 0</exception>
@@ -380,8 +392,7 @@ public partial class VAWorld
             if (world != null)
                 world.InverseSpeedOfSound = 1.0f / _SpeedOfSound;
 
-            if (ALManager.Initialised)
-                ALManager.SpeedOfSound = _SpeedOfSound;
+            VAAudioBackend.SpeedOfSound = _SpeedOfSound;
         }
     }
 

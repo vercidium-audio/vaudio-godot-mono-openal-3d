@@ -2,18 +2,26 @@
 
 namespace vaudio_godot_mono_openal;
 
+// A grouped EAX's reverb bus, with the gain and pan last calculated for it, which it keeps while its EAX has no listener-relative results
+internal class VAGroupedReverbBus(VAReverbBus bus)
+{
+    public readonly VAReverbBus Bus = bus;
+    public float Gain = 1;
+    public Vector3 Pan;
+}
+
 public partial class VAWorld
 {
-    // Grouped reverb effects are only created once reverb updates with a listener
+    // Grouped reverb buses are only created once reverb updates with a listener
     void WarnMissingGroupedEAX(string emitterName, int groupedEAXIndex)
     {
         if (listener == null)
             LogWarning($"Emitter {emitterName} has a grouped EAX index of {groupedEAXIndex} but the VAWorld has no VAListener. Ensure the VAListener node is created and is a sibling or child node of VAWorld.");
         else
-            LogWarning($"Emitter {emitterName} has a grouped EAX index of {groupedEAXIndex} but only {groupedReverbEffects.Count} EAX presets are available. Increase the 'Maximum Grouped EAX Count' setting on the VAWorld node.");
+            LogWarning($"Emitter {emitterName} has a grouped EAX index of {groupedEAXIndex} but only {groupedReverbBuses.Count} EAX presets are available. Increase the 'Maximum Grouped EAX Count' setting on the VAWorld node.");
     }
 
-    public ALReverbEffect GetReverbEffect(VAEmitter emitter)
+    public VAReverbBus GetReverbBus(VAEmitter emitter)
     {
         // Not raytraced outside the bounds, so any grouped EAX it has is stale, and the listener's reverb doesn't describe where it is either
         if (emitter.IsOutsideBounds())
@@ -21,31 +29,31 @@ public partial class VAWorld
 
         if (emitter.AffectsGroupedEAX && emitter.GroupedEAXIndex >= 0)
         {
-            if (emitter.GroupedEAXIndex >= groupedReverbEffects.Count)
+            if (emitter.GroupedEAXIndex >= groupedReverbBuses.Count)
             {
                 WarnMissingGroupedEAX(emitter.Name, emitter.GroupedEAXIndex);
-                return listenerReverbEffect;
+                return listenerReverbBus;
             }
 
-            return groupedReverbEffects[emitter.GroupedEAXIndex];
+            return groupedReverbBuses[emitter.GroupedEAXIndex].Bus;
         }
 
         if (!emitter.UseListenerReverb)
             return null;
 
-        return listenerReverbEffect;
+        return listenerReverbBus;
     }
 
-    // Whether the current listener's reverb effect has its first EAX, or never will: no reverb effect, no reverb rays, or outside the bounds. False with no listener. VASourceRelative waits for this
+    // Whether the current listener's reverb bus has its first EAX, or never will: no reverb bus, no reverb rays, or outside the bounds. False with no listener. VASourceRelative waits for this
     internal bool IsListenerReverbReady()
     {
         if (listener?.emitter == null)
             return false;
 
-        return listenerReverbEffect == null || listenerReverbEffect.effectSlotID == 0 || !listener.IsWaitingForEAX() || listener.IsOutsideBounds();
+        return listenerReverbBus == null || !listenerReverbBus.IsValid || !listener.IsWaitingForEAX() || listener.IsOutsideBounds();
     }
 
-    // Warns once per source (warned tracks it) that uses the listener's reverb effect while the current listener casts no reverb rays, as it then plays without reverb
+    // Warns once per source (warned tracks it) that uses the listener's reverb bus while the current listener casts no reverb rays, as it then plays without reverb
     internal void WarnIfListenerCastsNoReverbRays(Node source, ref bool warned)
     {
         if (warned || listener?.emitter == null || listener.emitter.ReverbEnabled)
@@ -55,82 +63,65 @@ public partial class VAWorld
         LogWarning($"{source.Name}: The listener '{listener.Name}' casts no reverb rays, so this source plays without the listener's reverb. Set the listener's reverb ray and bounce counts above 0.");
     }
 
-    // Silent until CopyReverb's Update() writes its effectSlotGain with the first EAX, so nothing plays through OpenAL's default reverb
-    static ALReverbEffect CreateSilentReverbEffect()
-    {
-        var effect = new ALReverbEffect();
-        AL.AuxiliaryEffectSlotf(effect.effectSlotID, AL.AL_EFFECTSLOT_GAIN, 0);
-        return effect;
-    }
-
     void OnReverbUpdated()
     {
         raytraceCount++;
-        ALManager.Ensure();
-        
+        VAAudioBackend.Ensure();
+
         // Shouldn't access anything until user adds a VAListener to the scene - else what is reverb relative to?
         if (listener == null)
             return;
 
         // Update ambient gain
         if (listener.AmbientFilter != null)
-        {
-            var ambientGainLF = listener.AmbientFilter.GainLF;
-            var ambientGainHF = listener.AmbientFilter.GainHF;
+            ambientFilter = new VALowPass(listener.AmbientFilter.GainLF, listener.AmbientFilter.GainHF);
 
-            ambientFilter ??= new(ambientGainLF, ambientGainHF);
-            ambientFilter.SetGain(ambientGainLF, ambientGainHF);
-        }
-
-        // Copy raytraced EAX results to ALReverbEffects
+        // Copy raytraced EAX results to the reverb buses
         if (listener.EAX != null)
-            CopyReverb(listener.EAX, listenerReverbEffect, false);
+            listenerReverbBus?.SetParams(listener.EAX, 1, Vector3.Zero, Vector3.Zero);
+
+        var backend = VAAudioBackend.Backend;
 
         for (int i = 0; i < world.GroupedEAX.Count; i++)
         {
-            if (groupedReverbEffects.Count <= i)
-                groupedReverbEffects.Add(CreateSilentReverbEffect());
+            if (groupedReverbBuses.Count <= i)
+            {
+                if (backend == null)
+                    break;
 
-            CopyReverb(world.GroupedEAX[i], groupedReverbEffects[i], true);
+                groupedReverbBuses.Add(new(backend.CreateReverbBus()));
+            }
 
-            groupedReverbEffects[i].Update();
+            var eax = world.GroupedEAX[i];
+            var grouped = groupedReverbBuses[i];
+
+            if (eax.HasRelativeResults(listener.emitter))
+            {
+                grouped.Gain = Math.Clamp(eax.GetRelativeGain(listener.emitter), 0, 1);
+                grouped.Pan = GetGroupedEAXPan(eax);
+            }
+
+            // TODO - separate pan for late reverb and reflections
+            grouped.Bus.SetParams(eax, grouped.Gain, grouped.Pan, grouped.Pan);
         }
     }
 
-    void CopyReverb(vaudio.EAXReverb eax, ALReverbEffect effect, bool isGroupedEAX)
+    void OnDeviceRecreated()
     {
-        effect.gain = 1f;
-
-        // Density causes static when updating in real time
-        //  See OpenAL Soft GitHub issue: https://github.com/kcat/openal-soft/issues/1229
-        effect.density = 0.5f;//eax.Density;
-
-        effect.diffusion = eax.Diffusion;
-        effect.gainLF = eax.GainLF;
-        effect.gainHF = eax.GainHF;
-        effect.decayTime = eax.DecayTime;
-        effect.decayLFRatio = eax.DecayLFRatio;
-        effect.decayHFRatio = eax.DecayHFRatio;
-        effect.reflectionsDelay = eax.ReflectionsDelay;
-        effect.reflectionsGain = eax.ReflectionsGain;
-        effect.lateReverbGain = eax.LateReverbGain;
-        effect.lateReverbDelay = eax.LateReverbDelay;
-        effect.echoTime = eax.EchoTime;
-        effect.echoDepth = eax.EchoDepth;
-        effect.modulationTime = eax.ModulationTime;
-        effect.modulationDepth = eax.ModulationDepth;
-        effect.airAbsorptionGainHF = eax.AirAbsorptionGainHF;
-        effect.hfReference = eax.HFReference;
-        effect.lfReference = eax.LFReference;
-        effect.roomRolloffFactor = eax.RoomRolloffFactor;
-        effect.decayHFLimit = eax.DecayHFLimit;
-
-        if (isGroupedEAX)
-            ApplyGroupedEAXPan(eax, effect);
-
-        effect.dirty = true;
-        effect.Update();
+        // The buses belong to the device, so they're created again with it
+        listenerReverbBus = VAAudioBackend.Backend?.CreateReverbBus();
     }
 
-    partial void ApplyGroupedEAXPan(vaudio.EAXReverb eax, ALReverbEffect effect);
+    void OnDeviceDestroyed()
+    {
+        ambientFilter = null;
+
+        listenerReverbBus?.Dispose();
+        listenerReverbBus = null;
+
+        foreach (var grouped in groupedReverbBuses)
+            grouped.Bus.Dispose();
+
+        groupedReverbBuses.Clear();
+    }
 }

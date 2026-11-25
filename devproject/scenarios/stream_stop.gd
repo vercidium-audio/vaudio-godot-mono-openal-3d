@@ -5,7 +5,6 @@ extends "res://scenarios/lib/scenario.gd"
 # Plays a sine wave through a VAStreamSource, then checks stop() closes the stream as well as stopping playback, so is_stream_open() doesn't stay true with nothing playing it. Reopening afterwards plays again, and close_stream() stops it too
 
 const SEED := 20261007
-const AL_FORMAT_MONO16 := 4353
 const FREQUENCY := 44100
 
 var stream: Node
@@ -23,7 +22,7 @@ func run() -> void:
 	VA.set_value(stream, "scattering_seed", SEED)
 	root.add_child(stream)
 
-	check(VA.open_stream(stream, AL_FORMAT_MONO16, FREQUENCY), "open_stream failed")
+	check(VA.open_stream(stream, VA.PCM_MONO16, FREQUENCY), "open_stream failed")
 	await wait_raytraced_by_listener(stream)
 	await wait_raytraced(SETTLE_PASSES)
 
@@ -35,7 +34,7 @@ func run() -> void:
 	check(not VA.is_stream_open(stream), "stream is still open after stop()")
 	check(not VA.is_playing(stream), "stream is still playing after stop()")
 
-	check(VA.open_stream(stream, AL_FORMAT_MONO16, FREQUENCY), "open_stream failed after stop()")
+	check(VA.open_stream(stream, VA.PCM_MONO16, FREQUENCY), "open_stream failed after stop()")
 	check(VA.is_stream_open(stream), "stream isn't open after reopening")
 	VA.push_audio_data(stream, sine_wave(1.0))
 	check(await wait_playing(stream), "stream isn't playing after reopening")

@@ -30,7 +30,7 @@ public partial class VASourceAmbient
         cancelWaitForVAWorld = null;
 
         if (!Engine.IsEditorHint())
-            ALManager.UnregisterDeviceRecreatedCallback(OnDeviceRecreated);
+            VAAudioBackend.UnregisterDeviceRecreatedCallback(OnDeviceRecreated);
 
         base._ExitTree();
     }
@@ -46,13 +46,15 @@ public partial class VASourceAmbient
         base._Ready();
     }
 
-    /// <summary>If true, this source is sent to the listener's reverb effect, muffled by the ambient filter. It then waits for the listener's first raytraced reverb before it plays</summary>
+    protected override void ConfigureVoice(VAVoice voice) => ConfigureListenerRelativeVoice(voice);
+
+    /// <summary>If true, this source is sent to the listener's reverb bus, muffled by the ambient filter. It then waits for the listener's first raytraced reverb before it plays</summary>
     [Export]
     public bool UseListenerReverb { get; set; } = false;
 
     public override bool Play(float startTime)
     {
-        // Don't play until we've raytraced once, and the listener's reverb has its first EAX, so it never starts in OpenAL's default reverb
+        // Don't play until we've raytraced once, and the listener's reverb has its first EAX, so it never starts in the backend's default reverb
         if (vercidiumAudio?.ambientFilter == null || (UseListenerReverb && !vercidiumAudio.IsListenerReverbReady()))
             return false;
 
@@ -79,11 +81,11 @@ public partial class VASourceAmbient
         }
 
         // Ensure VAWorld is available
-        if (vercidiumAudio?.ambientFilter == null)
+        if (vercidiumAudio?.ambientFilter is not VALowPass ambientFilter)
             return;
 
-        effect = UseListenerReverb ? vercidiumAudio.listenerReverbEffect : null;
-        UpdateFilter(vercidiumAudio.ambientFilter.gain, vercidiumAudio.ambientFilter.gainHF);
+        reverbBus = UseListenerReverb ? vercidiumAudio.listenerReverbBus : null;
+        UpdateFilter(ambientFilter.GainLF, ambientFilter.GainHF);
 
         if (!played)
         {

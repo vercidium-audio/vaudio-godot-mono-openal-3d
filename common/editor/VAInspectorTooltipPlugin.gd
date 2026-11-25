@@ -11,13 +11,13 @@ func _addon_root() -> String:
 	return get_script().resource_path.get_base_dir().get_base_dir().get_base_dir()
 
 func _base_class_names() -> Dictionary:
-	var spatial_al_source := "ALSource3D" if _addon_root().ends_with("-3d") else "ALSource2D"
+	var spatial_player := "VAPlayer3D" if _addon_root().ends_with("-3d") else "VAPlayer2D"
 	return {
 		"VAListener": ["VAEmitter"],
-		"VASource": ["VARaytracedSource", spatial_al_source, "ALSource"],
-		"VASourceLeech": [spatial_al_source, "ALSource"],
-		"VASourceRelative": ["ALSourceRelative", "ALSource"],
-		"VASourceAmbient": ["ALSourceRelative", "ALSource"],
+		"VASource": ["VARaytracedSource", spatial_player, "VAPlayer"],
+		"VASourceLeech": [spatial_player, "VAPlayer"],
+		"VASourceRelative": ["VAPlayer"],
+		"VASourceAmbient": ["VAPlayer"],
 	}
 
 # class_name -> (property_name -> tooltip text). Keyed by the C# class name as it appears in the

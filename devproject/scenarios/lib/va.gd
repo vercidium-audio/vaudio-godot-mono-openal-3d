@@ -56,7 +56,7 @@ static func connect_signal(node: Object, signal_name: String, callable: Callable
 # Creates a plugin node by class name, e.g. "VADefaultMaterial". C# nodes aren't in ClassDB, so find the script next to the world's own script in the addon
 static func create_node(world: Node, type: String) -> Node:
 	var addon: String = world.get_script().resource_path.get_base_dir().get_base_dir()
-	for folder in ["common/nodes", "nodes"]:
+	for folder in ["common/nodes", "nodes", "common/player", "player"]:
 		var path := "%s/%s/%s.cs" % [addon, folder, type]
 		if ResourceLoader.exists(path):
 			return load(path).new()
@@ -134,6 +134,10 @@ static func is_playing(source: Node) -> bool:
 static func make_current(listener: Node) -> void:
 	listener.MakeCurrent()
 
+# VAPcmFormat values, for open_stream(), open_capture() and VAInputStreamSource's format
+const PCM_MONO16 := 1
+const PCM_MONO_FLOAT := 4
+
 static func open_stream(source: Node, format: int, frequency: int) -> bool:
 	return source.OpenStream(format, frequency)
 
@@ -173,7 +177,7 @@ static func seek(source: Node, time: float) -> void:
 static func playback_time(source: Node) -> float:
 	return source.GetPlaybackTime()
 
-# The C# ALManager isn't a Godot object, so its HRTF functions are reached through VAWorld's static passthroughs
+# The C# VAAudioBackend isn't a Godot object, so its HRTF functions are reached through VAWorld's static passthroughs
 static func available_hrtfs(world: Node) -> PackedStringArray:
 	return PackedStringArray(world.get_script().GetAvailableHrtfs())
 
@@ -188,6 +192,14 @@ static func active_hrtf(world: Node) -> String:
 
 static func set_hrtf_enabled(world: Node, value: bool) -> bool:
 	return world.get_script().SetHrtfEnabled(value)
+
+# The global mix settings the audio backend is using, keyed by the VAWorld property they come from in snake_case, e.g. "doppler_scale"
+static func backend_settings(world: Node) -> Dictionary:
+	var settings := {}
+	var pascal: Dictionary = world.get_script().GetBackendSettings()
+	for key in pascal:
+		settings[String(key).to_snake_case()] = pascal[key]
+	return settings
 
 # How many errors the audio backend has logged since the game started, through VAWorld's static passthrough like the HRTF ones
 static func backend_error_count(world: Node) -> int:

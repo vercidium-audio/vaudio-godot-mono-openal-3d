@@ -1,19 +1,20 @@
 namespace vaudio_godot_mono_openal;
 
-public static unsafe partial class ALManager
+public sealed partial class OpenALBackend
 {
-    const string DefaultDeviceLabel = "System Default";
+    // Empty means the system default
+    string _outputDeviceName = "";
 
-    static int _maximumAuxiliarySends;
-    static int _sampleRate;
-    static bool _hrtfEnabled;
-    static int _maximumMonoSources;
-    static int _maximumStereoSources;
+    int _maximumAuxiliarySends;
+    int _sampleRate;
+    bool _hrtfEnabled;
+    int _maximumMonoSources;
+    int _maximumStereoSources;
 
-    static bool _settingsRead;
+    bool _settingsRead;
 
     // Read once, so runtime changes (SetOutputDevice, SetHrtf etc.) aren't overwritten when the device is recreated
-    static void EnsureSettingsRead()
+    void EnsureSettingsRead()
     {
         if (_settingsRead)
             return;
@@ -21,20 +22,20 @@ public static unsafe partial class ALManager
         _settingsRead = true;
 
         // plugin_main.gd only registers these settings in the editor, and project.godot doesn't store settings left at their default, so a running game must supply the same defaults itself
-        var deviceNameSetting = ProjectSettings.GetSetting("audio/vaudio/output_device", DefaultDeviceLabel).AsString();
-        _outputDeviceName = deviceNameSetting == DefaultDeviceLabel ? "" : deviceNameSetting;
+        var deviceNameSetting = ProjectSettings.GetSetting("audio/vaudio/output_device", "").AsString();
+        _outputDeviceName = deviceNameSetting == "System Default" ? "" : deviceNameSetting;
 
-        _maximumAuxiliarySends = Math.Max(1, ProjectSettings.GetSetting("audio/vaudio/max_reverb_sends", 1).AsInt32());
+        _maximumAuxiliarySends = Math.Max(1, ProjectSettings.GetSetting("audio/vaudio/openal_max_reverb_sends", 1).AsInt32());
         _sampleRate = ProjectSettings.GetSetting("audio/vaudio/sample_rate", 0).AsInt32();
-        _hrtfEnabled = ProjectSettings.GetSetting("audio/vaudio/hrtf_enabled", true).AsBool();
-        _maximumMonoSources = ProjectSettings.GetSetting("audio/vaudio/max_mono_sources", 16).AsInt32();
-        _maximumStereoSources = ProjectSettings.GetSetting("audio/vaudio/max_stereo_sources", 240).AsInt32();
+        _hrtfEnabled = ProjectSettings.GetSetting("audio/vaudio/openal_hrtf_enabled", true).AsBool();
+        _maximumMonoSources = ProjectSettings.GetSetting("audio/vaudio/openal_max_mono_sources", 16).AsInt32();
+        _maximumStereoSources = ProjectSettings.GetSetting("audio/vaudio/openal_max_stereo_sources", 240).AsInt32();
 
-        var hrtfSetting = ProjectSettings.GetSetting("audio/vaudio/hrtf", DefaultHrtfLabel).AsString();
+        var hrtfSetting = ProjectSettings.GetSetting("audio/vaudio/openal_hrtf", DefaultHrtfLabel).AsString();
         _hrtfName = hrtfSetting == DefaultHrtfLabel ? "" : hrtfSetting;
     }
 
-    static void CreateDeviceAndContext()
+    void CreateDeviceAndContext()
     {
         // Shouldn't be initialising in the editor
         Debug.Assert(!Engine.IsEditorHint());
@@ -65,19 +66,28 @@ public static unsafe partial class ALManager
         if (!_hrtfEnabled && ALDevice.HasExtension(HrtfExtension))
             AL.ResetDeviceSOFT(ALDevice.handle, BuildAttribs());
 
-        // Set initial properties
-        SetMetersPerUnit(MetersPerUnit);
-        SetSpeedOfSound(SpeedOfSound);
-        SetListenerGain(MasterVolume);
-        SetDistanceModel(DistanceModel);
+        ApplyAllSettings();
+    }
+
+    // Releases everything on the device (via DeviceDestroying), then the context and device
+    void DestroyDevice()
+    {
+        RaiseDeviceDestroying();
+
+        AL.MakeContextCurrent(IntPtr.Zero);
+        ALContext.Destroy();
+        ALContext = null;
+
+        ALDevice.Close();
+        ALDevice = null;
     }
 
     const string DisconnectExtension = "ALC_EXT_disconnect";
     const ulong ConnectionCheckIntervalMs = 1000;
-    static ulong _nextConnectionCheckMs;
+    ulong _nextConnectionCheckMs;
 
     // Once the output device is lost (e.g. headphones unplugged), OpenAL Soft stops every source and new ones stop as soon as they play. Recreates the device so looping sources replay. Returns false if the device was lost and couldn't be recreated
-    static bool CheckDeviceConnected()
+    bool CheckDeviceConnected()
     {
         var now = Time.GetTicksMsec();
         if (now < _nextConnectionCheckMs)
@@ -97,15 +107,15 @@ public static unsafe partial class ALManager
         }
         catch (Exception e)
         {
-            LogBackendError($"Failed to recreate the audio output device after it was disconnected: {e.Message}");
+            LogError($"Failed to recreate the audio output device after it was disconnected: {e.Message}");
             return false;
         }
     }
 
-    static void RecreateDevice()
+    void RecreateDevice()
     {
         // Don't create OpenAL devices when changing properties in the editor
-        if (!Initialised)
+        if (!IsInitialised)
             return;
 
         // Try a reopen first. If it fails, destroy and recreate the device
@@ -115,31 +125,21 @@ public static unsafe partial class ALManager
         RecreateDeviceFully();
     }
 
-    static void RecreateDeviceFully()
+    void RecreateDeviceFully()
     {
-        CancelLoadingAndDestroy();
+        DestroyDevice();
         CreateDeviceAndContext();
-
-        // Invoke device recreated callbacks (e.g. for recreating reverb effects)
-        foreach (var callback in OnDeviceRecreatedCallbacks)
-            callback.Invoke();
+        RaiseDeviceRecreated();
     }
 
-    public static void RefreshDeviceLists()
+    public override void SetOutputDevice(string name)
     {
-        OutputDeviceList = AL.GetStringList(IntPtr.Zero, AL.ALC_ALL_DEVICES_SPECIFIER);
-
-        var devices = new List<string> { DefaultDeviceLabel };
-        devices.AddRange(OutputDeviceList);
-
-        ProjectSettings.AddPropertyInfo(new Godot.Collections.Dictionary
-        {
-            { "name", "audio/vaudio/output_device" },
-            { "type", (int)Variant.Type.String },
-            { "hint", (int)PropertyHint.Enum },
-            { "hint_string", string.Join(",", devices) }
-        });
-
-        RefreshHrtfList();
+        EnsureSettingsRead();
+        _outputDeviceName = name;
+        RecreateDevice();
     }
+
+    public override string[] GetOutputDevices() => [.. AL.GetStringList(IntPtr.Zero, AL.ALC_ALL_DEVICES_SPECIFIER)];
+
+    public override void RefreshSettingHints() => RefreshHrtfList();
 }

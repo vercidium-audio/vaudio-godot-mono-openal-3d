@@ -2,26 +2,26 @@ using System.Runtime.InteropServices;
 
 namespace vaudio_godot_mono_openal;
 
-public static unsafe partial class ALManager
+public sealed unsafe partial class OpenALBackend
 {
     const string DefaultHrtfLabel = "Default";
     const string HrtfExtension = "ALC_SOFT_HRTF";
     const string LocalPathVariable = "ALSOFT_LOCAL_PATH";
 
     // Empty means OpenAL Soft's default HRTF
-    static string _hrtfName = "";
+    string _hrtfName = "";
 
-    static bool _hrtfFolderPrepared;
+    bool _hrtfFolderPrepared;
 
     /// <summary>
-    /// Get the names of the HRTFs OpenAL Soft can use, including any .mhr files in the audio/vaudio/hrtf_folder folder. Pass one of these to SetHrtf()
+    /// Get the names of the HRTFs OpenAL Soft can use, including any .mhr files in the audio/vaudio/openal_hrtf_folder folder. Pass one of these to SetHrtf()
     /// </summary>
-    public static List<string> GetAvailableHrtfs() => Initialised ? GetHrtfList(ALDevice.handle) : [];
+    public override List<string> GetAvailableHrtfs() => IsInitialised ? GetHrtfList(ALDevice.handle) : [];
 
     /// <summary>
     /// Switch to the named HRTF at runtime, without interrupting playing sounds. Pass an empty string to use OpenAL Soft's default HRTF. Returns false if the device couldn't be reset
     /// </summary>
-    public static bool SetHrtf(string name)
+    public override bool SetHrtf(string name)
     {
         EnsureSettingsRead();
 
@@ -35,9 +35,9 @@ public static unsafe partial class ALManager
     }
 
     /// <summary>
-    /// Get the HRTF name last passed to SetHrtf() or set in audio/vaudio/hrtf, or an empty string for the default HRTF
+    /// Get the HRTF name last passed to SetHrtf() or set in audio/vaudio/openal_hrtf, or an empty string for the default HRTF
     /// </summary>
-    public static string GetHrtf()
+    public override string GetHrtf()
     {
         EnsureSettingsRead();
         return _hrtfName;
@@ -46,9 +46,9 @@ public static unsafe partial class ALManager
     /// <summary>
     /// Get the name of the HRTF OpenAL Soft is actually using, or an empty string if HRTF is not active (e.g. it's disabled, or the output isn't stereo)
     /// </summary>
-    public static string GetActiveHrtf()
+    public override string GetActiveHrtf()
     {
-        if (!Initialised || !ALDevice.HasExtension(HrtfExtension))
+        if (!IsInitialised || !ALDevice.HasExtension(HrtfExtension))
             return "";
 
         var status = ALDevice.GetIntegerALC(AL.ALC_HRTF_STATUS_SOFT);
@@ -62,7 +62,7 @@ public static unsafe partial class ALManager
     /// <summary>
     /// Turn HRTF on or off at runtime, without interrupting playing sounds. HRTF is intended for headphones - players using speakers may prefer it off. Returns false if the device couldn't be reset
     /// </summary>
-    public static bool SetHrtfEnabled(bool value)
+    public override bool SetHrtfEnabled(bool value)
     {
         EnsureSettingsRead();
 
@@ -74,9 +74,9 @@ public static unsafe partial class ALManager
     }
 
     /// <summary>
-    /// Get whether HRTF is requested, from SetHrtfEnabled() or audio/vaudio/hrtf_enabled
+    /// Get whether HRTF is requested, from SetHrtfEnabled() or audio/vaudio/openal_hrtf_enabled
     /// </summary>
-    public static bool GetHrtfEnabled()
+    public override bool GetHrtfEnabled()
     {
         EnsureSettingsRead();
         return _hrtfEnabled;
@@ -110,7 +110,7 @@ public static unsafe partial class ALManager
     }
 
     // Index into the device's current HRTF list for ALC_HRTF_ID_SOFT, or -1 for OpenAL Soft's default
-    static int FindHrtfIndex()
+    int FindHrtfIndex()
     {
         if (string.IsNullOrEmpty(_hrtfName))
             return -1;
@@ -124,7 +124,7 @@ public static unsafe partial class ALManager
     }
 
     // Unlike ALContext.GetAttribs(), this always passes ALC_HRTF_SOFT, so turning HRTF off actually disables it rather than leaving it up to OpenAL Soft's headphone detection
-    static int[] BuildAttribs()
+    int[] BuildAttribs()
     {
         List<int> attribs =
         [
@@ -155,10 +155,10 @@ public static unsafe partial class ALManager
     }
 
     // Applies the current attributes (HRTF etc.) to the open device. alcResetDeviceSOFT keeps every AL object valid, the full recreation fallback doesn't
-    static bool ResetDevice()
+    bool ResetDevice()
     {
         // Settings are applied when the device is created
-        if (!Initialised)
+        if (!IsInitialised)
             return true;
 
         if (ALDevice.HasExtension(HrtfExtension))
@@ -170,11 +170,11 @@ public static unsafe partial class ALManager
         }
 
         RecreateDeviceFully();
-        return Initialised;
+        return IsInitialised;
     }
 
     // OpenAL Soft searches ALSOFT_LOCAL_PATH for .mhr files every time it enumerates HRTFs, so pointing it at the project's HRTF folder makes those files show up alongside its built-in HRTF
-    static void PrepareHrtfFolder()
+    void PrepareHrtfFolder()
     {
         if (_hrtfFolderPrepared)
             return;
@@ -185,7 +185,7 @@ public static unsafe partial class ALManager
         if (System.Environment.GetEnvironmentVariable(LocalPathVariable) != null)
             return;
 
-        var folder = ProjectSettings.GetSetting("audio/vaudio/hrtf_folder", "res://hrtf").AsString();
+        var folder = ProjectSettings.GetSetting("audio/vaudio/openal_hrtf_folder", "res://hrtf").AsString();
 
         if (string.IsNullOrEmpty(folder))
             return;
@@ -245,13 +245,13 @@ public static unsafe partial class ALManager
     [DllImport("libc")]
     static extern int setenv([MarshalAs(UnmanagedType.LPUTF8Str)] string name, [MarshalAs(UnmanagedType.LPUTF8Str)] string value, int overwrite);
 
-    static void RefreshHrtfList()
+    void RefreshHrtfList()
     {
         PrepareHrtfFolder();
 
         List<string> hrtfs;
 
-        if (Initialised)
+        if (IsInitialised)
         {
             hrtfs = GetHrtfList(ALDevice.handle);
         }
@@ -269,14 +269,14 @@ public static unsafe partial class ALManager
         options.AddRange(hrtfs);
 
         // Keep a selected HRTF that isn't installed on this machine in the list, rather than the dropdown silently showing a different entry
-        var current = ProjectSettings.GetSetting("audio/vaudio/hrtf", DefaultHrtfLabel).AsString();
+        var current = ProjectSettings.GetSetting("audio/vaudio/openal_hrtf", DefaultHrtfLabel).AsString();
 
         if (!string.IsNullOrEmpty(current) && !options.Contains(current))
             options.Add(current);
 
         ProjectSettings.AddPropertyInfo(new Godot.Collections.Dictionary
         {
-            { "name", "audio/vaudio/hrtf" },
+            { "name", "audio/vaudio/openal_hrtf" },
             { "type", (int)Variant.Type.String },
             { "hint", (int)PropertyHint.Enum },
             { "hint_string", string.Join(",", options) }

@@ -1,19 +1,7 @@
-using OpenALSource = global::OpenAL.managed.ALSource;
-
 namespace vaudio_godot_mono_openal;
 
-public static unsafe partial class ALManager
+public static partial class VAAudioBackend
 {
-    // AL resources
-    static ALDevice ALDevice;
-    static ALContext ALContext;
-
-    // Device cache
-    static List<string> OutputDeviceList = [];
-
-    // Keep track of all currently playing sources, so we can destroy them when they've finished playing
-    static List<OpenALSource> ActiveSources = [];
-
     // Callbacks for when the device is destroyed (e.g. when switching audio devices)
     static HashSet<Action> OnDeviceDestroyedCallbacks = [];
 
@@ -21,8 +9,8 @@ public static unsafe partial class ALManager
     static HashSet<Action> OnDeviceRecreatedCallbacks = [];
 
     /// <summary>
-    /// Register a callback to be invoked when the OpenAL device is destroyed.
-    /// Use this to clean up any OpenAL resources (filters, effects, etc.)
+    /// Register a callback to be invoked when the audio device is destroyed.
+    /// Use this to clean up any backend resources (reverb buses, etc.)
     /// </summary>
     public static void RegisterDeviceDestroyedCallback(Action callback)
     {
@@ -44,8 +32,8 @@ public static unsafe partial class ALManager
     }
 
     /// <summary>
-    /// Register a callback to be invoked when the OpenAL device is recreated.
-    /// Use this to recreate any OpenAL resources (filters, effects, etc.) after the device is ready.
+    /// Register a callback to be invoked when the audio device is recreated.
+    /// Use this to recreate any backend resources (reverb buses, etc.) after the device is ready.
     /// </summary>
     public static void RegisterDeviceRecreatedCallback(Action callback)
     {
@@ -64,5 +52,35 @@ public static unsafe partial class ALManager
             throw new ArgumentException("callback cannot be null");
 
         OnDeviceRecreatedCallbacks.Remove(callback);
+    }
+
+    static void DestroyAllAudioSources(Node root)
+    {
+        foreach (var child in root.GetChildren())
+        {
+            if (child is VAPlayer source)
+                source.OnDeviceDestroyed();
+
+            DestroyAllAudioSources(child);
+        }
+    }
+
+    // Releases everything that lives on the device, before the backend destroys it
+    static void OnDeviceDestroying()
+    {
+        CancelLoadingSounds();
+
+        DestroyAllAudioSources(((SceneTree)Engine.GetMainLoop()).Root);
+
+        // Invoke device destroyed callbacks (e.g. for cleaning up reverb effects)
+        foreach (var callback in OnDeviceDestroyedCallbacks)
+            callback.Invoke();
+    }
+
+    static void OnDeviceRecreated()
+    {
+        // Invoke device recreated callbacks (e.g. for recreating reverb effects)
+        foreach (var callback in OnDeviceRecreatedCallbacks)
+            callback.Invoke();
     }
 }

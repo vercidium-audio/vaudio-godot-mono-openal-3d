@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace vaudio_godot_mono_openal;
 
-public static unsafe partial class ALManager
+internal static class OpenALLibrary
 {
     // openal_soft_bindings dlopens OpenAL by name, which never searches the project root or the exe's folder on Linux/macOS. Loading our copy by full path first makes that later dlopen match it by SONAME
 #pragma warning disable CA2255

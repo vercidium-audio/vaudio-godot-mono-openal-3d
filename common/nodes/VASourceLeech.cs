@@ -19,8 +19,8 @@ public partial class VASourceLeech
     /// <summary>
     /// Current muffling filter state (direct/dry path only). 0 until the listener has raytraced the parent emitter at least once
     /// </summary>
-    public float GainLF => filter?.gain ?? 0;
-    public float GainHF => filter?.gainHF ?? 0;
+    public float GainLF => muffling?.GainLF ?? 0;
+    public float GainHF => muffling?.RelativeGainHF ?? 0;
 
     readonly VABoundsPlayback playback = new();
 
@@ -103,8 +103,8 @@ public partial class VASourceLeech
         if (!IsReadyToPlay)
             return;
 
-        // Copies the parent VAEmitter's muffling and reverb, which it updates in its own _Process before this child's. The effect is null if it casts no reverb rays
-        effect = emitter.effect;
+        // Copies the parent VAEmitter's muffling and reverb, which it updates in its own _Process before this child's. The bus is null if it casts no reverb rays
+        reverbBus = emitter.reverbBus;
         UpdateFilter(emitter.MufflingGainLF, emitter.MufflingGainHF, true);
     }
 
@@ -130,7 +130,7 @@ public partial class VASourceLeech
         }
 
         // Unregister the device recreated callback (only registered when not in editor)
-        ALManager.UnregisterDeviceRecreatedCallback(OnDeviceRecreated);
+        VAAudioBackend.UnregisterDeviceRecreatedCallback(OnDeviceRecreated);
 
         emitter = null;
 

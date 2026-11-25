@@ -12,10 +12,16 @@ public partial class VASourceRelative
 
     bool warnedNoListenerReverb = false;
 
+    /// <summary>If true, this source is sent to the listener's reverb bus, and waits for the listener's first raytraced reverb before it plays. If false, it plays straight away with no reverb (e.g. music, UI), and needs no VAWorld</summary>
+    [Export]
+    public bool UseListenerReverb { get; set; } = true;
+
     /// <summary>
-    /// True once the current listener's reverb has its first raytraced results, or never will (no reverb rays, or outside the bounds). Sources don't play until this is true, so they never start in OpenAL's default reverb
+    /// True once the current listener's reverb has its first raytraced results, or never will (no reverb rays, or outside the bounds). Sources don't play until this is true, so they never start in the backend's default reverb. Always true when <see cref="UseListenerReverb"/> is off
     /// </summary>
-    public bool IsReadyToPlay => vercidiumAudio != null && vercidiumAudio.IsListenerReverbReady();
+    public bool IsReadyToPlay => !UseListenerReverb || (vercidiumAudio != null && vercidiumAudio.IsListenerReverbReady());
+
+    protected override void ConfigureVoice(VAVoice voice) => ConfigureListenerRelativeVoice(voice);
 
     public override void _EnterTree()
     {
@@ -61,9 +67,11 @@ public partial class VASourceRelative
         if (!playback.RequestPlay(this, false, IsReadyToPlay, startTime))
             return true;
 
-        // Set the effect, with no filter
-        vercidiumAudio.WarnIfListenerCastsNoReverbRays(this, ref warnedNoListenerReverb);
-        effect = vercidiumAudio.listenerReverbEffect;
+        // Send to the listener reverb bus (or none), with no filter
+        if (UseListenerReverb)
+            vercidiumAudio.WarnIfListenerCastsNoReverbRays(this, ref warnedNoListenerReverb);
+
+        reverbBus = UseListenerReverb ? vercidiumAudio.listenerReverbBus : null;
         UpdateFilter(1, 1);
 
         var played = base.Play(startTime);

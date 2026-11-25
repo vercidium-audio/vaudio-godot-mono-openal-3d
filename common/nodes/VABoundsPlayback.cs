@@ -23,7 +23,7 @@ internal class VABoundsPlayback
     internal void Cancel() => OnPlayed();
 
     // Call at the top of Play(). Returns whether to play now, otherwise the play is queued until it's ready, and a loop waits until it's inside the bounds. A sound that doesn't loop isn't played outside the bounds, with a warning
-    internal bool RequestPlay(ALSource source, bool silenced, bool ready, float startTime)
+    internal bool RequestPlay(VAPlayer source, bool silenced, bool ready, float startTime)
     {
         if (silenced && !source.Looping)
             LogWarning($"{source.Name}: This source did not play because it is outside the world bounds.");
@@ -39,7 +39,7 @@ internal class VABoundsPlayback
     }
 
     // Call every frame. While silenced it stops the sound, re-queues a loop that was playing so it resumes inside, and cancels a queued play that doesn't loop. Returns whether to call Play(PendingStartTime) now, for a queued play or autoplay
-    internal bool Process(ALSource source, bool silenced, bool ready, bool autoplay)
+    internal bool Process(VAPlayer source, bool silenced, bool ready, bool autoplay)
     {
         if (StopIfSilenced(source, silenced))
             return false;
@@ -48,7 +48,7 @@ internal class VABoundsPlayback
     }
 
     // Returns whether it's silenced
-    bool StopIfSilenced(ALSource source, bool silenced)
+    bool StopIfSilenced(VAPlayer source, bool silenced)
     {
         if (!silenced)
             return false;

@@ -16,8 +16,9 @@ public partial class VAWorld
         if (Engine.IsEditorHint())
             return;
 
-        // Ensure the OpenAL device/context exists before creating reverb effects below
-        ALManager.Ensure();
+        // Ensure the audio device exists before creating reverb buses below
+        VAAudioBackend.Ensure();
+        ApplyBackendSettings();
 
         // Cache the scene root since we access it often
         SceneRoot = GetTree().CurrentScene as Node3D;
@@ -59,10 +60,10 @@ public partial class VAWorld
         world.AirAbsorption.Temperature = Temperature;
         world.AirAbsorption.Pressure = Pressure;
 
-        // Create reverb effects
+        // Create reverb buses
         OnDeviceRecreated();
 
-        // Register for device destroyed/recreated callbacks to clean up and recreate reverb effects
+        // Register for device destroyed/recreated callbacks to clean up and recreate reverb buses
         RegisterDeviceRecreatedCallback(OnDeviceRecreated);
         RegisterDeviceDestroyedCallback(OnDeviceDestroyed);
 
@@ -95,27 +96,6 @@ public partial class VAWorld
             Scale = Vector3.One;
     }
 
-    void OnDeviceRecreated()
-    {
-        // Recreate the reverb effects after the device is recreated
-        listenerReverbEffect = CreateSilentReverbEffect();
-    }
-
-    void OnDeviceDestroyed()
-    {
-        // Delete all reverb effects - they contain OpenAL resources that are now invalid
-        ambientFilter?.Delete();
-        ambientFilter = null;
-
-        listenerReverbEffect?.Dispose();
-        listenerReverbEffect = null;
-
-        foreach (var effect in groupedReverbEffects)
-            effect.Dispose();
-
-        groupedReverbEffects.Clear();
-    }
-
     bool listeningToTree;
 
     void InitializeScene()
@@ -142,8 +122,8 @@ public partial class VAWorld
         if (Engine.IsEditorHint())
             return;
 
-        ALManager.UnregisterDeviceDestroyedCallback(OnDeviceDestroyed);
-        ALManager.UnregisterDeviceRecreatedCallback(OnDeviceRecreated);
+        VAAudioBackend.UnregisterDeviceDestroyedCallback(OnDeviceDestroyed);
+        VAAudioBackend.UnregisterDeviceRecreatedCallback(OnDeviceRecreated);
 
         if (listeningToTree)
         {
@@ -184,7 +164,7 @@ public partial class VAWorld
             return;
         }
 
-        ALManager.Ensure();
+        VAAudioBackend.Ensure();
         
         if (listener == null)
         {
@@ -196,17 +176,17 @@ public partial class VAWorld
         }
         else
         {
-            // Sync the AL listener to our main listener
+            // Sync the backend listener to our main listener
             Vector3 listenerRotation = listener.GlobalRotation;
 
-            ALManager.ListenerPosition = listener.GlobalPosition;
-            ALManager.ListenerPitch = listenerRotation.X;
-            ALManager.ListenerYaw = listenerRotation.Y;
+            VAAudioBackend.ListenerPosition = listener.GlobalPosition;
+            VAAudioBackend.ListenerPitch = listenerRotation.X;
+            VAAudioBackend.ListenerYaw = listenerRotation.Y;
         }
 
         FollowBounds();
 
-        ALManager.Update();
+        VAAudioBackend.Update();
         world.Update();
     }
 

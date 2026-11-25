@@ -1,8 +1,6 @@
-using OpenALSource = global::OpenAL.managed.ALSource;
-
 namespace vaudio_godot_mono_openal;
 
-public partial class ALSource
+public partial class VAPlayer
 {
     float _volume = 1;
     float _pitch = 1;
@@ -14,15 +12,15 @@ public partial class ALSource
     float _pitchRandomness = 1;
     float _volumeRandomnessDb = 0;
 
-    protected void UpdateProperty<T>(ref T field, T value, Action<T, OpenALSource> updateAction) where T : struct
+    protected void UpdateProperty<T>(ref T field, T value, Action<T, VAVoice> updateAction) where T : struct
     {
         if (!field.Equals(value))
         {
             field = value;
 
             if (updateAction != null)
-                foreach (var s in sources)
-                    updateAction.Invoke(value, s);
+                foreach (var voice in voices)
+                    updateAction.Invoke(value, voice);
         }
     }
 
@@ -47,10 +45,10 @@ public partial class ALSource
     public bool Looping
     {
         get => _looping;
-        set => UpdateProperty(ref _looping, value, (v, source) => source.SetLooping(v));
+        set => UpdateProperty(ref _looping, value, (v, voice) => voice.Looping = v);
     }
 
-    /// <summary>The pool of sounds to pick from each time this source plays. Decoded on demand via Godot's own AudioStream/import pipeline and cached per-resource by ALManager.</summary>
+    /// <summary>The pool of sounds to pick from each time this source plays. Decoded on demand via Godot's own AudioStream/import pipeline and cached per-resource by the audio backend.</summary>
     // Untyped array so a half-added inspector slot (an EncodedObjectAsId, not an AudioStream) doesn't throw on read; go through StreamAt.
     [Export]
     public Godot.Collections.Array Streams

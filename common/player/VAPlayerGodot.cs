@@ -1,6 +1,6 @@
 namespace vaudio_godot_mono_openal;
 
-public partial class ALSource
+public partial class VAPlayer
 {
     // Signals
     [Signal]
@@ -24,7 +24,7 @@ public partial class ALSource
         if (Engine.IsEditorHint())
             return;
 
-        ALManager.Ensure();
+        VAAudioBackend.Ensure();
     }
 
     public override void _Ready()
@@ -41,43 +41,32 @@ public partial class ALSource
         if (playRequested)
             Play(requestedStartTime);
 
-        for (int i = sources.Count - 1; i >= 0; i--)
+        for (int i = voices.Count - 1; i >= 0; i--)
         {
-            var s = sources[i];
+            var voice = voices[i];
 
-            if (s.Finished())
+            if (voice.IsFinished)
             {
-                s.Dispose();
-                sources.RemoveAt(i);
+                voice.Dispose();
+                voices.RemoveAt(i);
 
-                if (sources.Count == 0)
+                if (voices.Count == 0)
                     EmitSignal(SignalName.Finished);
-
-                continue;
             }
         }
 
         // Picks up this source's or the VAWorld's ReverbOnly changing, including on sources that don't update their filter every frame
         if (UpdateDryOutput())
         {
-            foreach (var s in sources)
-                ApplyFilters(s);
+            foreach (var voice in voices)
+                ApplyFilters(voice);
         }
     }
 
     // Released on free rather than _ExitTree, so a reparent keeps playing (matches the native plugin, which releases them in its destructor)
     public override void _Notification(int what)
     {
-        if (what != NotificationPredelete)
-            return;
-
-        foreach (var s in sources)
-            s.Dispose();
-
-        sources.Clear();
-
-        // Must delete the filter after deleting the sources
-        filter?.Delete();
-        filter = null;
+        if (what == NotificationPredelete)
+            DisposeVoices();
     }
 }

@@ -2,7 +2,7 @@
 
 extends "res://scenarios/lib/scenario.gd"
 
-# Switches between every available HRTF (OpenAL Soft's built-in one, plus any .mhr files in audio/vaudio/hrtf_folder) while a source plays, checking the device resets in place without stopping it. Then checks an unknown HRTF name falls back to the default, and HRTF can be turned off and back on
+# Switches between every available HRTF (OpenAL Soft's built-in one, plus any .mhr files in audio/vaudio/openal_hrtf_folder) while a source plays, checking the device resets in place without stopping it. Then checks an unknown HRTF name falls back to the default, and HRTF can be turned off and back on
 
 const BUILT_IN_HRTF := "Built-In HRTF"
 
@@ -16,7 +16,7 @@ func run() -> void:
 	var hrtfs := VA.available_hrtfs(root.world)
 	print("[hrtf_switch] available HRTFs: ", hrtfs)
 	check(hrtfs.has(BUILT_IN_HRTF), "'%s' isn't in the available HRTFs: %s" % [BUILT_IN_HRTF, hrtfs])
-	check(VA.active_hrtf(root.world) != "", "HRTF isn't active at startup, with audio/vaudio/hrtf_enabled on")
+	check(VA.active_hrtf(root.world) != "", "HRTF isn't active at startup, with audio/vaudio/openal_hrtf_enabled on")
 
 	for hrtf in hrtfs:
 		check(VA.set_hrtf(root.world, hrtf), "set_hrtf('%s') failed" % hrtf)

@@ -5,7 +5,6 @@ extends "res://scenarios/lib/scenario.gd"
 # World bounds rules for raytraced sources, with the bounds shrunk to end at x = 0 like world_bounds.gd so the scene source's side is outside. With emitters_outside_the_world_are_muffled on, a non-looping source outside doesn't play, a playing source that leaves stops, and a looping source or stream waits outside and resumes inside. With it off, sources outside play clear with no reverb
 
 const SEED := 20261109
-const AL_FORMAT_MONO16 := 4353
 const FREQUENCY := 44100
 
 # Frames to give a source the chance to (wrongly) start
@@ -209,7 +208,7 @@ func check_stream() -> void:
 	root.add_child(stream)
 	nodes.append(stream)
 
-	check(VA.open_stream(stream, AL_FORMAT_MONO16, FREQUENCY), "open_stream outside the bounds failed")
+	check(VA.open_stream(stream, VA.PCM_MONO16, FREQUENCY), "open_stream outside the bounds failed")
 	check(VA.is_stream_open(stream), "stream opened outside the bounds isn't open")
 	await wait_frames(WAIT_FRAMES)
 	check(not VA.is_playing(stream), "stream opened outside the bounds is playing")

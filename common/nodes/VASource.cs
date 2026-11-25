@@ -110,7 +110,7 @@ public partial class VASource
         }
 
         // Unregister the device recreated callback (only registered when not in editor)
-        ALManager.UnregisterDeviceRecreatedCallback(OnDeviceRecreated);
+        VAAudioBackend.UnregisterDeviceRecreatedCallback(OnDeviceRecreated);
 
         base._ExitTree();
     }

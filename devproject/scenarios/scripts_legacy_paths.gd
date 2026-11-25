@@ -2,20 +2,19 @@
 
 extends "res://scenarios/lib/scenario.gd"
 
-# Scenes saved by older plugin versions reference each node's C# script by path (the per-user .uid files aren't shipped), so moving a node's file breaks every scene that uses it. Loads a scene referencing each path a released version bound a node to, and checks the node comes back with its class. If a node's body moves to common/, leave a per-addon file named after the class at the old path, like nodes/VASourceAmbient.cs
+# Saved scenes reference each node's C# script by path (the per-user .uid files aren't shipped), so moving a node's file breaks every scene that uses it. Loads a scene referencing each node's script path and checks the node comes back with its class. If a node's body moves to common/, leave a per-addon file named after the class at the old path, like nodes/VASourceAmbient.cs
 
 # Relative to the addon folder. {dim} is 2D or 3D
-const LEGACY_PATHS := [
+const SCRIPT_PATHS := [
 	"common/nodes/VAEmitter.cs",
 	"common/nodes/VAListener.cs",
-	"common/openal/nodes/ALSource.cs",
-	"openal/nodes/ALSource{dim}.cs",
+	"common/player/VAPlayer.cs",
+	"player/VAPlayer{dim}.cs",
 	"common/nodes/VAStreamSource.cs",
 	"common/nodes/VAInputStreamSource.cs",
 	"common/nodes/VANetworkedStreamSource.cs",
 	"common/nodes/VASource.cs",
 	"common/nodes/VASourceLeech.cs",
-	"openal/nodes/ALSourceRelative.cs",
 	"nodes/VASourceRelative.cs",
 	"nodes/VASourceAmbient.cs",
 	"nodes/VAVisualisation.cs",
@@ -24,14 +23,26 @@ const LEGACY_PATHS := [
 	"common/nodes/VACustomMaterial.cs",
 ]
 
+# The 1.11 OpenAL player scripts, renamed to VAPlayer* in 1.12 with no stubs left behind, and VAPlayerRelative, folded into VASourceRelative (see the migration guide)
+const REMOVED_PATHS := [
+	"common/openal/nodes/ALSource.cs",
+	"openal/nodes/ALSource{dim}.cs",
+	"openal/nodes/ALSourceRelative.cs",
+	"player/VAPlayerRelative.cs",
+]
+
 const SCENE_PATH := "user://scripts_legacy_paths.tscn"
 
 func run() -> void:
 	var addon: String = root.world.get_script().resource_path.get_base_dir().get_base_dir()
 	var dim := "3D" if addon.ends_with("-3d") else "2D"
 
-	for relative in LEGACY_PATHS:
+	for relative in SCRIPT_PATHS:
 		check_path("%s/%s" % [addon, relative.replace("{dim}", dim)])
+
+	for relative in REMOVED_PATHS:
+		var path := "%s/%s" % [addon, relative.replace("{dim}", dim)]
+		check(not ResourceLoader.exists(path), "%s still exists, but the AL* players were renamed to VAPlayer*" % path)
 
 func teardown() -> void:
 	DirAccess.remove_absolute(SCENE_PATH)
@@ -39,7 +50,7 @@ func teardown() -> void:
 func check_path(path: String) -> void:
 	var class_name_expected := path.get_file().get_basename()
 	if not ResourceLoader.exists(path):
-		fail("%s no longer exists, so scenes saved by older versions lose their %s script" % [path, class_name_expected])
+		fail("%s doesn't exist, so scenes referencing it lose their %s script" % [path, class_name_expected])
 		return
 
 	# A file that isn't named after its class (or only holds part of a partial class) isn't the one Godot binds, so it has no base type

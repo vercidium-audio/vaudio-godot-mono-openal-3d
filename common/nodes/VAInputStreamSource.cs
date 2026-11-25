@@ -16,18 +16,19 @@ public partial class VAInputStreamSource : VAStreamSource
     [Signal]
     public delegate void AudioCapturedEventHandler(byte[] data);
 
-    ALCaptureDevice captureDevice;
+    VACaptureDevice captureDevice;
 
     public bool IsCaptureOpen => captureDevice != null;
 
-    int _format = AL.AL_FORMAT_MONO16;
+    VAPcmFormat _format = VAPcmFormat.Mono16;
     int _sampleRate = 44100;
     string _deviceName = "";
     int _bufferSizeFrames = 1024;
     int _microphoneThreshold = 0;
 
-    [Export(PropertyHint.Enum, "Mono 8-bit:4352,Mono 16-bit:4353,Stereo 8-bit:4354,Stereo 16-bit:4355")]
-    public int Format
+    /// <summary>The captured audio's channels and sample type. Only the 8 and 16-bit formats are supported</summary>
+    [Export(PropertyHint.Enum, "Mono 8-bit:0,Mono 16-bit:1,Stereo 8-bit:2,Stereo 16-bit:3")]
+    public VAPcmFormat Format
     {
         get => _format;
         set => _format = value;
@@ -64,13 +65,13 @@ public partial class VAInputStreamSource : VAStreamSource
 
     public bool MicrophoneThresholdEnabled => MicrophoneThreshold > 0;
 
-    public static string[] GetAvailableCaptureDevices() => [.. AL.GetStringList(IntPtr.Zero, AL.ALC_CAPTURE_DEVICE_SPECIFIER)];
+    public static string[] GetAvailableCaptureDevices() => VAAudioBackend.GetCaptureDevices();
 
     // Enumerating capture devices can be slow, and Godot calls _ValidateProperty every time it fetches the property list, so the dropdown reuses this array until RefreshDevices() is called
     static string[] cachedCaptureDevices;
 
     // PeakAmplitude only reads 8 and 16-bit PCM, matching the Format dropdown
-    static bool IsSupportedFormat(int format) => format == AL.AL_FORMAT_MONO8 || format == AL.AL_FORMAT_MONO16 || format == AL.AL_FORMAT_STEREO8 || format == AL.AL_FORMAT_STEREO16;
+    static bool IsSupportedFormat(VAPcmFormat format) => format.BytesPerSample() <= 2;
 
     public override void _Ready()
     {
@@ -88,11 +89,11 @@ public partial class VAInputStreamSource : VAStreamSource
         StartCapture();
     }
 
-    static unsafe int PeakAmplitude(byte* data, int numBytes, int format)
+    static unsafe int PeakAmplitude(byte* data, int numBytes, VAPcmFormat format)
     {
         int peak = 0;
 
-        if (format == AL.AL_FORMAT_MONO8 || format == AL.AL_FORMAT_STEREO8)
+        if (format.BytesPerSample() == 1)
         {
             for (int i = 0; i < numBytes; i++)
             {
@@ -115,48 +116,40 @@ public partial class VAInputStreamSource : VAStreamSource
         return peak;
     }
 
-    public unsafe bool OpenCapture(string deviceName, int format, int frequency, int bufferSizeFrames)
+    public unsafe bool OpenCapture(string deviceName, VAPcmFormat format, int frequency, int bufferSizeFrames)
     {
         CloseCapture();
 
         if (!IsSupportedFormat(format))
         {
-            LogWarning($"{Name}: {format} isn't a supported capture format. Use MONO8, MONO16, STEREO8 or STEREO16 instead");
+            LogWarning($"{Name}: {format} isn't a supported capture format. Use Mono8, Mono16, Stereo8 or Stereo16 instead");
             return false;
         }
 
         try
         {
-            captureDevice = new ALCaptureDevice(new()
+            captureDevice = VAAudioBackend.OpenCaptureDevice(deviceName, format, frequency, bufferSizeFrames, (samples, sampleCount) =>
             {
-                DeviceName = string.IsNullOrEmpty(deviceName) ? null : deviceName,
-                Format = format,
-                SampleRate = frequency,
-                BufferSize = bufferSizeFrames,
-                LogCallback = LogWarning,
-                DataCallback = (samples, sampleCount) =>
-                {
-                    var numBytes = sampleCount * AL.GetBytesPerFrame(format);
-                    var data = (byte*)samples;
+                var numBytes = sampleCount * format.BytesPerFrame();
+                var data = (byte*)samples;
 
-                    // Ignore quiet input
-                    if (MicrophoneThresholdEnabled)
-                        if (PeakAmplitude(data, numBytes, format) < MicrophoneThreshold)
-                            return;
+                // Ignore quiet input
+                if (MicrophoneThresholdEnabled)
+                    if (PeakAmplitude(data, numBytes, format) < MicrophoneThreshold)
+                        return;
 
-                    var packed = new byte[numBytes];
-                    Marshal.Copy((nint)data, packed, 0, numBytes);
+                var packed = new byte[numBytes];
+                Marshal.Copy((nint)data, packed, 0, numBytes);
 
-                    if (IsStreamOpen)
-                        PushAudioData(packed);
+                if (IsStreamOpen)
+                    PushAudioData(packed);
 
-                    EmitSignal(SignalName.AudioCaptured, packed);
-                },
+                EmitSignal(SignalName.AudioCaptured, packed);
             });
         }
         catch (Exception e)
         {
-            ALManager.LogBackendError($"Failed to open capture device '{deviceName}' on {Name}: {e.Message}");
+            VAAudioBackend.LogBackendError($"Failed to open capture device '{deviceName}' on {Name}: {e.Message}");
             return false;
         }
 
@@ -172,12 +165,12 @@ public partial class VAInputStreamSource : VAStreamSource
             return;
         }
 
-        captureDevice.CaptureStart();
+        captureDevice.Start();
     }
 
     public void StopCapture()
     {
-        captureDevice?.CaptureStop();
+        captureDevice?.Stop();
     }
 
     public void CloseCapture()
@@ -193,7 +186,7 @@ public partial class VAInputStreamSource : VAStreamSource
     {
         base._Process(delta);
 
-        captureDevice?.Update();
+        captureDevice?.Poll();
     }
 
     public override void _ExitTree()

@@ -2,28 +2,12 @@ namespace vaudio_godot_mono_openal;
 
 public partial class VAWorld
 {
-    // 3D implementation of common/world/VAWorldReverb.cs's ApplyGroupedEAXPan - derives the
-    // listener-relative pan from the listener's pitch and yaw.
-    partial void ApplyGroupedEAXPan(vaudio.EAXReverb eax, ALReverbEffect effect)
+    // Where a grouped EAX's reverb comes from relative to the listener, derived from the listener's pitch and yaw. Used by common/world/VAWorldReverb.cs
+    Vector3 GetGroupedEAXPan(vaudio.EAXReverb eax)
     {
-        if (!eax.HasRelativeResults(listener.emitter))
-            return;
-
-        // Convert to a listener-relative vector for OpenAL
         Vector3 listenerRotation = listener.GlobalRotation;
         var pan = world.CalculateListenerRelativePan(eax.GetRelativeDirection(listener.emitter), listenerRotation.X, listenerRotation.Y);
 
-        effect.effectSlotGain = eax.GetRelativeGain(listener.emitter);
-        effect.effectSlotGain = Math.Max(0, effect.effectSlotGain);
-        effect.effectSlotGain = Math.Min(1, effect.effectSlotGain);
-
-        // TODO - separate pan for late reverb and reflections
-        effect.lateReverbPan[0] = pan.X;
-        effect.lateReverbPan[1] = pan.Y;
-        effect.lateReverbPan[2] = pan.Z;
-
-        effect.reflectionsPan[0] = pan.X;
-        effect.reflectionsPan[1] = pan.Y;
-        effect.reflectionsPan[2] = pan.Z;
+        return new Vector3(pan.X, pan.Y, pan.Z);
     }
 }
