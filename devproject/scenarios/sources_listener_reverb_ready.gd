@@ -17,6 +17,7 @@ func expect_no_listener_reverb_warning(node_name: String) -> void:
 
 func _init() -> void:
 	scene = REVERB_ROOM
+	backend_smoke = true
 	timeout_seconds = 120.0
 
 func run() -> void:

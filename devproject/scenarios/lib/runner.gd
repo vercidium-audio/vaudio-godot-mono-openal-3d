@@ -7,10 +7,17 @@ extends Node
 #   --listen          stretch each step and print what to listen for
 #   --debugwindow     leave VAWorld.rendering_enabled on (dev builds) - off by default so test runs don't open debug windows. Applied by test_controller.gd's _enter_tree, before the world is created
 #   --mute            set VAWorld.master_volume (the OpenAL listener gain) to 0 so headless runs are silent. Also applied by test_controller.gd's _enter_tree
+#   --backend=name    the audio backend the project runs on (default openal; godottest --backend selects it via override.cfg). Scenarios whose requires_backends doesn't include it are skipped
+#   --backend-smoke   only run scenarios with backend_smoke set (the playback-related ones), for checking a non-default backend
+# Skipped scenarios print "[devproject] SKIP name: reason", even when named in --scenarios=, and the run fails if every scenario was skipped
+# A scenario also fails if the audio backend's error count (VA.backend_error_count) went up while it ran, so "no backend errors" is checked on every backend
+
+const VA := preload("res://scenarios/lib/va.gd")
 
 const TEST_PASSED_MARKER := "[devproject] Test passed"
 const ARCH_MARKER := "[devproject] arch"
 const SCENARIOS_DIR := "res://scenarios"
+const DEFAULT_BACKEND := "openal"
 
 var current_scenario := ""
 var current_deadline_msec := 0
@@ -36,6 +43,8 @@ func _process(_delta: float) -> void:
 func _run_scenarios() -> void:
 	var args := OS.get_cmdline_user_args()
 	var listen := args.has("--listen")
+	var backend_smoke := args.has("--backend-smoke")
+	var backend := DEFAULT_BACKEND
 	var names: Array[String] = []
 
 	# Only top-level scripts are scenarios - shared helpers live in scenarios/lib. ResourceLoader rather than DirAccess, since an exported game stores them as .gd.remap
@@ -47,12 +56,11 @@ func _run_scenarios() -> void:
 	for arg in args:
 		if arg.begins_with("--scenarios="):
 			names.assign(arg.trim_prefix("--scenarios=").split(",", false))
+		elif arg.begins_with("--backend="):
+			backend = arg.trim_prefix("--backend=")
 
 	var failed := 0
-
-	if names.is_empty():
-		push_error("[devproject] FAIL no scenarios found in %s" % SCENARIOS_DIR)
-		failed += 1
+	var to_run: Array = []
 
 	for scenario_name in names:
 		var path := "%s/%s.gd" % [SCENARIOS_DIR, scenario_name]
@@ -69,6 +77,19 @@ func _run_scenarios() -> void:
 			continue
 
 		var scenario = script.new()
+		var skip_reason := _skip_reason(scenario, backend, backend_smoke)
+		if skip_reason.is_empty():
+			to_run.append([scenario_name, scenario])
+		else:
+			print("[devproject] SKIP %s: %s" % [scenario_name, skip_reason])
+
+	if to_run.is_empty() and failed == 0:
+		push_error("[devproject] FAIL no scenarios to run in %s (backend %s%s)" % [SCENARIOS_DIR, backend, ", backend smoke only" if backend_smoke else ""])
+		failed += 1
+
+	for entry in to_run:
+		var scenario_name: String = entry[0]
+		var scenario = entry[1]
 		scenario.listen = listen
 
 		print("[devproject] RUN %s" % scenario_name)
@@ -77,12 +98,16 @@ func _run_scenarios() -> void:
 
 		scenario.root = await _open_scene(scenario.scene)
 		error_capture.take()
+		var backend_errors_before := _backend_error_count()
 		await scenario.setup()
 		await scenario.run()
 		await scenario.teardown()
 
 		current_scenario = ""
 		_check_errors(scenario, error_capture.take())
+		var backend_errors := _backend_error_count() - backend_errors_before
+		if backend_errors > 0:
+			scenario.fail("the %s backend logged %d error(s)" % [backend, backend_errors])
 
 		if scenario.failure.is_empty():
 			print("[devproject] PASS %s" % scenario_name)
@@ -96,6 +121,18 @@ func _run_scenarios() -> void:
 		print("[devproject] %d of %d scenario(s) failed" % [failed, names.size()])
 
 	get_tree().quit(0 if failed == 0 else 1)
+
+# Why a scenario doesn't run on this backend/pass, or empty if it does
+func _skip_reason(scenario, backend: String, backend_smoke: bool) -> String:
+	if not scenario.requires_backends.is_empty() and not scenario.requires_backends.has(backend):
+		return "requires backend %s, running on %s" % [", ".join(scenario.requires_backends), backend]
+	if backend_smoke and not scenario.backend_smoke:
+		return "not a backend smoke scenario"
+	return ""
+
+# Read through the current scene's world rather than scenario.root's, since a scenario may change scenes and free its root
+func _backend_error_count() -> int:
+	return VA.backend_error_count(get_tree().current_scene.world)
 
 # Every expected error/warning must have been logged, and any other error fails the scenario. Unexpected warnings are allowed, same as in godottest.cs
 func _check_errors(scenario, logged: Dictionary) -> void:

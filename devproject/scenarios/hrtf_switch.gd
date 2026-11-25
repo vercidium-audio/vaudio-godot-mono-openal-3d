@@ -6,6 +6,9 @@ extends "res://scenarios/lib/scenario.gd"
 
 const BUILT_IN_HRTF := "Built-In HRTF"
 
+func _init() -> void:
+	requires_backends = ["openal"]
+
 func run() -> void:
 	await wait_raytraced_by_listener(root.source)
 	check(await wait_playing(root.source), "source isn't playing before switching HRTF")

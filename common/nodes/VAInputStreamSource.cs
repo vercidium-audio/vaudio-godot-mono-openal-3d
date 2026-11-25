@@ -156,7 +156,7 @@ public partial class VAInputStreamSource : VAStreamSource
         }
         catch (Exception e)
         {
-            LogWarning($"Failed to open capture device '{deviceName}' on {Name}: {e.Message}");
+            ALManager.LogBackendError($"Failed to open capture device '{deviceName}' on {Name}: {e.Message}");
             return false;
         }
 

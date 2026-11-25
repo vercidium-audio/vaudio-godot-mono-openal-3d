@@ -12,6 +12,7 @@ var stream: Node
 
 func _init() -> void:
 	scene = REVERB_ROOM
+	backend_smoke = true
 
 func run() -> void:
 	stream = VA.create_node(root.world, "VAStreamSource")

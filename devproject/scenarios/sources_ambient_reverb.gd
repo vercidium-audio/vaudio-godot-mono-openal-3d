@@ -11,6 +11,7 @@ const LISTENER_RAYS := 64
 
 func _init() -> void:
 	scene = REVERB_ROOM
+	backend_smoke = true
 	timeout_seconds = 120.0
 
 func run() -> void:

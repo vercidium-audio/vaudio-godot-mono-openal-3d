@@ -188,3 +188,7 @@ static func active_hrtf(world: Node) -> String:
 
 static func set_hrtf_enabled(world: Node, value: bool) -> bool:
 	return world.get_script().SetHrtfEnabled(value)
+
+# How many errors the audio backend has logged since the game started, through VAWorld's static passthrough like the HRTF ones
+static func backend_error_count(world: Node) -> int:
+	return world.get_script().GetBackendErrorCount()

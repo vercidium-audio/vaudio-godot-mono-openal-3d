@@ -14,4 +14,7 @@ public partial class VAWorld : Node3D
     public static string GetActiveHrtf() => ALManager.GetActiveHrtf();
     public static bool SetHrtfEnabled(bool value) => ALManager.SetHrtfEnabled(value);
     public static bool GetHrtfEnabled() => ALManager.GetHrtfEnabled();
+
+    // How many OpenAL errors have been logged since the game started
+    public static int GetBackendErrorCount() => ALManager.ErrorCount;
 }

@@ -6,3 +6,6 @@ addons/
 soft_oal.dll
 libopenal.so.1
 libopenal.1.dylib
+
+# Written by vaudio godottest --backend
+override.cfg

@@ -153,7 +153,7 @@ public class ALBuffer
         // Out of memory
         if (sourceID == 0)
         {
-            LogWarning($"Failed to create source - likely too many sources have been created");
+            ALManager.LogBackendError($"Failed to create source - likely too many sources have been created");
             source = null;
             return false;
         }

@@ -11,6 +11,7 @@ var spawned: Array[Node] = []
 
 func _init() -> void:
 	scene = REVERB_ROOM
+	backend_smoke = true
 
 func setup() -> void:
 	await wait_raytraced_by_listener(root.source)

@@ -24,6 +24,7 @@ var baseline := 0
 
 func _init() -> void:
 	scene = REVERB_ROOM
+	backend_smoke = true
 	timeout_seconds = 180.0
 
 func setup() -> void:

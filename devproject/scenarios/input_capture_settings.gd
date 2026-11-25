@@ -9,6 +9,9 @@ const AL_FORMAT_MONO_FLOAT32 := 0x10010
 
 var input: Node
 
+func _init() -> void:
+	backend_smoke = true
+
 func run() -> void:
 	input = VA.create_node(root.world, "VAInputStreamSource")
 	input.name = "Input"

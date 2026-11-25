@@ -9,6 +9,7 @@ var start_position
 
 func _init() -> void:
 	scene = REVERB_ROOM
+	backend_smoke = true
 
 func setup() -> void:
 	start_position = root.listener.global_position

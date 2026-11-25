@@ -11,6 +11,7 @@ var reverb: Node
 
 func _init() -> void:
 	scene = REVERB_ROOM
+	backend_smoke = true
 
 func setup() -> void:
 	plain_emitter = add_emitter("LeechNoReverbEmitter", false)

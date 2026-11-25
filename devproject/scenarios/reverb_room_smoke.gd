@@ -6,6 +6,7 @@ extends "res://scenarios/lib/scenario.gd"
 
 func _init() -> void:
 	scene = REVERB_ROOM
+	backend_smoke = true
 
 func run() -> void:
 	check(root.scene_file_path == REVERB_ROOM, "runner didn't switch to %s" % REVERB_ROOM)

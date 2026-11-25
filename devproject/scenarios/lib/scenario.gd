@@ -39,6 +39,12 @@ const GROUPED_EAX_STABLE_MS := 2000
 # Seconds before the runner gives up on this scenario and fails the run, before the listen stretch is applied
 var timeout_seconds := 60.0
 
+# Audio backends (runner.gd --backend=) this scenario can run on, or empty for any. The runner skips it on the others
+var requires_backends: PackedStringArray = []
+
+# Drives playback through the audio backend, so it's in the --backend-smoke pass that checks each non-default backend
+var backend_smoke := false
+
 func setup() -> void:
 	pass
 

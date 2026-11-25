@@ -12,6 +12,7 @@ var sources: Array[Node] = []
 
 func _init() -> void:
 	scene = REVERB_ROOM
+	backend_smoke = true
 
 func run() -> void:
 	var source := spawn_source("ReverbOnlySource", root.source.position + offset(-1), SEED, true, false)

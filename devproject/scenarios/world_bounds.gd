@@ -10,6 +10,7 @@ var original_clamp: bool
 
 func _init() -> void:
 	scene = REVERB_ROOM
+	backend_smoke = true
 
 func setup() -> void:
 	original_size = VA.get_value(root.world, "bounds_size")

@@ -47,7 +47,7 @@ public partial class VAStreamSource : VARaytracedSource
 
         if (sourceID == 0)
         {
-            LogWarning($"Failed to create a stream source for {Name} - likely too many sources have been created");
+            ALManager.LogBackendError($"Failed to create a stream source for {Name} - likely too many sources have been created");
             return false;
         }
 

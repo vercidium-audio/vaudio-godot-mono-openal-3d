@@ -14,6 +14,7 @@ var baseline_eax := 0
 
 func _init() -> void:
 	scene = REVERB_ROOM
+	backend_smoke = true
 
 func setup() -> void:
 	partition = DIM.add_reverb_room_partition(root, "brick")

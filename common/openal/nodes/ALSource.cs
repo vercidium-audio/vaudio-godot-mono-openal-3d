@@ -26,7 +26,7 @@ public partial class ALSource
         {
             if (!nativeLoadErrorLogged)
             {
-                LogError($"Failed to initialise OpenAL ({ex.Message}). Audio playback will not work until this is fixed.");
+                ALManager.LogBackendError($"Failed to initialise OpenAL ({ex.Message}). Audio playback will not work until this is fixed.");
                 nativeLoadErrorLogged = true;
             }
 

@@ -97,7 +97,7 @@ public static unsafe partial class ALManager
         }
         catch (Exception e)
         {
-            LogError($"Failed to recreate the audio output device after it was disconnected: {e.Message}");
+            LogBackendError($"Failed to recreate the audio output device after it was disconnected: {e.Message}");
             return false;
         }
     }
