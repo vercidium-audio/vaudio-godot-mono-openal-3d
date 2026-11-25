@@ -1,3 +1,5 @@
+// AI-created
+
 namespace vaudio_godot_mono_openal;
 
 // The audio backend's global settings, plus static passthroughs to it for GDScript, since VAAudioBackend is a plain C# class
@@ -14,6 +16,11 @@ public partial class VAWorld
 
     // How many audio backend errors have been logged since the game started
     public static int GetBackendErrorCount() => VAAudioBackend.ErrorCount;
+
+    // The audio backend in use (e.g. "OpenAL", "FMOD"), or empty if none is compiled in
+    public static string GetBackendName() => VAAudioBackend.Backend?.Name ?? "";
+
+    public static bool IsBackendInitialised() => VAAudioBackend.Initialised;
 
     // The global mix settings the audio backend is using, keyed by their VAWorld property names, so tests can check a VAWorld's values reached it
     public static Godot.Collections.Dictionary GetBackendSettings() => new()

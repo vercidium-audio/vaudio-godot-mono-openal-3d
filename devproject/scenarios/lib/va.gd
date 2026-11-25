@@ -204,3 +204,10 @@ static func backend_settings(world: Node) -> Dictionary:
 # How many errors the audio backend has logged since the game started, through VAWorld's static passthrough like the HRTF ones
 static func backend_error_count(world: Node) -> int:
 	return world.get_script().GetBackendErrorCount()
+
+# The audio backend in use, e.g. "OpenAL" or "FMOD"
+static func backend_name(world: Node) -> String:
+	return world.get_script().GetBackendName()
+
+static func is_backend_initialised(world: Node) -> bool:
+	return world.get_script().IsBackendInitialised()

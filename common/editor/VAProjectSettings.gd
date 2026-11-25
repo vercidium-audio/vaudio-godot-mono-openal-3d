@@ -42,6 +42,15 @@ static func register() -> void:
 	_add("audio/vaudio/openal_max_mono_sources", 16, TYPE_INT, PROPERTY_HINT_RANGE, "0,256,or_greater")
 	_add("audio/vaudio/openal_max_stereo_sources", 240, TYPE_INT, PROPERTY_HINT_RANGE, "0,256,or_greater")
 
+	# The FMOD library (or the folder holding it), searched after the project folder and the executable's folder. FMOD isn't shipped with vaudio
+	_add("audio/vaudio/fmod_library_path", "", TYPE_STRING, PROPERTY_HINT_GLOBAL_DIR)
+
+	# Read once when FMOD initialises: the most sounds FMOD tracks at once (virtual voices)
+	_add("audio/vaudio/fmod_max_channels", 512, TYPE_INT, PROPERTY_HINT_RANGE, "1,4095")
+
+	# Samples per mix buffer, 0 means FMOD's default (1024). Smaller is lower latency but uses more CPU
+	_add("audio/vaudio/fmod_dsp_buffer_size", 0, TYPE_INT, PROPERTY_HINT_ENUM, "FMOD Default:0,256,512,1024,2048")
+
 	update_backend_visibility()
 
 static func _add(name: String, default_value: Variant, type: int, hint: int = PROPERTY_HINT_NONE, hint_string: String = "") -> void:
