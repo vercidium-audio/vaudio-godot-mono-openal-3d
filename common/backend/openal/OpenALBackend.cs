@@ -1,12 +1,15 @@
+// AI-created
+
 using System.Runtime.CompilerServices;
 
 namespace vaudio_godot_mono_openal;
 
-// Plays vaudio's sounds through OpenAL Soft
+// Audio backend powered by OpenAL Soft
 public sealed partial class OpenALBackend : VAAudioBackendBase
 {
     public const string BackendName = "OpenAL";
 
+    // Runtime registry, so FMOD-only builds don't include OpenAL code
 #pragma warning disable CA2255
     [ModuleInitializer]
 #pragma warning restore CA2255

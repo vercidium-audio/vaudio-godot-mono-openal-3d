@@ -1,3 +1,5 @@
+// AI-created
+
 namespace vaudio_godot_mono_openal;
 
 // Static facade over the audio backend selected by audio/vaudio/backend. Nodes go through this rather than a backend type

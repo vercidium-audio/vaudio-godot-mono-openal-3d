@@ -1,3 +1,5 @@
+// AI-created
+
 using OpenALSource = global::OpenAL.managed.ALSource;
 
 namespace vaudio_godot_mono_openal;

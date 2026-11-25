@@ -1,3 +1,5 @@
+// AI-created
+
 namespace vaudio_godot_mono_openal;
 
 // An EFX EAX reverb effect in an auxiliary effect slot

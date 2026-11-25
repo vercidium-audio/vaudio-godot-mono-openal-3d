@@ -1,3 +1,5 @@
+// AI-created
+
 namespace vaudio_godot_mono_openal;
 
 // A grouped EAX's reverb effect, with the gain and pan last calculated for it, which it keeps while its EAX has no listener-relative results

@@ -1,3 +1,5 @@
+// Human-created
+
 namespace vaudio_godot_mono_openal;
 
 public partial class VAEmitter

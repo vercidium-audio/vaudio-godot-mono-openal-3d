@@ -1,3 +1,5 @@
+// Human-reviewed
+
 namespace vaudio_godot_mono_openal;
 
 // Autoplay and world bounds rules shared by VASource, VASourceLeech and VASourceRelative, which have no raytraced base class in common. VASourceRelative is never silenced

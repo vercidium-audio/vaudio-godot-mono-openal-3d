@@ -1,6 +1,8 @@
+// Human-created
+
 namespace vaudio_godot_mono_openal;
 
-// The body lives in common/nodes/VASourceAmbientCommon.cs. Scenes reference this path, so don't move it
+// Scenes reference this file, so don't move it . The rest is in common/nodes/
 [Tool]
 [GlobalClass]
 public partial class VASourceAmbient : VAPlayer

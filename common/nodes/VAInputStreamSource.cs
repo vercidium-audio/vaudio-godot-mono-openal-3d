@@ -1,4 +1,4 @@
-// Human-created
+// Human-reviewed
 
 using System.Runtime.InteropServices;
 

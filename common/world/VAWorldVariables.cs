@@ -1,3 +1,5 @@
+// AI-created
+
 namespace vaudio_godot_mono_openal;
 
 public enum PropagateMode

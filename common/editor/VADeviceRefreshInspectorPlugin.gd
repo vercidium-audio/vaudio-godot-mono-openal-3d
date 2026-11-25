@@ -1,3 +1,5 @@
+# AI-created
+
 @tool
 extends EditorInspectorPlugin
 

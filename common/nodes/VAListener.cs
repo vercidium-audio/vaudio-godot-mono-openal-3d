@@ -1,3 +1,5 @@
+// Human-created
+
 using Godot.Collections;
 
 namespace vaudio_godot_mono_openal;

@@ -1,3 +1,5 @@
+// Human-created
+
 namespace vaudio_godot_mono_openal;
 
 sealed class OpenALCaptureDevice(ALCaptureDevice device) : VACaptureDevice

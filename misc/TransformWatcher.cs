@@ -1,10 +1,10 @@
+// Human-reviewed
+
 // Human-created
 
 namespace vaudio_godot_mono_openal;
 
-/// <summary>
-/// Node that fires OnTransformChanged when its parent's global transform changes
-/// </summary>
+/// <summary>Node that fires OnTransformChanged when its parent's global transform changes</summary>
 partial class TransformWatcher : Node3D
 {
     public Action OnTransformChanged { get; set; }

@@ -1,3 +1,5 @@
+// Human-reviewed
+
 namespace vaudio_godot_mono_openal;
 
 public static class NodeExtensions

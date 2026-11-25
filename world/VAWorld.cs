@@ -1,7 +1,8 @@
+// Human-created
+
 namespace vaudio_godot_mono_openal;
 
-// All dimension-specific VAWorld logic lives in common/world/*.cs.
-// This file only pins the Godot base type for the 3D addon
+// Scenes reference this file, so don't move it . The rest is in common/world/
 [Tool]
 public partial class VAWorld : Node3D
 {

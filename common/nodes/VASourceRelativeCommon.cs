@@ -1,3 +1,5 @@
+// Human-created
+
 namespace vaudio_godot_mono_openal;
 
 // Shared body of VASourceRelative. Godot binds the script to nodes/VASourceRelative.cs (the file named after the class), which must stay at that path so scenes saved by older versions still load

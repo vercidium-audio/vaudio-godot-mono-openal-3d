@@ -1,3 +1,5 @@
+// Human-reviewed
+
 namespace vaudio_godot_mono_openal;
 
 // Mirrors the native plugin's VAWorld getters, so GDScript (e.g. the devproject tests) can read world statistics without touching the vaudio.World field

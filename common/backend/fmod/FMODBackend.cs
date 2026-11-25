@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace vaudio_godot_mono_openal;
 
-// Wrapper around FMOD Core
+// Audio backend powered by FMOD Core
 public sealed partial class FMODBackend : VAAudioBackendBase
 {
     public const string BackendName = "FMOD";

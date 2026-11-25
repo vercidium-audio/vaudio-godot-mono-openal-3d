@@ -1,3 +1,5 @@
+// Human-created
+
 namespace vaudio_godot_mono_openal;
 
 // Base type (Node2D/Node3D) and [Tool]/[GlobalClass] are declared per-addon in VAEmitterBase.cs.

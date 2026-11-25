@@ -1,3 +1,5 @@
+// AI-created
+
 namespace vaudio_godot_mono_openal;
 
 // Base type (Node2D/Node3D) and [Tool] are declared per-addon in VAPlayerBase.cs.

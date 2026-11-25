@@ -1,3 +1,5 @@
+// Human-created
+
 global using static vaudio_godot_mono_openal.Logger;
 
 global using System;

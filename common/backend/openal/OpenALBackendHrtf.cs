@@ -1,3 +1,5 @@
+// AI-created
+
 using System.Runtime.InteropServices;
 
 namespace vaudio_godot_mono_openal;

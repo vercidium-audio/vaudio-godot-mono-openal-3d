@@ -1,3 +1,5 @@
+// AI-created
+
 using System.Linq;
 
 namespace vaudio_godot_mono_openal;
