@@ -68,10 +68,10 @@ public sealed unsafe partial class OpenALBackend
     {
         EnsureSettingsRead();
 
-        if (value == _hrtfEnabled)
+        if (value == hrtfEnabled)
             return true;
 
-        _hrtfEnabled = value;
+        hrtfEnabled = value;
         return ResetDevice();
     }
 
@@ -81,7 +81,7 @@ public sealed unsafe partial class OpenALBackend
     public override bool GetHrtfEnabled()
     {
         EnsureSettingsRead();
-        return _hrtfEnabled;
+        return hrtfEnabled;
     }
 
     static List<string> GetHrtfList(IntPtr device)
@@ -130,16 +130,16 @@ public sealed unsafe partial class OpenALBackend
     {
         List<int> attribs =
         [
-            AL.ALC_FREQUENCY, _sampleRate,
-            AL.ALC_MAX_AUXILIARY_SENDS, _maximumAuxiliarySends,
-            AL.ALC_MONO_SOURCES, _maximumMonoSources,
-            AL.ALC_STEREO_SOURCES, _maximumStereoSources,
+            AL.ALC_FREQUENCY, sampleRate,
+            AL.ALC_MAX_AUXILIARY_SENDS, maximumAuxiliarySends,
+            AL.ALC_MONO_SOURCES, maximumMonoSources,
+            AL.ALC_STEREO_SOURCES, maximumStereoSources,
         ];
 
         if (ALDevice.HasExtension(HrtfExtension))
         {
             attribs.Add(AL.ALC_HRTF_SOFT);
-            attribs.Add(_hrtfEnabled ? 1 : 0);
+            attribs.Add(hrtfEnabled ? 1 : 0);
 
             var hrtfIndex = FindHrtfIndex();
 

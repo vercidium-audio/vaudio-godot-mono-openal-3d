@@ -1,15 +1,15 @@
-// AI-created
+// Human-created
 
 using System.Runtime.CompilerServices;
 
 namespace vaudio_godot_mono_openal;
 
-// Audio backend powered by OpenAL Soft
 public sealed partial class OpenALBackend : VAAudioBackendBase
 {
     public const string BackendName = "OpenAL";
 
     // Runtime registry, so FMOD-only builds don't include OpenAL code
+    // TODO - vaudio-godot-mono-openal-2d\devproject\vaudio-godot-mono-openal-2d test project.csproj already filters out FMOD/OpenAL code based on VaudioBackend. Can we do this automatically for the user?
 #pragma warning disable CA2255
     [ModuleInitializer]
 #pragma warning restore CA2255
@@ -27,7 +27,7 @@ public sealed partial class OpenALBackend : VAAudioBackendBase
         if (IsInitialised)
             return;
 
-        // Log to both - in case we're launched from vs2026 or from the Godot Editor
+        // Log to both, as we can be run from Visual Studio or the Godot Editor
         OpenAL.Logger.Log = (message) =>
         {
             Console.WriteLine(message);

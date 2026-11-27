@@ -1,45 +1,52 @@
-// AI-created
+// Human-created
 
 namespace vaudio_godot_mono_openal;
 
 public sealed partial class OpenALBackend
 {
-    // Empty means the system default
-    string _outputDeviceName = "";
+    const string SYSTEM_DEFAULT = "";
+    const string SETTINGS_PREFIX = "audio/vaudio/";
 
-    int _maximumAuxiliarySends;
-    int _sampleRate;
-    bool _hrtfEnabled;
-    int _maximumMonoSources;
-    int _maximumStereoSources;
+    string _outputDeviceName = SYSTEM_DEFAULT;
+
+    int maximumAuxiliarySends;
+    int sampleRate;
+    bool hrtfEnabled;
+    int maximumMonoSources;
+    int maximumStereoSources;
 
     bool _settingsRead;
 
-    // Read once, so runtime changes (SetOutputDevice, SetHrtf etc.) aren't overwritten when the device is recreated
+    // Settings helpers
+    Variant GetSetting(string name, Variant fallback) => ProjectSettings.GetSetting($"{SETTINGS_PREFIX}{name}", fallback);
+
+    int GetIntSetting(string name, int fallback) => GetSetting(name, fallback).AsInt32();
+    bool GetBoolSetting(string name, bool fallback) => GetSetting(name, fallback).AsBool();
+    string GetStringSetting(string name, string fallback) => GetSetting(name, fallback).AsString();
+
     void EnsureSettingsRead()
     {
+        // Only run once, so settings aren't lost when recreating a device
         if (_settingsRead)
             return;
 
         _settingsRead = true;
 
-        // plugin_main.gd only registers these settings in the editor, and project.godot doesn't store settings left at their default, so a running game must supply the same defaults itself
-        var deviceNameSetting = ProjectSettings.GetSetting("audio/vaudio/output_device", "").AsString();
-        _outputDeviceName = deviceNameSetting == "System Default" ? "" : deviceNameSetting;
+        var deviceNameSetting = GetStringSetting("output_device", SYSTEM_DEFAULT);
+        _outputDeviceName = deviceNameSetting == "System Default" ? SYSTEM_DEFAULT : deviceNameSetting;
 
-        _maximumAuxiliarySends = Math.Max(1, ProjectSettings.GetSetting("audio/vaudio/openal_max_reverb_sends", 1).AsInt32());
-        _sampleRate = ProjectSettings.GetSetting("audio/vaudio/sample_rate", 0).AsInt32();
-        _hrtfEnabled = ProjectSettings.GetSetting("audio/vaudio/openal_hrtf_enabled", true).AsBool();
-        _maximumMonoSources = ProjectSettings.GetSetting("audio/vaudio/openal_max_mono_sources", 16).AsInt32();
-        _maximumStereoSources = ProjectSettings.GetSetting("audio/vaudio/openal_max_stereo_sources", 240).AsInt32();
+        maximumAuxiliarySends = Math.Max(1, GetIntSetting("openal_max_reverb_sends", 1));
+        sampleRate = GetIntSetting("sample_rate", 0);
+        hrtfEnabled = GetBoolSetting("openal_hrtf_enabled", true);
+        maximumMonoSources = GetIntSetting("openal_max_mono_sources", 16);
+        maximumStereoSources = GetIntSetting("openal_max_stereo_sources", 240);
 
-        var hrtfSetting = ProjectSettings.GetSetting("audio/vaudio/openal_hrtf", DefaultHrtfLabel).AsString();
-        _hrtfName = hrtfSetting == DefaultHrtfLabel ? "" : hrtfSetting;
+        var hrtfSetting = GetStringSetting("openal_hrtf", DefaultHrtfLabel);
+        _hrtfName = hrtfSetting == DefaultHrtfLabel ? SYSTEM_DEFAULT : hrtfSetting;
     }
 
     void CreateDeviceAndContext()
     {
-        // Shouldn't be initialising in the editor
         Debug.Assert(!Engine.IsEditorHint());
 
         Debug.Assert(ALContext == null);
@@ -53,25 +60,24 @@ public sealed partial class OpenALBackend
         // Create an OpenAL context
         var settings = new ALContextSettings()
         {
-            HRTFEnabled = _hrtfEnabled,
+            HRTFEnabled = hrtfEnabled,
             HRTFID = FindHrtfIndex(),
-            SampleRate = _sampleRate,
-            MaximumAuxiliarySends = _maximumAuxiliarySends,
-            MaximumMonoSources = _maximumMonoSources,
-            MaximumStereoSources = _maximumStereoSources,
+            SampleRate = sampleRate,
+            MaximumAuxiliarySends = maximumAuxiliarySends,
+            MaximumMonoSources = maximumMonoSources,
+            MaximumStereoSources = maximumStereoSources,
             LogWarning = LogWarning,
         };
 
         ALContext = new(ALDevice, settings);
 
-        // ALContextSettings leaves HRTF up to OpenAL Soft's headphone detection when it's disabled, so explicitly turn it off
-        if (!_hrtfEnabled && ALDevice.HasExtension(HrtfExtension))
+        // Disable HRTF
+        if (!hrtfEnabled && ALDevice.HasExtension(HrtfExtension))
             AL.ResetDeviceSOFT(ALDevice.handle, BuildAttribs());
 
         ApplyAllSettings();
     }
 
-    // Releases everything on the device (via DeviceDestroying), then the context and device
     void DestroyDevice()
     {
         RaiseDeviceDestroying();
@@ -88,7 +94,7 @@ public sealed partial class OpenALBackend
     const ulong ConnectionCheckIntervalMs = 1000;
     ulong _nextConnectionCheckMs;
 
-    // Once the output device is lost (e.g. headphones unplugged), OpenAL Soft stops every source and new ones stop as soon as they play. Recreates the device so looping sources replay. Returns false if the device was lost and couldn't be recreated
+    // Returns false if the device was lost and couldn't be recreated
     bool CheckDeviceConnected()
     {
         var now = Time.GetTicksMsec();
@@ -120,7 +126,7 @@ public sealed partial class OpenALBackend
         if (!IsInitialised)
             return;
 
-        // Try a reopen first. If it fails, destroy and recreate the device
+        // Try a quick device reopen first
         if (ALDevice.Reopen(string.IsNullOrEmpty(_outputDeviceName) ? null : _outputDeviceName, BuildAttribs()))
             return;
 
@@ -131,6 +137,8 @@ public sealed partial class OpenALBackend
     {
         DestroyDevice();
         CreateDeviceAndContext();
+
+        // Re-play sounds that were playing before the device changed/disconnected
         RaiseDeviceRecreated();
     }
 
