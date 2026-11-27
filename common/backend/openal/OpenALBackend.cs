@@ -8,8 +8,6 @@ public sealed partial class OpenALBackend : VAAudioBackendBase
 {
     public const string BackendName = "OpenAL";
 
-    // Runtime registry, so FMOD-only builds don't include OpenAL code
-    // TODO - vaudio-godot-mono-openal-2d\devproject\vaudio-godot-mono-openal-2d test project.csproj already filters out FMOD/OpenAL code based on VaudioBackend. Can we do this automatically for the user?
 #pragma warning disable CA2255
     [ModuleInitializer]
 #pragma warning restore CA2255
