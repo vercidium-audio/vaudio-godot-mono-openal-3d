@@ -2,7 +2,7 @@
 
 extends "res://scenarios/lib/scenario.gd"
 
-# VAWorld's audio backend settings (master volume, distance model, doppler scale, meters per unit, speed of sound, reverb only) reach the backend: the scene's saved values once the world is in the tree, and changes straight away. Mono only until the native plugin has doppler_scale and the backend interface
+# VAWorld's audio backend settings (master volume, distance model, doppler scale, meters per unit, speed of sound, reverb only) reach the backend: the scene's saved values once the world is in the tree, and changes straight away
 
 const PROPERTIES := ["master_volume", "distance_model", "doppler_scale", "meters_per_unit", "speed_of_sound", "reverb_only"]
 

@@ -8,31 +8,20 @@ namespace vaudio_godot_mono_openal;
 
 internal static class OpenALLibrary
 {
-    // openal_soft_bindings dlopens OpenAL by name, which never searches the project root or the exe's folder on Linux/macOS. Loading our copy by full path first makes that later dlopen match it by SONAME
+    // openal_soft_bindings loads OpenAL by name, which never searches the addon's bin folder (and on Linux/macOS not the exe's folder either). Loading our copy by full path first makes that later load reuse it: by SONAME on Linux/macOS, by module name on Windows
 #pragma warning disable CA2255
     [ModuleInitializer]
 #pragma warning restore CA2255
     internal static void PreloadOpenALLibrary()
     {
-        if (OperatingSystem.IsWindows())
-            return;
-
-        string libName = OperatingSystem.IsMacOS() ? "libopenal.1.dylib" : "libopenal.so.1";
+        string libName = OperatingSystem.IsWindows() ? "soft_oal.dll" : OperatingSystem.IsMacOS() ? "libopenal.1.dylib" : "libopenal.so.1";
         string exeDir = Path.GetDirectoryName(System.Environment.ProcessPath) ?? "";
 
-        // No Godot API here: in exported games this assembly loads before Godot's interop is initialised, and calling into it segfaults. The editor's --path chdirs into the project, so the current directory is the project root
+        // No Godot API here (see VAAddonBin). The editor's --path chdirs into the project, so the current directory is the project root
         string projectDir = Directory.GetCurrentDirectory();
 
-        List<string> dirs = [exeDir, Path.Combine(exeDir, "..", "Frameworks"), projectDir];
-
-        // plugin.gd copies the lib to the project root after this assembly loads, so a fresh project only has the addon's copy
-        string addonsDir = Path.Combine(projectDir, "addons");
-        if (projectDir.Length > 0 && Directory.Exists(addonsDir))
-        {
-            string folder = OperatingSystem.IsMacOS() ? "mac" : RuntimeInformation.ProcessArchitecture == Architecture.Arm64 ? "linux-arm64" : "linux";
-            foreach (string addon in Directory.GetDirectories(addonsDir))
-                dirs.Add(Path.Combine(addon, "bin", folder));
-        }
+        // Exports have OpenAL beside the exe. In the editor the addon's copy wins over one left in the project root by older versions of the plugin, so upgrading the plugin upgrades OpenAL
+        List<string> dirs = [exeDir, Path.Combine(exeDir, "..", "Frameworks"), .. VAAddonBin.PlatformDirs(), projectDir];
 
         foreach (string dir in dirs)
         {

@@ -33,6 +33,8 @@ Setup instructions are [available here](https://vercidium.com/docs/godot/getting
 
 Copy `vaudio.dll` and `vaudio.xml` from the `3d/dotnet/dev/` folder in the Vercidium Audio SDK, to the `addons/vaudio-godot-mono-openal-3d/bin/` folder.
 
+The dev `vaudio.dll` renders to a separate debug window. Copy the files from the SDK's `3d/debug-window/{platform}/` folder (e.g. `vaudio-debug-window.exe` and `glfw3.dll` for `windows`) to the `addons/vaudio-godot-mono-openal-3d/bin/{platform}/` folder, for each platform you develop on. The production `vaudio.dll` doesn't use them, so you don't need them in your exported game.
+
 ### 2. Enable the Plugin
 
 1. Open your project in Godot
@@ -46,7 +48,7 @@ You should then see a `[vaudio-godot-mono-openal-3d] Vercidium Audio (vaudio) pl
 
 The plugin setup script in `addons/vaudio-godot-mono-openal-3d/plugin.gd` will perform some setup logic for you.
 
-First, it will add this text to your project's `.csproj` file:
+It will add this text to your project's `.csproj` file:
 
 ```xml
 <PropertyGroup>
@@ -66,7 +68,7 @@ First, it will add this text to your project's `.csproj` file:
 </ItemGroup>
 ```
 
-Second, it will copy OpenAL Soft for your platform from `addons/vaudio-godot-mono-openal-3d/bin/{platform}/` to your project root, which is where Godot searches for `.dll` files when it runs. The platform folders match the Vercidium Audio SDK's:
+OpenAL Soft is loaded from `addons/vaudio-godot-mono-openal-3d/bin/{platform}/` when the game starts, so it doesn't need to be copied anywhere. The platform folders match the Vercidium Audio SDK's:
 
 | Folder | Library |
 |---|---|

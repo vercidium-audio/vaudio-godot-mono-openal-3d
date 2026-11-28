@@ -2,7 +2,7 @@
 
 extends "res://scenarios/lib/scenario.gd"
 
-# A VASourceRelative with use_listener_reverb off is a plain listener-relative player (music, UI): it plays straight away without waiting for the listener's reverb, and sends to no reverb bus. Replaces 1.11's VAPlayerRelative. Mono only until the native port
+# A VASourceRelative with use_listener_reverb off is a plain listener-relative player (music, UI): it plays straight away without waiting for the listener's reverb, and sends to no reverb bus. Replaces 1.11's ALSourceRelative
 
 const REVERB_RAYS := 64
 

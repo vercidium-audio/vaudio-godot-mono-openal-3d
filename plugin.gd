@@ -8,7 +8,6 @@ var main_plugin: EditorPlugin
 const ADDON_NAME = "vaudio-godot-mono-openal-3d"
 const ADDON_ROOT = "res://addons/" + ADDON_NAME
 const LOG_PREFIX = "[" + ADDON_NAME + "] "
-const VAOpenALLibrary = preload("res://addons/vaudio-godot-mono-openal-3d/common/editor/VAOpenALLibrary.gd")
 const VACsproj = preload("res://addons/vaudio-godot-mono-openal-3d/common/editor/VACsproj.gd")
 const VAProjectSettings = preload("res://addons/vaudio-godot-mono-openal-3d/common/editor/VAProjectSettings.gd")
 
@@ -40,7 +39,6 @@ func _on_settings_changed():
 	if backend != _backend:
 		_backend = backend
 		push_warning(LOG_PREFIX + "The audio backend is now %s. Rebuild the C# project (Alt + B, or the hammer icon in the top right) and restart the editor to switch to it" % backend)
-		_copy_dll()
 
 	if not _setup_done:
 		_setup_project()
@@ -102,8 +100,6 @@ func _setup_project():
 			push_error(LOG_PREFIX + "Godot needs to rebuild the C# assembly before the plugin can fully load - please rebuild the project (Alt + B, or hammer icon in the top right) and then disable and re-enable this plugin")
 		return
 
-	_copy_dll()
-
 	_setup_done = true
 
 	if main_plugin:
@@ -112,30 +108,3 @@ func _setup_project():
 	var main_script = load(ADDON_ROOT + "/plugin_main.gd")
 	main_plugin = main_script.new()
 	main_plugin._enter_tree()
-
-# Copies this platform's OpenAL Soft from bin/{platform folder}/ to the project root, which is where the OpenAL bindings load it from in the editor. Only for the OpenAL backend
-func _copy_dll():
-	if _backend != "OpenAL":
-		return
-
-	var os_name := OS.get_name().to_lower()
-	var source_path := VAOpenALLibrary.get_library_path(ADDON_ROOT, os_name, Engine.get_architecture_name())
-	if source_path.is_empty():
-		return
-
-	var lib_name := VAOpenALLibrary.get_library_name(os_name)
-	var dest_path := "res://" + lib_name
-
-	# Replace an existing copy that differs from the addon's, so upgrading the plugin also upgrades OpenAL (e.g. the universal macOS build)
-	if FileAccess.file_exists(dest_path) and (not FileAccess.file_exists(source_path) or FileAccess.get_md5(dest_path) == FileAccess.get_md5(source_path)):
-		return
-
-	# Copy the library
-	if FileAccess.file_exists(source_path):
-		var result = DirAccess.copy_absolute(source_path, dest_path)
-		if result == OK:
-			print(LOG_PREFIX + "Copied %s to project root" % lib_name)
-		else:
-			push_error(LOG_PREFIX + "Failed to copy %s: %s. If OpenAL is already loaded, restart the editor to finish updating it" % [lib_name, result])
-	else:
-		push_error(LOG_PREFIX + "Source library not found at ", source_path)
